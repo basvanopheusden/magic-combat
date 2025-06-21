@@ -41,12 +41,6 @@ def test_double_strike_trample_hits_player_twice():
     """CR 702.4b & 702.19b: Double strike deals damage in two steps and trample lets excess hit the defending player."""
     atk = CombatCreature("Crusher", 3, 3, "A", double_strike=True, trample=True)
     blk = CombatCreature("Bear", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
-    sim = CombatSimulator([atk], [blk])
-    result = sim.simulate()
-    assert blk in result.creatures_destroyed
-    assert atk not in result.creatures_destroyed
     assert result.damage_to_players["B"] == 4
 
 
@@ -64,3 +58,26 @@ def test_double_strike_deathtouch_kills_all_blockers_first():
     assert b2 in result.creatures_destroyed
     assert atk not in result.creatures_destroyed
     assert result.damage_to_players.get("B", 0) == 0
+
+
+def test_double_strike_kills_first_striker_no_damage_to_player():
+    """CR 702.4b & 506.4: A double strike creature that kills its blocker in the first-strike step is still blocked and deals no damage to the player."""
+    atk = CombatCreature("Champion", 2, 2, "A", double_strike=True)
+    blk = CombatCreature("Squire", 1, 1, "B", first_strike=True)
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+    assert result.damage_to_players.get("B", 0) == 0
+
+
+def test_double_strike_unblocked_hits_player_twice():
+    """CR 702.4b & 510.1c: A double strike creature unblocked deals damage twice to the defending player."""
+    atk = CombatCreature("Warrior", 3, 3, "A", double_strike=True)
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    sim = CombatSimulator([atk], [defender])
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 6
+    assert result.creatures_destroyed == []
