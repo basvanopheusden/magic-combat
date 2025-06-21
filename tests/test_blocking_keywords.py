@@ -79,3 +79,41 @@ def test_protection_prevents_blocking():
     sim = CombatSimulator([attacker], [blocker])
     with pytest.raises(ValueError):
         sim.validate_blocking()
+
+
+def test_skulk_prevents_stronger_blocker_even_with_bushido():
+    """CR 702.65a: Skulk says a creature can't be blocked by creatures with greater power."""
+    attacker = CombatCreature("Sneak", 2, 2, "A", skulk=True, bushido=2)
+    blocker = CombatCreature("Brute", 3, 3, "B")
+    attacker.blocked_by.append(blocker)
+    blocker.blocking = attacker
+    sim = CombatSimulator([attacker], [blocker])
+    with pytest.raises(ValueError):
+        sim.validate_blocking()
+
+
+def test_flying_horsemanship_requires_both_abilities():
+    """CR 702.9b & 702.30b: A creature with flying and horsemanship can be blocked only by a creature with both."""
+    attacker = CombatCreature("Hybrid", 1, 1, "A", flying=True, horsemanship=True)
+
+    only_flying = CombatCreature("Pegasus", 1, 2, "B", flying=True)
+    attacker.blocked_by.append(only_flying)
+    only_flying.blocking = attacker
+    sim = CombatSimulator([attacker], [only_flying])
+    with pytest.raises(ValueError):
+        sim.validate_blocking()
+
+    attacker.blocked_by.clear()
+    only_horse = CombatCreature("Horseman", 1, 2, "B", horsemanship=True)
+    attacker.blocked_by.append(only_horse)
+    only_horse.blocking = attacker
+    sim = CombatSimulator([attacker], [only_horse])
+    with pytest.raises(ValueError):
+        sim.validate_blocking()
+
+    attacker.blocked_by.clear()
+    both = CombatCreature("Cavalry", 1, 2, "B", flying=True, horsemanship=True)
+    attacker.blocked_by.append(both)
+    both.blocking = attacker
+    sim = CombatSimulator([attacker], [both])
+    sim.validate_blocking()

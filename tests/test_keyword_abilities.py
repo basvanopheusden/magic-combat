@@ -85,3 +85,15 @@ def test_training_adds_counter():
     sim = CombatSimulator([trainee, mentor], [])
     sim.simulate()
     assert trainee.plus1_counters == 1
+
+
+def test_skulk_and_bushido_combo():
+    """CR 702.65a & 702.46a: Skulk restricts blocks to weaker creatures and bushido gives +N/+N when blocked."""
+    attacker = CombatCreature("Ninja", 2, 2, "A", skulk=True, bushido=1)
+    blocker = CombatCreature("Guard", 1, 1, "B")
+    attacker.blocked_by.append(blocker)
+    blocker.blocking = attacker
+    sim = CombatSimulator([attacker], [blocker])
+    result = sim.simulate()
+    assert blocker in result.creatures_destroyed
+    assert attacker not in result.creatures_destroyed
