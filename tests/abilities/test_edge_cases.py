@@ -129,3 +129,14 @@ def test_rampage_and_flanking_multi_block():
     assert b1 in result.creatures_destroyed
     assert b2 in result.creatures_destroyed
     assert attacker not in result.creatures_destroyed
+
+
+def test_blocked_creature_no_trample_hits_no_player():
+    """CR 509.1h: A creature remains blocked even if its blocker dies."""
+    attacker = CombatCreature("Fencer", 2, 2, "A", first_strike=True)
+    blocker = CombatCreature("Guard", 2, 2, "B")
+    attacker.blocked_by.append(blocker)
+    blocker.blocking = attacker
+    sim = CombatSimulator([attacker], [blocker])
+    result = sim.simulate()
+    assert result.damage_to_players.get("B", 0) == 0

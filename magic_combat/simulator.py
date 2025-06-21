@@ -159,7 +159,7 @@ class CombatSimulator:
     def _assign_damage_from_attacker(
         self, attacker: CombatCreature, blockers: Optional[List[CombatCreature]] = None
     ) -> None:
-        """Deal attacker's damage to its blockers."""
+        """Deal attacker's damage to its blockers and excess to the player."""
         blockers = blockers if blockers is not None else attacker.blocked_by
         ordered = self.assignment_strategy.order_blockers(attacker, blockers)
         remaining = attacker.effective_power()
@@ -176,6 +176,8 @@ class CombatSimulator:
             remaining -= dmg
             if remaining <= 0:
                 break
+        if remaining > 0 and attacker.trample:
+            self._deal_damage_to_player(attacker, remaining)
 
     def _assign_damage_to_attacker(
         self, attacker: CombatCreature, blockers: Optional[List[CombatCreature]] = None
@@ -192,10 +194,12 @@ class CombatSimulator:
                     self.lifegain.get(blocker.controller, 0) + dmg
                 )
 
-    def _deal_damage_to_player(self, attacker: CombatCreature) -> None:
-        """Deal damage from an unblocked attacker to a defending player."""
+    def _deal_damage_to_player(
+        self, attacker: CombatCreature, dmg: Optional[int] = None
+    ) -> None:
+        """Deal combat damage from ``attacker`` to a defending player."""
         defender = self.defenders[0].controller if self.defenders else "defender"
-        dmg = attacker.effective_power()
+        dmg = attacker.effective_power() if dmg is None else dmg
         self.player_damage[defender] = self.player_damage.get(defender, 0) + dmg
         if attacker.lifelink:
             self.lifegain[attacker.controller] = (
@@ -218,7 +222,10 @@ class CombatSimulator:
                     self._assign_damage_to_attacker(attacker, eligible_blockers)
             else:
                 if not attacker.first_strike or attacker.double_strike:
-                    self._deal_damage_to_player(attacker)
+                    if not attacker.blocked_by:
+                        self._deal_damage_to_player(attacker)
+                    elif attacker.trample:
+                        self._deal_damage_to_player(attacker)
 
     def check_lethal_damage(self):
         """Evaluate which creatures die after damage or state-based effects."""
