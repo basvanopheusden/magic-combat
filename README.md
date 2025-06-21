@@ -63,3 +63,11 @@ from magic_combat import fetch_french_vanilla_cards, save_cards
 cards = fetch_french_vanilla_cards()
 save_cards(cards, "data/cards.json")
 ```
+
+Alternatively you can run the ``download_cards.py`` script from this
+repository to fetch the data from the command line::
+
+    python download_cards.py data/cards.json
+
+This will query Scryfall for the supported French vanilla creatures and
+store them in the specified JSON file.
