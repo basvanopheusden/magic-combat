@@ -54,8 +54,18 @@ class CombatCreature:
     damage_marked: int = 0
 
     # --- Counters ---
-    plus1_counters: int = 0
-    minus1_counters: int = 0
+    _plus1_counters: int = field(default=0, repr=False)
+    _minus1_counters: int = field(default=0, repr=False)
+
+    def __post_init__(self) -> None:
+        if self.power < 0:
+            raise ValueError("power cannot be negative")
+        if self.toughness <= 0:
+            raise ValueError("toughness must be positive")
+        if self._plus1_counters < 0 or self._minus1_counters < 0:
+            raise ValueError("counters cannot be negative")
+        if self.damage_marked < 0:
+            raise ValueError("damage_marked cannot be negative")
 
     def has_protection_from(self, color: Color) -> bool:
         return color in self.protection_colors
@@ -73,3 +83,24 @@ class CombatCreature:
 
     def __str__(self) -> str:
         return f"{self.name} ({self.power}/{self.toughness})"
+
+    # --- Counter properties with validation ---
+    @property
+    def plus1_counters(self) -> int:
+        return self._plus1_counters
+
+    @plus1_counters.setter
+    def plus1_counters(self, value: int) -> None:
+        if value < 0:
+            raise ValueError("plus1 counters cannot be negative")
+        self._plus1_counters = value
+
+    @property
+    def minus1_counters(self) -> int:
+        return self._minus1_counters
+
+    @minus1_counters.setter
+    def minus1_counters(self, value: int) -> None:
+        if value < 0:
+            raise ValueError("minus1 counters cannot be negative")
+        self._minus1_counters = value
