@@ -36,17 +36,17 @@ class CombatSimulator:
         self.player_damage: Dict[str, int] = {}
         self.poison_counters: Dict[str, int] = {}
         self.lifegain: Dict[str, int] = {}
+        self._lifegain_applied: Dict[str, int] = {}
         self.assignment_strategy = strategy or MostCreaturesKilledStrategy()
         self.game_state = game_state
         self.players_lost: List[str] = []
 
     def _check_players_lost(self) -> None:
         """Record any players who have lost the game."""
-        if self.game_state is None:
-            return
-        for player in list(self.game_state.players.keys()):
-            if has_player_lost(self.game_state, player) and player not in self.players_lost:
-                self.players_lost.append(player)
+        if self.game_state is not None:
+            for player in list(self.game_state.players.keys()):
+                if has_player_lost(self.game_state, player) and player not in self.players_lost:
+                    self.players_lost.append(player)
 
         for attacker in self.attackers:
             attacker.attacking = True
@@ -298,10 +298,14 @@ class CombatSimulator:
         """Apply lifelink life gain to the game state, if any."""
         if self.game_state is not None:
             for player, gain in self.lifegain.items():
-                ps = self.game_state.players.setdefault(
-                    player, PlayerState(life=20, creatures=[], poison=0)
-                )
-                ps.life += gain
+                already = self._lifegain_applied.get(player, 0)
+                diff = gain - already
+                if diff:
+                    ps = self.game_state.players.setdefault(
+                        player, PlayerState(life=20, creatures=[], poison=0)
+                    )
+                    ps.life += diff
+                    self._lifegain_applied[player] = gain
         # lifegain remains tracked for CombatResult
 
     def finalize(self) -> CombatResult:
