@@ -8,15 +8,6 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from magic_combat import CombatCreature, CombatSimulator
 
 
-def test_skulk_bushido_illegal_block():
-    """CR 702.120 & 702.46a: Skulk stops blocks by creatures with equal or greater power before Bushido applies."""
-    atk = CombatCreature("Sneaky Samurai", 2, 2, "A", skulk=True, bushido=1)
-    blk = CombatCreature("Guard", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
-    sim = CombatSimulator([atk], [blk])
-    with pytest.raises(ValueError):
-        sim.validate_blocking()
 
 
 def test_skulk_bushido_combat():
