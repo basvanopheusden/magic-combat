@@ -96,3 +96,36 @@ def test_rampage_and_bushido_multi_block():
     assert b1 in result.creatures_destroyed
     assert b2 in result.creatures_destroyed
     assert attacker not in result.creatures_destroyed
+
+def test_exalted_and_bushido_stack():
+    """CR 702.90a & 702.46a: Exalted and bushido each grant +1/+1."""
+    attacker = CombatCreature("Disciplined", 2, 2, "A", exalted_count=1, bushido=1)
+    blocker = CombatCreature("Grunt", 2, 2, "B")
+    attacker.blocked_by.append(blocker)
+    blocker.blocking = attacker
+    sim = CombatSimulator([attacker], [blocker])
+    result = sim.simulate()
+    assert blocker in result.creatures_destroyed
+    assert attacker not in result.creatures_destroyed
+
+def test_training_after_battle_cry_equal_power():
+    """CR 702.92a & 702.138a: Battle cry may prevent training if powers tie."""
+    trainee = CombatCreature("Trainee", 2, 2, "A", training=True)
+    leader = CombatCreature("Leader", 3, 3, "A", battle_cry_count=1)
+    sim = CombatSimulator([trainee, leader], [])
+    sim.simulate()
+    assert trainee.plus1_counters == 0
+
+def test_rampage_and_flanking_multi_block():
+    """CR 702.23a & 702.25a: Rampage boosts attackers while flanking weakens blockers."""
+    attacker = CombatCreature("Warrior", 3, 3, "A", rampage=2, flanking=1)
+    b1 = CombatCreature("B1", 2, 2, "B")
+    b2 = CombatCreature("B2", 2, 2, "B")
+    attacker.blocked_by.extend([b1, b2])
+    b1.blocking = attacker
+    b2.blocking = attacker
+    sim = CombatSimulator([attacker], [b1, b2])
+    result = sim.simulate()
+    assert b1 in result.creatures_destroyed
+    assert b2 in result.creatures_destroyed
+    assert attacker not in result.creatures_destroyed
