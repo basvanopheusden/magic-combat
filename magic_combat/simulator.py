@@ -357,6 +357,8 @@ class CombatSimulator:
 
     def check_lethal_damage(self):
         """Evaluate which creatures die after damage or state-based effects."""
+        for creature in self.all_creatures:
+            creature.apply_counter_annihilation()
         destroyed_by_damage = [
             c for c in self.all_creatures if c.is_destroyed_by_damage()
         ]

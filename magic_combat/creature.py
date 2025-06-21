@@ -158,6 +158,17 @@ class CombatCreature:
         check_non_negative(value, "minus1 counters")
         self._minus1_counters = value
 
+    def apply_counter_annihilation(self) -> None:
+        """Remove matched +1/+1 and -1/-1 counters.
+
+        CR 704.5q specifies that if a permanent has both a +1/+1 counter and
+        a -1/-1 counter on it, a +1/+1 counter and a -1/-1 counter are removed
+        from it until it has no counters of one of those kinds."""
+        cancel = min(self.plus1_counters, self.minus1_counters)
+        if cancel:
+            self._plus1_counters -= cancel
+            self._minus1_counters -= cancel
+
     def reset_temporary_bonuses(self) -> None:
         """Clear temporary power and toughness modifiers."""
         self.temp_power = 0
