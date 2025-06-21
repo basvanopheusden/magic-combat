@@ -6,6 +6,7 @@ from magic_combat import (
     DamageAssignmentStrategy,
     MostCreaturesKilledStrategy,
     CombatSimulator,
+    Color,
 )
 
 
@@ -27,10 +28,10 @@ def test_effective_stats_with_counters():
 def test_has_protection_from():
     """CR 702.16b: Protection prevents effects from objects of that color."""
     creature = CombatCreature(
-        name="Paladin", power=2, toughness=2, controller="A", protection_colors={"black"}
+        name="Paladin", power=2, toughness=2, controller="A", protection_colors={Color.BLACK}
     )
-    assert creature.has_protection_from("black")
-    assert not creature.has_protection_from("red")
+    assert creature.has_protection_from(Color.BLACK)
+    assert not creature.has_protection_from(Color.RED)
 
 
 def test_destroyed_by_damage():

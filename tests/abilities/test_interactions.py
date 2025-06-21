@@ -1,16 +1,16 @@
 import pytest
 
 
-from magic_combat import CombatCreature, CombatSimulator
+from magic_combat import CombatCreature, CombatSimulator, Color
 
 
 def test_fear_and_protection_from_black():
     """CR 702.36b & 702.16b: Fear allows only artifact or black blockers, but protection from black stops black blockers."""
     atk = CombatCreature(
-        "Nightblade", 2, 2, "A", fear=True, protection_colors={"black"}
+        "Nightblade", 2, 2, "A", fear=True, protection_colors={Color.BLACK}
     )
     blk = CombatCreature(
-        "Black Artifact", 2, 2, "B", colors={"black"}, artifact=True
+        "Black Artifact", 2, 2, "B", colors={Color.BLACK}, artifact=True
     )
     atk.blocked_by.append(blk)
     blk.blocking = atk
