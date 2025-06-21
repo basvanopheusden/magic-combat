@@ -60,7 +60,7 @@ class CombatSimulator:
                 if attacker.horsemanship and not blocker.horsemanship:
                     raise ValueError("Non-horsemanship creature blocking")
 
-                if attacker.skulk and blocker.effective_power() >= attacker.effective_power():
+                if attacker.skulk and blocker.effective_power() > attacker.effective_power():
                     raise ValueError("Skulk prevents block by higher power")
 
                 if attacker.fear and not (blocker.artifact or "black" in blocker.colors):
