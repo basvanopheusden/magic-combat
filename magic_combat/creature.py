@@ -102,6 +102,13 @@ class CombatCreature:
     def __str__(self) -> str:
         return f"{self.name} ({self.power}/{self.toughness})"
 
+    def __repr__(self) -> str:
+        cls = self.__class__.__name__
+        return (
+            f"{cls}(name={self.name!r}, power={self.power}, "
+            f"toughness={self.toughness}, controller={self.controller!r})"
+        )
+
     # --- Counter properties with validation ---
     @property
     def plus1_counters(self) -> int:
