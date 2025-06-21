@@ -214,8 +214,17 @@ class CombatSimulator:
                     self._deal_damage_to_player(attacker)
 
     def check_lethal_damage(self):
-        """Evaluate which creatures die after damage."""
-        self.dead_creatures = [c for c in self.all_creatures if c.is_destroyed_by_damage()]
+        """Evaluate which creatures die after damage or state-based effects."""
+        destroyed_by_damage = [
+            c for c in self.all_creatures if c.is_destroyed_by_damage()
+        ]
+        zero_toughness = [
+            c for c in self.all_creatures if c.effective_toughness() <= 0
+        ]
+        self.dead_creatures = destroyed_by_damage
+        for creature in zero_toughness:
+            if creature not in self.dead_creatures:
+                self.dead_creatures.append(creature)
 
     def apply_lifelink_and_combat_lifegain(self):
         """Placeholder for additional combat-related lifegain."""
@@ -234,6 +243,7 @@ class CombatSimulator:
         self.dead_creatures: List[CombatCreature] = []
         self.validate_blocking()
         self.apply_precombat_triggers()
+        self.check_lethal_damage()
 
         # First strike step
         any_first_strike = any(c.first_strike or c.double_strike for c in self.all_creatures)
