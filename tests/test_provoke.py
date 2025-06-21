@@ -139,3 +139,152 @@ def test_provoke_afflict_damage_triggers():
     assert result.damage_to_players["B"] == 2
     assert atk in result.creatures_destroyed
     assert blk in result.creatures_destroyed
+
+
+def test_provoke_first_strike_kills_before_damage():
+    """CR 702.7b & 702.40a: First strike damage is dealt before the provoked creature can respond."""
+    atk = CombatCreature("Duelist", 2, 2, "A", first_strike=True)
+    blk = CombatCreature("Guard", 2, 2, "B")
+    atk.provoke_target = blk
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+
+
+def test_provoke_trample_excess_damage_to_player():
+    """CR 702.19b & 702.40a: Trample assigns excess damage even when provoking a block."""
+    atk = CombatCreature("Rhino", 4, 4, "A", trample=True)
+    blk = CombatCreature("Wall", 1, 1, "B")
+    atk.provoke_target = blk
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 3
+    assert blk in result.creatures_destroyed
+
+
+def test_provoke_bushido_bonus_saves_attacker():
+    """CR 702.46a & 702.40a: Bushido grants +1/+1 when the provoked creature blocks."""
+    atk = CombatCreature("Samurai", 2, 2, "A", bushido=1)
+    blk = CombatCreature("Soldier", 2, 2, "B")
+    atk.provoke_target = blk
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+
+
+def test_provoke_rampage_bonus_with_multiple_blockers():
+    """CR 702.23a & 702.40a: Rampage increases stats when multiple blockers including the target block."""
+    atk = CombatCreature("Warlord", 3, 3, "A", rampage=2)
+    blk1 = CombatCreature("Guard1", 2, 2, "B")
+    blk2 = CombatCreature("Guard2", 2, 2, "B")
+    atk.provoke_target = blk1
+    atk.blocked_by.extend([blk1, blk2])
+    blk1.blocking = atk
+    blk2.blocking = atk
+    sim = CombatSimulator([atk], [blk1, blk2])
+    result = sim.simulate()
+    assert blk1 in result.creatures_destroyed
+    assert blk2 in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+
+
+def test_provoke_flanking_debuffs_target():
+    """CR 702.25a & 702.40a: Flanking gives the provoked creature -1/-1."""
+    atk = CombatCreature("Lancer", 2, 2, "A", flanking=1)
+    blk = CombatCreature("Knight", 2, 2, "B")
+    atk.provoke_target = blk
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+
+
+def test_provoke_training_counter_added():
+    """CR 702.138a & 702.40a: Training grants a +1/+1 counter when a stronger ally attacks with the provoker."""
+    trainee = CombatCreature("Recruit", 2, 2, "A", training=True)
+    ally = CombatCreature("Veteran", 3, 3, "A")
+    blk = CombatCreature("Guard", 2, 2, "B")
+    trainee.provoke_target = blk
+    trainee.blocked_by.append(blk)
+    blk.blocking = trainee
+    sim = CombatSimulator([trainee, ally], [blk])
+    result = sim.simulate()
+    assert trainee.plus1_counters == 1
+    assert blk in result.creatures_destroyed
+
+
+def test_provoke_exalted_no_bonus_with_multiple_attackers():
+    """CR 702.90a & 702.40a: Exalted doesn't trigger when more than one creature attacks."""
+    exalter = CombatCreature("Monk", 2, 2, "A", exalted_count=1)
+    ally = CombatCreature("Helper", 3, 3, "A")
+    blk = CombatCreature("Guard", 2, 2, "B")
+    exalter.provoke_target = blk
+    exalter.blocked_by.append(blk)
+    blk.blocking = exalter
+    sim = CombatSimulator([exalter, ally], [blk])
+    result = sim.simulate()
+    assert exalter in result.creatures_destroyed
+    assert blk in result.creatures_destroyed
+
+
+def test_provoke_allows_frenzy_attacker_unblocked():
+    """CR 702.35a & 702.40a: Forcing a block elsewhere lets a frenzy attacker hit unblocked for extra damage."""
+    provoker = CombatCreature("Taunter", 2, 2, "A")
+    frenzy_attacker = CombatCreature("Berserker", 2, 2, "A", frenzy=2)
+    blk = CombatCreature("Guard", 2, 2, "B")
+    provoker.provoke_target = blk
+    provoker.blocked_by.append(blk)
+    blk.blocking = provoker
+    sim = CombatSimulator([provoker, frenzy_attacker], [blk])
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 4
+
+
+def test_provoke_battle_cry_buffs_ally():
+    """CR 702.92a & 702.40a: Battle cry still pumps other attackers when provoking a block."""
+    leader = CombatCreature("Warcry", 2, 2, "A", battle_cry_count=1)
+    ally = CombatCreature("Soldier", 2, 2, "A")
+    blk = CombatCreature("Guard", 2, 2, "B")
+    leader.provoke_target = blk
+    leader.blocked_by.append(blk)
+    blk.blocking = leader
+    sim = CombatSimulator([leader, ally], [blk])
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 3
+    assert blk in result.creatures_destroyed
+
+
+def test_provoke_lifelink_attacker_gains_life():
+    """CR 702.15a & 702.40a: Lifelink causes life gain when the provoker deals damage."""
+    atk = CombatCreature("Vampire", 2, 2, "A", lifelink=True)
+    blk = CombatCreature("Guard", 2, 2, "B")
+    atk.provoke_target = blk
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.lifegain["A"] == 2
+    assert blk in result.creatures_destroyed
+
+
+def test_provoke_wither_applies_counters():
+    """CR 702.90a & 702.40a: Wither deals damage as -1/-1 counters to the provoked creature."""
+    atk = CombatCreature("Corrosive", 2, 2, "A", wither=True)
+    blk = CombatCreature("Guard", 2, 2, "B")
+    atk.provoke_target = blk
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk.minus1_counters == 2
+    assert blk in result.creatures_destroyed
