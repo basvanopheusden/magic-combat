@@ -24,6 +24,7 @@ class CombatCreature:
     power: int
     toughness: int
     controller: str
+    mana_cost: str = ""
     colors: Set[Color] = field(default_factory=set)
     artifact: bool = False
 
@@ -134,6 +135,13 @@ class CombatCreature:
             f"{cls}(name={self.name!r}, power={self.power}, "
             f"toughness={self.toughness}, controller={self.controller!r})"
         )
+
+    @property
+    def mana_value(self) -> int:
+        """Return the numeric mana value calculated from ``mana_cost``."""
+        from .utils import calculate_mana_value
+
+        return calculate_mana_value(self.mana_cost, 0)
 
     # --- Counter properties with validation ---
     @property

@@ -322,3 +322,19 @@ def test_ai_blocks_creature_with_first_strike_over_vanilla():
     decide_optimal_blocks([a1, a2], [blk], game_state=state)
     assert blk.blocking is a2
 
+
+def test_ai_prefers_blocking_to_kill_more_mana():
+    """CR 509.1a: The defending player chooses how creatures block."""
+    a1 = CombatCreature("A1", 4, 4, "A", mana_cost="{6}")
+    a2 = CombatCreature("A2", 2, 2, "A", mana_cost="{2}")
+    b1 = CombatCreature("B1", 4, 4, "B", mana_cost="{5}")
+    b2 = CombatCreature("B2", 4, 4, "B", mana_cost="{1}")
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[a1, a2]),
+            "B": PlayerState(life=4, creatures=[b1, b2]),
+        }
+    )
+    decide_optimal_blocks([a1, a2], [b1, b2], game_state=state)
+    assert b1.blocking is a1 and b2.blocking is a2
+
