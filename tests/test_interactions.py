@@ -84,3 +84,37 @@ def test_menace_and_skulk_two_small_blockers():
     b2.blocking = atk
     sim = CombatSimulator([atk], [b1, b2])
     sim.validate_blocking()
+
+
+def test_melee_and_exalted_stack():
+    """CR 702.111a & 702.90a: Melee and exalted each grant +1/+1 when a creature attacks alone."""
+    attacker = CombatCreature("Champion", 2, 2, "A", melee=True, exalted_count=1)
+    sim = CombatSimulator([attacker], [])
+    result = sim.simulate()
+    assert result.damage_to_players["defender"] == 4
+    assert result.creatures_destroyed == []
+
+
+def test_training_with_battle_cry():
+    """CR 702.92a & 702.138a: Battle cry boosts allies and training adds a +1/+1 counter with a stronger attacker."""
+    leader = CombatCreature("Leader", 4, 4, "A", battle_cry_count=1)
+    trainee = CombatCreature("Trainee", 2, 2, "A", training=True)
+    sim = CombatSimulator([leader, trainee], [])
+    result = sim.simulate()
+    assert trainee.plus1_counters == 1
+    assert result.damage_to_players["defender"] == 8
+
+
+def test_rampage_and_flanking_combined():
+    """CR 702.23a & 702.25a: Rampage enlarges the attacker while flanking weakens each blocker."""
+    attacker = CombatCreature("Warrior", 3, 3, "A", rampage=1, flanking=1)
+    b1 = CombatCreature("Soldier1", 2, 2, "B")
+    b2 = CombatCreature("Soldier2", 2, 2, "B")
+    attacker.blocked_by.extend([b1, b2])
+    b1.blocking = attacker
+    b2.blocking = attacker
+    sim = CombatSimulator([attacker], [b1, b2])
+    result = sim.simulate()
+    assert b1 in result.creatures_destroyed
+    assert b2 in result.creatures_destroyed
+    assert attacker not in result.creatures_destroyed
