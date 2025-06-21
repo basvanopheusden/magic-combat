@@ -68,8 +68,8 @@ class CombatSimulator:
                 if has_player_lost(self.game_state, player) and player not in self.players_lost:
                     self.players_lost.append(player)
 
-    def validate_blocking(self):
-        """Ensure blocking assignments are legal for this simplified simulator."""
+    def _check_block_assignments(self) -> None:
+        """Validate basic blocker assignments and duplicates."""
         for blocker in self.defenders:
             if blocker.blocking is not None and blocker.blocking not in self.attackers:
                 raise ValueError("Blocker assigned to unknown attacker")
@@ -87,13 +87,21 @@ class CombatSimulator:
                     raise ValueError("Blocker listed multiple times")
                 seen_ids.add(bid)
 
+    def _check_unblockable(self) -> None:
+        """Ensure unblockable creatures haven't been blocked."""
         for attacker in self.attackers:
             if attacker.unblockable and attacker.blocked_by:
                 raise ValueError("Unblockable creature was blocked")
 
+    def _check_menace(self) -> None:
+        """Validate menace blocking requirements."""
+        for attacker in self.attackers:
             if attacker.menace and 0 < len(attacker.blocked_by) < 2:
                 raise ValueError("Menace creature blocked by fewer than two")
 
+    def _check_evasion(self) -> None:
+        """Check evasion abilities like flying, shadow, and skulk."""
+        for attacker in self.attackers:
             for blocker in attacker.blocked_by:
                 if attacker.flying and not (blocker.flying or blocker.reach):
                     raise ValueError("Non-flying/reach blocker blocking flyer")
@@ -107,6 +115,10 @@ class CombatSimulator:
                 if attacker.skulk and blocker.effective_power() > attacker.effective_power():
                     raise ValueError("Skulk prevents block by higher power")
 
+    def _check_fear_intimidate(self) -> None:
+        """Validate fear and intimidate blocking restrictions."""
+        for attacker in self.attackers:
+            for blocker in attacker.blocked_by:
                 if attacker.fear and not (
                     blocker.artifact or Color.BLACK in blocker.colors
                 ):
@@ -117,9 +129,15 @@ class CombatSimulator:
                 ):
                     raise ValueError("Intimidate creature blocked illegally")
 
+    def _check_protection(self) -> None:
+        """Ensure protection abilities prevent illegal blockers."""
+        for attacker in self.attackers:
+            for blocker in attacker.blocked_by:
                 if attacker.protection_colors & blocker.colors:
                     raise ValueError("Attacker has protection from blocker's color")
 
+    def _check_provoke(self) -> None:
+        """Verify provoke targets are blocking as required."""
         for attacker in self.attackers:
             if attacker.provoke_target is not None:
                 target = attacker.provoke_target
@@ -127,6 +145,16 @@ class CombatSimulator:
                     raise ValueError("Provoke target not defending creature")
                 if target.blocking is not attacker:
                     raise ValueError("Provoke target failed to block")
+
+    def validate_blocking(self):
+        """Ensure blocking assignments are legal for this simplified simulator."""
+        self._check_block_assignments()
+        self._check_unblockable()
+        self._check_menace()
+        self._check_evasion()
+        self._check_fear_intimidate()
+        self._check_protection()
+        self._check_provoke()
 
     def apply_precombat_triggers(self):
         """Apply keyword abilities that modify stats before combat damage.
