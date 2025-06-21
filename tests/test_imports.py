@@ -1,11 +1,4 @@
-from pathlib import Path
-import sys
-
-# Ensure the package is importable when running tests from any location
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
 from magic_combat import CombatCreature, CombatResult, CombatSimulator
-
 
 def test_imports():
     creature = CombatCreature(name="Goblin", power=1, toughness=1, controller="player")

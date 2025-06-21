@@ -1,12 +1,6 @@
-from pathlib import Path
-import sys
 import pytest
 
-# Ensure the package is importable when running tests from any location
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
 from magic_combat import CombatCreature, CombatSimulator
-
 
 def test_skulk_bushido_illegal_block():
     """CR 702.120 & 702.46a: Skulk stops blocks by creatures with equal or greater power before Bushido applies."""
@@ -18,7 +12,6 @@ def test_skulk_bushido_illegal_block():
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
-
 def test_skulk_bushido_combat():
     """CR 702.120 & 702.46a: Bushido bonuses apply after blockers are declared."""
     atk = CombatCreature("Sneaky Samurai", 2, 2, "A", skulk=True, bushido=1)
@@ -29,7 +22,6 @@ def test_skulk_bushido_combat():
     result = sim.simulate()
     assert blk in result.creatures_destroyed
     assert atk not in result.creatures_destroyed
-
 
 def test_flying_and_horsemanship_blocking():
     """CR 702.9b & 702.30a: A creature with flying and horsemanship can be blocked only by one with horsemanship and flying or reach."""
@@ -60,7 +52,6 @@ def test_flying_and_horsemanship_blocking():
     reach_both.blocking = atk
     sim = CombatSimulator([atk], [reach_both])
     sim.validate_blocking()
-
 
 def test_fear_and_protection_from_black():
     """CR 702.36b & 702.16b: Fear allows only artifact or black blockers, but protection from black stops black blockers."""

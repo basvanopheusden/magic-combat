@@ -1,10 +1,4 @@
-from pathlib import Path
-import sys
-
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
 from magic_combat import CombatCreature, CombatSimulator
-
 
 def test_bushido_bonus():
     """CR 702.46a: Bushido gives the creature +N/+N when it blocks or becomes blocked."""
@@ -17,7 +11,6 @@ def test_bushido_bonus():
     assert blk in result.creatures_destroyed
     assert atk not in result.creatures_destroyed
 
-
 def test_flanking_debuff_blocker():
     """CR 702.25a: Flanking gives blocking creatures without flanking -1/-1."""
     atk = CombatCreature("Knight", 2, 2, "A", flanking=1)
@@ -29,7 +22,6 @@ def test_flanking_debuff_blocker():
     assert blk in result.creatures_destroyed
     assert atk not in result.creatures_destroyed
 
-
 def test_exalted_single_attacker_multiple_instances():
     """CR 702.90a: Each instance of exalted grants +1/+1 if a creature attacks alone."""
     atk = CombatCreature("Lone", 2, 2, "A", exalted_count=2)
@@ -40,7 +32,6 @@ def test_exalted_single_attacker_multiple_instances():
     result = sim.simulate()
     assert blk in result.creatures_destroyed
     assert atk not in result.creatures_destroyed
-
 
 def test_rampage_with_multiple_blockers():
     """CR 702.23a: Rampage gives +N/+N for each blocker beyond the first."""
@@ -56,7 +47,6 @@ def test_rampage_with_multiple_blockers():
     assert b2 in result.creatures_destroyed
     assert atk not in result.creatures_destroyed
 
-
 def test_battle_cry_boosts_allies():
     """CR 702.92a: Battle cry gives each other attacking creature +1/+0."""
     leader = CombatCreature("Leader", 2, 2, "A", battle_cry_count=1)
@@ -64,7 +54,6 @@ def test_battle_cry_boosts_allies():
     sim = CombatSimulator([leader, ally], [])
     result = sim.simulate()
     assert result.damage_to_players["defender"] == 5
-
 
 def test_melee_bonus_on_attack():
     """CR 702.111a: Melee gives the creature +1/+1 for each opponent it's attacking."""
@@ -76,7 +65,6 @@ def test_melee_bonus_on_attack():
     result = sim.simulate()
     assert blk in result.creatures_destroyed
     assert atk not in result.creatures_destroyed
-
 
 def test_training_adds_counter():
     """CR 702.138a: Training puts a +1/+1 counter on the creature if it attacks with a stronger ally."""

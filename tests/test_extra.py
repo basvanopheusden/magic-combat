@@ -1,12 +1,6 @@
-from pathlib import Path
-import sys
 import pytest
 
-# Ensure the package is importable when running tests from any location
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
 from magic_combat import CombatCreature, CombatSimulator, DamageAssignmentStrategy
-
 
 def test_invalid_power_and_toughness():
     """CR 302.4b states a creature with 0 or less toughness is put into its owner's graveyard."""
@@ -15,12 +9,10 @@ def test_invalid_power_and_toughness():
     with pytest.raises(ValueError):
         CombatCreature(name="Bad", power=1, toughness=0, controller="A")
 
-
 def test_damage_marked_non_negative():
     """CR 120.3d: Damage can't be negative."""
     with pytest.raises(ValueError):
         CombatCreature(name="Bad", power=1, toughness=1, controller="A", damage_marked=-1)
-
 
 def test_has_protection():
     """CR 702.16b: Protection from a color stops effects of that color."""
@@ -28,12 +20,10 @@ def test_has_protection():
     assert c.has_protection_from("black")
     assert not c.has_protection_from("red")
 
-
 def test_str_representation():
     """CR 208.1: A creature's power and toughness are written as "x/y"."""
     c = CombatCreature(name="Bear", power=2, toughness=2, controller="A")
     assert str(c) == "Bear (2/2)"
-
 
 def test_counters_modify_stats():
     """CR 122.1a: +1/+1 and -1/-1 counters modify power and toughness."""
@@ -42,7 +32,6 @@ def test_counters_modify_stats():
     c.minus1_counters = 1
     assert c.effective_power() == 2
     assert c.effective_toughness() == 2
-
 
 def test_base_damage_strategy_order():
     """CR 510.1: The attacking player announces damage assignment order."""

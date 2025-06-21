@@ -1,12 +1,6 @@
 import pytest
-from pathlib import Path
-import sys
-
-# Ensure the package is importable when running tests from any location
-sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from magic_combat import CombatCreature, CombatSimulator
-
 
 def test_flying_requires_flying_or_reach():
     """CR 702.9b: A creature with flying can be blocked only by creatures with flying or reach."""
@@ -18,7 +12,6 @@ def test_flying_requires_flying_or_reach():
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
-
 def test_reach_allows_blocking_flying():
     """CR 702.9c: Creatures with reach can block creatures with flying."""
     attacker = CombatCreature("Hawk", 1, 1, "A", flying=True)
@@ -28,7 +21,6 @@ def test_reach_allows_blocking_flying():
     sim = CombatSimulator([attacker], [blocker])
     # Should not raise
     sim.validate_blocking()
-
 
 def test_menace_requires_two_blockers():
     """CR 702.110b: A creature with menace can't be blocked except by two or more creatures."""
@@ -40,7 +32,6 @@ def test_menace_requires_two_blockers():
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
-
 def test_menace_with_two_blockers_allowed():
     """CR 702.110b allows blocking a menace creature with two blockers."""
     attacker = CombatCreature("Ogre", 3, 3, "A", menace=True)
@@ -51,7 +42,6 @@ def test_menace_with_two_blockers_allowed():
     b2.blocking = attacker
     sim = CombatSimulator([attacker], [b1, b2])
     sim.validate_blocking()
-
 
 def test_fear_blocking():
     """CR 702.36b: Fear allows blocking only by artifact or black creatures."""
@@ -69,7 +59,6 @@ def test_fear_blocking():
     sim = CombatSimulator([attacker], [black_blocker])
     sim.validate_blocking()
 
-
 def test_protection_prevents_blocking():
     """CR 702.16b: Protection from a color means it can't be blocked by creatures of that color."""
     attacker = CombatCreature("Paladin", 2, 2, "A", protection_colors={"red"})
@@ -79,7 +68,6 @@ def test_protection_prevents_blocking():
     sim = CombatSimulator([attacker], [blocker])
     with pytest.raises(ValueError):
         sim.validate_blocking()
-
 
 def test_skulk_prevents_stronger_blocker_even_with_bushido():
     """CR 702.65a: Skulk says a creature can't be blocked by creatures with greater power."""

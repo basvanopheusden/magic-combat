@@ -1,12 +1,6 @@
-from pathlib import Path
-import sys
 import pytest
 
-# Ensure the package is importable when running tests from any location
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
 from magic_combat import CombatCreature, CombatSimulator, DamageAssignmentStrategy, MostCreaturesKilledStrategy
-
 
 def test_effective_power_toughness():
     """CR 121.1a: Each +1/+1 counter on a creature gives it +1/+1."""
@@ -16,13 +10,11 @@ def test_effective_power_toughness():
     assert c.effective_power() == 3
     assert c.effective_toughness() == 3
 
-
 def test_has_protection_from():
     """CR 702.16b: A creature with protection from a color can't be damaged by sources of that color."""
     c = CombatCreature("Paladin", 2, 2, "A", protection_colors={"black"})
     assert c.has_protection_from("black")
     assert not c.has_protection_from("red")
-
 
 def test_is_destroyed_by_damage_indestructible():
     """CR 702.12b: Indestructible permanents aren't destroyed by lethal damage."""
@@ -30,12 +22,10 @@ def test_is_destroyed_by_damage_indestructible():
     c.damage_marked = 5
     assert not c.is_destroyed_by_damage()
 
-
 def test_string_representation():
     """CR 108.1: A creature's name and stats are public information."""
     c = CombatCreature("Ogre", 3, 3, "A")
     assert str(c) == "Ogre (3/3)"
-
 
 def test_validate_blocking_unknown_attacker():
     """CR 509.1a: A creature can block only a creature that's attacking the player or planeswalker it's defending."""
@@ -46,7 +36,6 @@ def test_validate_blocking_unknown_attacker():
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
-
 def test_validate_blocking_inconsistent_assignments():
     """CR 509.2: Each blocker must actually block the creature it's declared to block."""
     atk = CombatCreature("Attacker", 2, 2, "A")
@@ -56,7 +45,6 @@ def test_validate_blocking_inconsistent_assignments():
     sim = CombatSimulator([atk], [blk])
     with pytest.raises(ValueError):
         sim.validate_blocking()
-
 
 def test_strategy_called_for_ordering(monkeypatch):
     """CR 510.1a: The attacking creature's controller orders blockers for assigning damage."""
@@ -79,7 +67,6 @@ def test_strategy_called_for_ordering(monkeypatch):
     sim.simulate()
     assert called
     assert b2.damage_marked > 0  # first in reversed order
-
 
 def test_most_creatures_killed_strategy_sort():
     """CR 510.1a: Damage is assigned in the order chosen by the attacker."""

@@ -1,12 +1,6 @@
-from pathlib import Path
-import sys
 import pytest
 
-# Ensure the package is importable when running tests from any location
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
 from magic_combat import CombatCreature, CombatSimulator
-
 
 def setup_vanilla():
     attacker = CombatCreature("Bear", 2, 2, "A")
@@ -15,7 +9,6 @@ def setup_vanilla():
     blocker.blocking = attacker
     return attacker, blocker
 
-
 def test_simple_trade():
     """CR 510.2: combat damage is dealt simultaneously."""
     a, b = setup_vanilla()
@@ -23,7 +16,6 @@ def test_simple_trade():
     result = sim.simulate()
     assert a in result.creatures_destroyed
     assert b in result.creatures_destroyed
-
 
 def test_double_block_simple():
     """Two 1/1 creatures trade with a 2/2 attacker."""
@@ -39,7 +31,6 @@ def test_double_block_simple():
     assert b1 in result.creatures_destroyed
     assert b2 in result.creatures_destroyed
 
-
 def test_most_creatures_killed_ordering():
     a = CombatCreature("Beast", 3, 3, "A")
     wall = CombatCreature("Wall", 0, 4, "B")
@@ -53,7 +44,6 @@ def test_most_creatures_killed_ordering():
     assert wall not in result.creatures_destroyed
     assert a not in result.creatures_destroyed
 
-
 def test_unblocked_attacker_hits_player():
     """CR 510.1c: An unblocked creature deals damage to the player it's attacking."""
     attacker = CombatCreature("Bear", 2, 2, "A")
@@ -62,7 +52,6 @@ def test_unblocked_attacker_hits_player():
     result = sim.simulate()
     assert result.damage_to_players["B"] == 2
     assert result.creatures_destroyed == []
-
 
 def test_blocker_survives_nonlethal_damage():
     """CR 704.5g: Creatures with damage less than toughness aren't destroyed."""
@@ -73,7 +62,6 @@ def test_blocker_survives_nonlethal_damage():
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert result.creatures_destroyed == []
-
 
 def test_attacker_survives_and_kills_blocker():
     """CR 704.5g: A creature with lethal damage is destroyed."""
@@ -86,7 +74,6 @@ def test_attacker_survives_and_kills_blocker():
     assert blocker in result.creatures_destroyed
     assert attacker not in result.creatures_destroyed
 
-
 def test_zero_power_attacker_deals_no_damage():
     """CR 120.3d: A creature with 0 power deals no combat damage."""
     attacker = CombatCreature("Pacifist", 0, 2, "A")
@@ -95,7 +82,6 @@ def test_zero_power_attacker_deals_no_damage():
     result = sim.simulate()
     assert result.damage_to_players.get("B", 0) == 0
     assert result.creatures_destroyed == []
-
 
 def test_indestructible_creature_survives_lethal_damage():
     """CR 702.12b: Indestructible permanents aren't destroyed by lethal damage."""
@@ -107,7 +93,6 @@ def test_indestructible_creature_survives_lethal_damage():
     result = sim.simulate()
     assert attacker not in result.creatures_destroyed
     assert blocker not in result.creatures_destroyed
-
 
 def test_first_strike_not_implemented():
     """CR 702.7b: First strike would let a creature deal damage before others."""

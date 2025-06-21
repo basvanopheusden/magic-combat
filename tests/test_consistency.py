@@ -1,16 +1,9 @@
 import random
-from pathlib import Path
-import sys
-
-# Ensure the package is importable when running tests from any location
-sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from magic_combat import CombatCreature, CombatSimulator
 
-
 def random_creature(name, controller):
     return CombatCreature(name=name, power=random.randint(1, 5), toughness=random.randint(1, 5), controller=controller)
-
 
 def simulate_pair(a, b):
     a.blocked_by.append(b)

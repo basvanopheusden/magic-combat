@@ -1,9 +1,4 @@
 import pytest
-from pathlib import Path
-import sys
-
-# Ensure the package is importable when running tests from any location
-sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from magic_combat import (
     CombatCreature,
@@ -12,12 +7,10 @@ from magic_combat import (
     CombatSimulator,
 )
 
-
 def test_string_representation():
     """CR 109.2: A creature's power and toughness are written as `X/Y`."""
     creature = CombatCreature(name="Bear", power=2, toughness=2, controller="A")
     assert str(creature) == "Bear (2/2)"
-
 
 def test_effective_stats_with_counters():
     """CR 122.1a: +1/+1 counters modify a creature's power and toughness."""
@@ -27,7 +20,6 @@ def test_effective_stats_with_counters():
     assert creature.effective_power() == 2
     assert creature.effective_toughness() == 2
 
-
 def test_has_protection_from():
     """CR 702.16b: Protection prevents effects from objects of that color."""
     creature = CombatCreature(
@@ -36,13 +28,11 @@ def test_has_protection_from():
     assert creature.has_protection_from("black")
     assert not creature.has_protection_from("red")
 
-
 def test_destroyed_by_damage():
     """CR 704.5g: A creature with lethal damage is destroyed."""
     creature = CombatCreature(name="Goblin", power=2, toughness=2, controller="A")
     creature.damage_marked = 3
     assert creature.is_destroyed_by_damage()
-
 
 def test_damage_assignment_strategy_identity():
     """CR 510.2: Damage assignment order matters only if multiple blockers are present."""
@@ -53,7 +43,6 @@ def test_damage_assignment_strategy_identity():
     ordered = strat.order_blockers(a, [b1, b2])
     assert ordered == [b1, b2]
 
-
 def test_most_creatures_killed_strategy_sorts():
     """CR 510.2: Attackers may order blockers to maximize kills."""
     strat = MostCreaturesKilledStrategy()
@@ -62,7 +51,6 @@ def test_most_creatures_killed_strategy_sorts():
     b2 = CombatCreature("Goblin", 1, 1, "B")
     ordered = strat.order_blockers(a, [b1, b2])
     assert ordered == [b2, b1]
-
 
 def test_plus1_minus1_counter_setters():
     """CR 122.1a: Counters can increase or decrease stats."""
@@ -73,7 +61,6 @@ def test_plus1_minus1_counter_setters():
     assert creature.minus1_counters == 1
     assert creature.effective_power() == 1
     assert creature.effective_toughness() == 1
-
 
 def test_validate_blocking_unknown_attacker():
     """CR 509.1a: A creature can block only a creature that's attacking it."""

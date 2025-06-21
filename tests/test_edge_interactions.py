@@ -1,12 +1,6 @@
-from pathlib import Path
-import sys
 import pytest
 
-# Ensure the package is importable when running tests from any location
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
 from magic_combat import CombatCreature, CombatSimulator
-
 
 def test_skulk_bushido_block_illegal():
     """CR 702.72a & 702.46a: Skulk checks power before bushido triggers."""
@@ -18,7 +12,6 @@ def test_skulk_bushido_block_illegal():
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
-
 def test_skulk_bushido_equal_power_allowed():
     """CR 702.72a: A blocker with equal power may block despite later bushido."""
     attacker = CombatCreature("Sneaky Samurai", 2, 2, "A", skulk=True, bushido=2)
@@ -27,7 +20,6 @@ def test_skulk_bushido_equal_power_allowed():
     blocker.blocking = attacker
     sim = CombatSimulator([attacker], [blocker])
     sim.validate_blocking()  # should be allowed
-
 
 def test_flying_horsemanship_needs_both_flying_only():
     """CR 702.9b & 702.108a: Flying alone can't block flying+horsemanship."""
@@ -39,7 +31,6 @@ def test_flying_horsemanship_needs_both_flying_only():
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
-
 def test_flying_horsemanship_needs_both_horse_only():
     """CR 702.9b & 702.108a: Horsemanship alone can't block flying+horsemanship."""
     attacker = CombatCreature("Pegasus Rider", 2, 2, "A", flying=True, horsemanship=True)
@@ -50,7 +41,6 @@ def test_flying_horsemanship_needs_both_horse_only():
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
-
 def test_flying_horsemanship_block_with_both_ok():
     """CR 702.9b & 702.108a: A creature with both abilities can block."""
     attacker = CombatCreature("Pegasus Rider", 2, 2, "A", flying=True, horsemanship=True)
@@ -60,7 +50,6 @@ def test_flying_horsemanship_block_with_both_ok():
     sim = CombatSimulator([attacker], [blocker])
     sim.validate_blocking()  # should not raise
 
-
 def test_flying_horsemanship_with_reach_and_horse_ok():
     """CR 702.9c & 702.108a: Reach plus horsemanship can block."""
     attacker = CombatCreature("Sky Cavalry", 2, 2, "A", flying=True, horsemanship=True)
@@ -69,7 +58,6 @@ def test_flying_horsemanship_with_reach_and_horse_ok():
     blocker.blocking = attacker
     sim = CombatSimulator([attacker], [blocker])
     sim.validate_blocking()  # should not raise
-
 
 def test_flanking_and_bushido_combined():
     """CR 702.25a & 702.46a: Flanking debuffs blockers while bushido buffs the attacker."""
