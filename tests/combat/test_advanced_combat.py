@@ -12,20 +12,6 @@ def test_double_strike_first_and_normal_damage():
     assert blocker in result.creatures_destroyed
     assert attacker not in result.creatures_destroyed
 
-
-def test_lifelink_grants_life_when_dealing_damage():
-    """CR 702.15a: Damage dealt by a creature with lifelink also causes its controller to gain that much life."""
-    attacker = CombatCreature("Cleric", 2, 2, "A", lifelink=True)
-    blocker = CombatCreature("Guard", 2, 2, "B")
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
-    sim = CombatSimulator([attacker], [blocker])
-    result = sim.simulate()
-    assert result.lifegain["A"] == 2
-    assert attacker in result.creatures_destroyed
-    assert blocker in result.creatures_destroyed
-
-
 def test_lifelink_unblocked_attacker_gain_life_from_player_damage():
     """CR 702.15a: Lifelink applies to combat damage dealt to a player."""
     attacker = CombatCreature("Vampire", 3, 3, "A", lifelink=True)
@@ -34,4 +20,3 @@ def test_lifelink_unblocked_attacker_gain_life_from_player_damage():
     result = sim.simulate()
     assert result.damage_to_players["B"] == 3
     assert result.lifegain["A"] == 3
-

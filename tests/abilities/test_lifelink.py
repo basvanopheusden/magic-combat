@@ -122,3 +122,28 @@ def test_lifelink_on_both_sides():
     assert result.lifegain["A"] == 2
     assert result.lifegain["B"] == 2
 
+
+def test_first_strike_lifelink_attacker_survives():
+    """CR 702.7b & 702.15a: First strike damage from a lifelink creature is dealt before the blocker can hit back, granting life."""
+    atk = CombatCreature("Templar", 2, 2, "A", first_strike=True, lifelink=True)
+    blk = CombatCreature("Orc", 2, 2, "B")
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+    assert result.lifegain["A"] == 2
+
+
+def test_lifelink_vs_indestructible_still_gains_life():
+    """CR 702.12b & 702.15a: Damage from a lifelink creature still causes life gain even if the blocker is indestructible."""
+    atk = CombatCreature("Blessed", 2, 2, "A", lifelink=True)
+    blk = CombatCreature("Guardian", 3, 3, "B", indestructible=True)
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk not in result.creatures_destroyed
+    assert result.lifegain["A"] == 2
+
