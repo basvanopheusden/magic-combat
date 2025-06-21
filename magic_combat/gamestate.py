@@ -7,6 +7,9 @@ from typing import Dict, List
 
 from .utils import check_non_negative
 
+# Default starting life total for new players
+STARTING_LIFE_TOTAL = 20
+
 from .creature import CombatCreature
 
 

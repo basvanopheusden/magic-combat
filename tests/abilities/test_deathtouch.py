@@ -1,6 +1,12 @@
 import pytest
 
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    STARTING_LIFE_TOTAL,
+)
 
 
 def test_zero_power_deathtouch_deals_no_damage():
@@ -47,7 +53,7 @@ def test_deathtouch_lifelink_gain_life():
     blk = CombatCreature("Bear", 2, 2, "B")
     atk.blocked_by.append(blk)
     blk.blocking = atk
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[atk]), "B": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert blk in result.creatures_destroyed

@@ -5,6 +5,7 @@ from magic_combat import (
     CombatSimulator,
     GameState,
     PlayerState,
+    STARTING_LIFE_TOTAL,
     Color,
 )
 
@@ -56,8 +57,8 @@ def test_double_strike_infect_toxic_lifelink():
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[attacker]),
-            "B": PlayerState(life=20, creatures=[defender]),
+            "A": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[attacker]),
+            "B": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[defender]),
         }
     )
     sim = CombatSimulator([attacker], [defender], game_state=state)

@@ -1,4 +1,10 @@
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    STARTING_LIFE_TOTAL,
+)
 
 
 def test_indestructible_attacker_survives_block():
@@ -93,7 +99,7 @@ def test_indestructible_lifelink_gains_life():
     blocker = CombatCreature("Bear", 2, 2, "B")
     attacker.blocked_by.append(blocker)
     blocker.blocking = attacker
-    state = GameState(players={"A": PlayerState(life=10, creatures=[attacker]), "B": PlayerState(life=20, creatures=[blocker])})
+    state = GameState(players={"A": PlayerState(life=10, creatures=[attacker]), "B": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[blocker])})
     sim = CombatSimulator([attacker], [blocker], game_state=state)
     result = sim.simulate()
     assert result.lifegain["A"] == 2

@@ -3,7 +3,12 @@
 from .creature import CombatCreature, Color
 from .simulator import CombatResult, CombatSimulator
 from .damage import DamageAssignmentStrategy, MostCreaturesKilledStrategy
-from .gamestate import GameState, PlayerState, has_player_lost
+from .gamestate import (
+    GameState,
+    PlayerState,
+    STARTING_LIFE_TOTAL,
+    has_player_lost,
+)
 
 __all__ = [
     "CombatCreature",
@@ -14,5 +19,6 @@ __all__ = [
     "MostCreaturesKilledStrategy",
     "GameState",
     "PlayerState",
+    "STARTING_LIFE_TOTAL",
     "has_player_lost",
 ]

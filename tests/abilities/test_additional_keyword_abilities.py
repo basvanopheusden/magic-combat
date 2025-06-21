@@ -1,6 +1,13 @@
 import pytest
 
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState, Color
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    STARTING_LIFE_TOTAL,
+    Color,
+)
 
 
 def test_defender_cannot_attack():
@@ -81,7 +88,7 @@ def test_dethrone_adds_counter():
     """CR 702.103a: Dethrone grants a +1/+1 counter when attacking the player with the most life."""
     atk = CombatCreature("Challenger", 2, 2, "A", dethrone=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=25, creatures=[defender])})
+    state = GameState(players={"A": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[atk]), "B": PlayerState(life=25, creatures=[defender])})
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert atk.plus1_counters == 1

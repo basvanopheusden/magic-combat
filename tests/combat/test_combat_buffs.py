@@ -1,5 +1,11 @@
 import pytest
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    STARTING_LIFE_TOTAL,
+)
 
 
 # Rampage tests
@@ -184,7 +190,7 @@ def test_dethrone_when_opponent_highest_life():
     """CR 702.103a: Dethrone gives a +1/+1 counter if the defending player has the most life."""
     atk = CombatCreature("Challenger", 2, 2, "A", dethrone=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=25, creatures=[defender])})
+    state = GameState(players={"A": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[atk]), "B": PlayerState(life=25, creatures=[defender])})
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert atk.plus1_counters == 1
@@ -194,7 +200,7 @@ def test_dethrone_no_counter_when_not_highest():
     """CR 702.103a: No dethrone counter if defender doesn't have the most life."""
     atk = CombatCreature("Challenger", 2, 2, "A", dethrone=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=15, creatures=[defender])})
+    state = GameState(players={"A": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[atk]), "B": PlayerState(life=15, creatures=[defender])})
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert atk.plus1_counters == 0

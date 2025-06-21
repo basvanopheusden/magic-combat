@@ -1,5 +1,11 @@
 import pytest
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    STARTING_LIFE_TOTAL,
+)
 
 
 def test_infect_kills_creature_with_counters():
@@ -20,7 +26,7 @@ def test_infect_lifelink_vs_blocker():
     blk = CombatCreature("Bear", 2, 2, "B")
     atk.blocked_by.append(blk)
     blk.blocking = atk
-    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -107,7 +113,7 @@ def test_lifelink_infect_vs_creature():
     blk = CombatCreature("Bear", 3, 3, "B")
     atk.blocked_by.append(blk)
     blk.blocking = atk
-    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert result.lifegain["A"] == 3
@@ -121,7 +127,7 @@ def test_infect_with_afflict_still_causes_life_loss():
     blk = CombatCreature("Guard", 2, 2, "B")
     atk.blocked_by.append(blk)
     blk.blocking = atk
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[atk]), "B": PlayerState(life=STARTING_LIFE_TOTAL, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert state.players["B"].life == 19
