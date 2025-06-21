@@ -44,6 +44,30 @@ def test_undying_returns_with_counter():
     assert atk.plus1_counters == 1
 
 
+def test_undying_with_counter_does_not_return():
+    """CR 702.92a: "When this creature dies, if it had no +1/+1 counters on it, return it"""
+    atk = CombatCreature("Slayer", 1, 1, "A", deathtouch=True)
+    blk = CombatCreature("Phoenix", 1, 1, "B", undying=True)
+    blk.plus1_counters = 1
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+
+
+def test_persist_with_minus_counter_does_not_return():
+    """CR 702.77a: "When this creature dies, if it had no -1/-1 counters on it, return it"""
+    atk = CombatCreature("Warrior", 2, 2, "A")
+    blk = CombatCreature("Wall", 1, 1, "B", persist=True)
+    blk.minus1_counters = 1
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+
+
 def test_intimidate_blocking_restriction():
     """CR 702.13a: Intimidate allows blocking only by artifacts or creatures that share a color."""
     atk = CombatCreature("Rogue", 2, 2, "A", intimidate=True, colors={Color.RED})

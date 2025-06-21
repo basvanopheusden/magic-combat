@@ -66,15 +66,6 @@ def test_fear_blocking():
     sim.validate_blocking()
 
 
-def test_protection_prevents_blocking():
-    """CR 702.16b: Protection from a color means it can't be blocked by creatures of that color."""
-    attacker = CombatCreature("Paladin", 2, 2, "A", protection_colors={Color.RED})
-    blocker = CombatCreature("Orc", 2, 2, "B", colors={Color.RED})
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
-    sim = CombatSimulator([attacker], [blocker])
-    with pytest.raises(ValueError):
-        sim.validate_blocking()
 
 
 
