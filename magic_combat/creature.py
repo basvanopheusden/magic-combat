@@ -74,6 +74,7 @@ class CombatCreature:
         check_non_negative(self.damage_marked, "damage_marked")
 
     def has_protection_from(self, color: Color) -> bool:
+        """Return ``True`` if this creature is protected from the color."""
         return color in self.protection_colors
 
     def effective_power(self) -> int:
@@ -87,6 +88,7 @@ class CombatCreature:
         )
 
     def effective_toughness(self) -> int:
+        """Base toughness, counters, and temporary modifiers."""
         return max(
             0,
             self.toughness
@@ -112,19 +114,23 @@ class CombatCreature:
     # --- Counter properties with validation ---
     @property
     def plus1_counters(self) -> int:
+        """Number of +1/+1 counters on the creature."""
         return self._plus1_counters
 
     @plus1_counters.setter
     def plus1_counters(self, value: int) -> None:
+        """Validate and set the +1/+1 counter total."""
         check_non_negative(value, "plus1 counters")
         self._plus1_counters = value
 
     @property
     def minus1_counters(self) -> int:
+        """Number of -1/-1 counters on the creature."""
         return self._minus1_counters
 
     @minus1_counters.setter
     def minus1_counters(self, value: int) -> None:
+        """Validate and set the -1/-1 counter total."""
         check_non_negative(value, "minus1 counters")
         self._minus1_counters = value
 
