@@ -36,3 +36,31 @@ def test_double_strike_blocked_no_damage_to_player():
     assert blk in result.creatures_destroyed
     assert atk not in result.creatures_destroyed
     assert result.damage_to_players.get("B", 0) == 0
+
+def test_double_strike_trample_hits_player_twice():
+    """CR 702.4b & 702.19b: Double strike deals damage in two steps and trample lets excess hit the defending player."""
+    atk = CombatCreature("Crusher", 3, 3, "A", double_strike=True, trample=True)
+    blk = CombatCreature("Bear", 2, 2, "B")
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+    assert result.damage_to_players["B"] == 4
+
+
+def test_double_strike_deathtouch_kills_all_blockers_first():
+    """CR 702.2b & 702.4b: Deathtouch makes any damage lethal, so a double-striker can slay multiple blockers before they deal damage."""
+    atk = CombatCreature("Assassin", 2, 2, "A", double_strike=True, deathtouch=True)
+    b1 = CombatCreature("Guard1", 2, 2, "B")
+    b2 = CombatCreature("Guard2", 2, 2, "B")
+    atk.blocked_by.extend([b1, b2])
+    b1.blocking = atk
+    b2.blocking = atk
+    sim = CombatSimulator([atk], [b1, b2])
+    result = sim.simulate()
+    assert b1 in result.creatures_destroyed
+    assert b2 in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+    assert result.damage_to_players.get("B", 0) == 0
