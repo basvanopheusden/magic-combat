@@ -70,8 +70,70 @@ class CombatSimulator:
                     raise ValueError("Attacker has protection from blocker's color")
 
     def apply_precombat_triggers(self):
-        """Placeholder for future precombat trigger logic."""
-        return
+        """Apply keyword abilities that modify stats before combat damage."""
+        # reset any temporary bonuses
+        for creature in self.all_creatures:
+            creature.reset_temporary_bonuses()
+
+        # group attackers by controller for exalted and training
+        attackers_by_controller: Dict[str, List[CombatCreature]] = {}
+        for atk in self.attackers:
+            attackers_by_controller.setdefault(atk.controller, []).append(atk)
+
+        # Exalted triggers
+        for controller, atks in attackers_by_controller.items():
+            if len(atks) == 1:
+                atk = atks[0]
+                exalted_total = atk.exalted_count
+                atk.temp_power += exalted_total
+                atk.temp_toughness += exalted_total
+
+        # Battle cry
+        for atk in self.attackers:
+            if atk.battle_cry_count:
+                for other in self.attackers:
+                    if other is not atk and other.controller == atk.controller:
+                        other.temp_power += atk.battle_cry_count
+
+        # Melee
+        num_opponents_attacked = 1 if self.attackers else 0
+        for atk in self.attackers:
+            if atk.melee and num_opponents_attacked:
+                atk.temp_power += num_opponents_attacked
+                atk.temp_toughness += num_opponents_attacked
+
+        # Training
+        for atk in self.attackers:
+            if atk.training:
+                if any(
+                    other.controller == atk.controller
+                    and other is not atk
+                    and other.effective_power() > atk.effective_power()
+                    for other in self.attackers
+                ):
+                    atk.plus1_counters += 1
+
+        # Bushido, Rampage, and Flanking
+        for attacker in self.attackers:
+            if attacker.blocked_by:
+                if attacker.bushido:
+                    attacker.temp_power += attacker.bushido
+                    attacker.temp_toughness += attacker.bushido
+                if attacker.rampage:
+                    extra = max(0, len(attacker.blocked_by) - 1)
+                    attacker.temp_power += attacker.rampage * extra
+                    attacker.temp_toughness += attacker.rampage * extra
+                if attacker.flanking:
+                    for blocker in attacker.blocked_by:
+                        if blocker.flanking == 0:
+                            blocker.temp_power -= attacker.flanking
+                            blocker.temp_toughness -= attacker.flanking
+
+        for blocker in self.defenders:
+            if blocker.blocking is not None:
+                if blocker.bushido:
+                    blocker.temp_power += blocker.bushido
+                    blocker.temp_toughness += blocker.bushido
 
     def resolve_first_strike_damage(self):
         """No first strike logic for vanilla combat."""

@@ -62,6 +62,10 @@ class CombatCreature:
     _plus1_counters: int = field(default=0, repr=False)
     _minus1_counters: int = field(default=0, repr=False)
 
+    # --- Temporary stat modifiers (until end of turn) ---
+    temp_power: int = field(default=0, repr=False)
+    temp_toughness: int = field(default=0, repr=False)
+
     def __post_init__(self) -> None:
         check_non_negative(self.power, "power")
         check_positive(self.toughness, "toughness")
@@ -73,11 +77,23 @@ class CombatCreature:
         return color in self.protection_colors
 
     def effective_power(self) -> int:
-        """Base power + +1/+1 counters - -1/-1 counters"""
-        return max(0, self.power + self.plus1_counters - self.minus1_counters)
+        """Base power, counters, and temporary modifiers."""
+        return max(
+            0,
+            self.power
+            + self.plus1_counters
+            - self.minus1_counters
+            + self.temp_power,
+        )
 
     def effective_toughness(self) -> int:
-        return max(0, self.toughness + self.plus1_counters - self.minus1_counters)
+        return max(
+            0,
+            self.toughness
+            + self.plus1_counters
+            - self.minus1_counters
+            + self.temp_toughness,
+        )
 
     def is_destroyed_by_damage(self) -> bool:
         """Check if marked damage is lethal, accounting for indestructibility"""
@@ -104,3 +120,8 @@ class CombatCreature:
     def minus1_counters(self, value: int) -> None:
         check_non_negative(value, "minus1 counters")
         self._minus1_counters = value
+
+    def reset_temporary_bonuses(self) -> None:
+        """Clear temporary power and toughness modifiers."""
+        self.temp_power = 0
+        self.temp_toughness = 0
