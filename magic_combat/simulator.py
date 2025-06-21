@@ -45,6 +45,14 @@ class CombatSimulator:
                     raise ValueError("Inconsistent blocking assignments")
 
         for attacker in self.attackers:
+            seen_ids = set()
+            for blocker in attacker.blocked_by:
+                bid = id(blocker)
+                if bid in seen_ids:
+                    raise ValueError("Blocker listed multiple times")
+                seen_ids.add(bid)
+
+        for attacker in self.attackers:
             if attacker.unblockable and attacker.blocked_by:
                 raise ValueError("Unblockable creature was blocked")
 

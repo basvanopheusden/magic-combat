@@ -104,3 +104,14 @@ def test_unblockable_cannot_be_blocked():
     sim = CombatSimulator([attacker], [blocker])
     with pytest.raises(ValueError):
         sim.validate_blocking()
+
+
+def test_blocker_listed_multiple_times():
+    """CR 509.1c: A creature can't block the same attacker more than once."""
+    attacker = CombatCreature("Ogre", 3, 3, "A")
+    blocker = CombatCreature("Soldier", 2, 2, "B")
+    attacker.blocked_by.extend([blocker, blocker])
+    blocker.blocking = attacker
+    sim = CombatSimulator([attacker], [blocker])
+    with pytest.raises(ValueError):
+        sim.validate_blocking()
