@@ -16,11 +16,14 @@ class CombatCreature:
     power: int
     toughness: int
     controller: str
+    colors: Set[Color] = field(default_factory=set)
+    artifact: bool = False
 
     # --- Combat Keywords ---
     flying: bool = False
     reach: bool = False
     menace: bool = False
+    fear: bool = False
     shadow: bool = False
     horsemanship: bool = False
     skulk: bool = False

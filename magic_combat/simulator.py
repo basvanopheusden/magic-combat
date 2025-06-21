@@ -43,6 +43,32 @@ class CombatSimulator:
                 if blocker.blocking is not attacker:
                     raise ValueError("Inconsistent blocking assignments")
 
+        for attacker in self.attackers:
+            if attacker.unblockable and attacker.blocked_by:
+                raise ValueError("Unblockable creature was blocked")
+
+            if attacker.menace and 0 < len(attacker.blocked_by) < 2:
+                raise ValueError("Menace creature blocked by fewer than two")
+
+            for blocker in attacker.blocked_by:
+                if attacker.flying and not (blocker.flying or blocker.reach):
+                    raise ValueError("Non-flying/reach blocker blocking flyer")
+
+                if attacker.shadow and not blocker.shadow:
+                    raise ValueError("Non-shadow creature blocking shadow")
+
+                if attacker.horsemanship and not blocker.horsemanship:
+                    raise ValueError("Non-horsemanship creature blocking")
+
+                if attacker.skulk and blocker.effective_power() >= attacker.effective_power():
+                    raise ValueError("Skulk prevents block by higher power")
+
+                if attacker.fear and not (blocker.artifact or "black" in blocker.colors):
+                    raise ValueError("Fear creature blocked illegally")
+
+                if attacker.protection_colors & blocker.colors:
+                    raise ValueError("Attacker has protection from blocker's color")
+
     def apply_precombat_triggers(self):
         """Placeholder for future precombat trigger logic."""
         return
