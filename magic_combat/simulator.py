@@ -1,17 +1,25 @@
-from typing import List, Dict, Optional
-from dataclasses import dataclass
+"""Core simulation logic for the combat phase."""
 
-# Assume CombatCreature is already imported from above
+from dataclasses import dataclass
+from typing import Dict, List
+
+from .creature import CombatCreature
 
 @dataclass
 class CombatResult:
+    """Outcome of combat after resolution."""
+
     damage_to_players: Dict[str, int]
     creatures_destroyed: List[CombatCreature]
     lifegain: Dict[str, int]
 
 
 class CombatSimulator:
+    """High level orchestrator for combat resolution."""
+
     def __init__(self, attackers: List[CombatCreature], defenders: List[CombatCreature]):
+        """Store combatants taking part in the current combat phase."""
+
         self.attackers = attackers
         self.defenders = defenders
         self.all_creatures = attackers + defenders
