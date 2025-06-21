@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 
 from .creature import CombatCreature, Color
 from .damage import DamageAssignmentStrategy, MostCreaturesKilledStrategy
+from .gamestate import GameState, PlayerState, has_player_lost
 
 @dataclass
 class CombatResult:
@@ -14,6 +15,7 @@ class CombatResult:
     creatures_destroyed: List[CombatCreature]
     lifegain: Dict[str, int]
     poison_counters: Dict[str, int] = field(default_factory=dict)
+    players_lost: List[str] = field(default_factory=list)
 
 
 class CombatSimulator:
@@ -24,6 +26,7 @@ class CombatSimulator:
         attackers: List[CombatCreature],
         defenders: List[CombatCreature],
         strategy: Optional[DamageAssignmentStrategy] = None,
+        game_state: Optional["GameState"] = None,
     ):
         """Store combatants taking part in the current combat phase."""
 
@@ -34,6 +37,16 @@ class CombatSimulator:
         self.poison_counters: Dict[str, int] = {}
         self.lifegain: Dict[str, int] = {}
         self.assignment_strategy = strategy or MostCreaturesKilledStrategy()
+        self.game_state = game_state
+        self.players_lost: List[str] = []
+
+    def _check_players_lost(self) -> None:
+        """Record any players who have lost the game."""
+        if self.game_state is None:
+            return
+        for player in list(self.game_state.players.keys()):
+            if has_player_lost(self.game_state, player) and player not in self.players_lost:
+                self.players_lost.append(player)
 
         for attacker in self.attackers:
             attacker.attacking = True
@@ -228,8 +241,20 @@ class CombatSimulator:
         dmg = attacker.effective_power() if dmg is None else dmg
         if attacker.infect:
             self.poison_counters[defender] = self.poison_counters.get(defender, 0) + dmg
+            if self.game_state is not None:
+                ps = self.game_state.players.setdefault(
+                    defender,
+                    PlayerState(life=20, creatures=[], poison=0),
+                )
+                ps.poison += dmg
         else:
             self.player_damage[defender] = self.player_damage.get(defender, 0) + dmg
+            if self.game_state is not None:
+                ps = self.game_state.players.setdefault(
+                    defender,
+                    PlayerState(life=20, creatures=[], poison=0),
+                )
+                ps.life -= dmg
         if attacker.lifelink:
             self.lifegain[attacker.controller] = (
                 self.lifegain.get(attacker.controller, 0) + dmg
@@ -270,8 +295,14 @@ class CombatSimulator:
                 self.dead_creatures.append(creature)
 
     def apply_lifelink_and_combat_lifegain(self):
-        """Placeholder for additional combat-related lifegain."""
-        # lifegain has been accumulated during damage assignment
+        """Apply lifelink life gain to the game state, if any."""
+        if self.game_state is not None:
+            for player, gain in self.lifegain.items():
+                ps = self.game_state.players.setdefault(
+                    player, PlayerState(life=20, creatures=[], poison=0)
+                )
+                ps.life += gain
+        # lifegain remains tracked for CombatResult
 
     def finalize(self) -> CombatResult:
         """Return the outcome of combat."""
@@ -280,6 +311,7 @@ class CombatSimulator:
             poison_counters=self.poison_counters,
             creatures_destroyed=self.dead_creatures,
             lifegain=self.lifegain,
+            players_lost=self.players_lost,
         )
 
     def simulate(self) -> CombatResult:
@@ -293,10 +325,13 @@ class CombatSimulator:
         any_first_strike = any(c.first_strike or c.double_strike for c in self.all_creatures)
         if any_first_strike:
             self.resolve_first_strike_damage()
+            self.apply_lifelink_and_combat_lifegain()
             self.check_lethal_damage()
+            self._check_players_lost()
 
         self.resolve_normal_combat_damage()
-        self.check_lethal_damage()
         self.apply_lifelink_and_combat_lifegain()
+        self.check_lethal_damage()
+        self._check_players_lost()
 
         return self.finalize()
