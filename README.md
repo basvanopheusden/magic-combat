@@ -48,18 +48,3 @@ sim = CombatSimulator([attacker], [blocker])
 result = sim.simulate()
 print(result.creatures_destroyed)
 ```
-
-## Downloading sample card data
-
-The :func:`fetch_french_vanilla_cards` utility searches Scryfall for
-"French vanilla" creatures. These are creature cards whose rules text
-contains only keyword abilities recognized by ``CombatCreature``. The
-resulting data can be stored locally using :func:`save_cards` and later
-loaded with :func:`load_cards`.
-
-```python
-from magic_combat import fetch_french_vanilla_cards, save_cards
-
-cards = fetch_french_vanilla_cards()
-save_cards(cards, "data/cards.json")
-```
