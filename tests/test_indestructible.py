@@ -1,4 +1,10 @@
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    DEFAULT_STARTING_LIFE,
+)
 from tests.conftest import link_block
 
 
@@ -86,7 +92,7 @@ def test_indestructible_lifelink_gains_life():
     attacker = CombatCreature("Angel", 2, 2, "A", indestructible=True, lifelink=True)
     blocker = CombatCreature("Bear", 2, 2, "B")
     link_block(attacker, blocker)
-    state = GameState(players={"A": PlayerState(life=10, creatures=[attacker]), "B": PlayerState(life=20, creatures=[blocker])})
+    state = GameState(players={"A": PlayerState(life=10, creatures=[attacker]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blocker])})
     sim = CombatSimulator([attacker], [blocker], game_state=state)
     result = sim.simulate()
     assert result.lifegain["A"] == 2

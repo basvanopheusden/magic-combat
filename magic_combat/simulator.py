@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 from .creature import CombatCreature, Color
 from .damage import DamageAssignmentStrategy, MostCreaturesKilledStrategy
 from .gamestate import GameState, PlayerState, has_player_lost
+from . import DEFAULT_STARTING_LIFE
 
 @dataclass
 class CombatResult:
@@ -238,7 +239,7 @@ class CombatSimulator:
             return
         max_life = max(ps.life for ps in self.game_state.players.values())
         defender_life = self.game_state.players.get(
-            defender_player, PlayerState(life=20, creatures=[], poison=0)
+            defender_player, PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0)
         ).life
         for atk in self.attackers:
             if atk.dethrone and defender_life >= max_life:
@@ -254,7 +255,7 @@ class CombatSimulator:
                 self.player_damage[defender] = self.player_damage.get(defender, 0) + atk.afflict
                 if self.game_state is not None:
                     ps = self.game_state.players.setdefault(
-                        defender, PlayerState(life=20, creatures=[], poison=0)
+                        defender, PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0)
                     )
                     ps.life -= atk.afflict
 
@@ -301,7 +302,7 @@ class CombatSimulator:
                 if self.game_state is not None:
                     ps = self.game_state.players.setdefault(
                         player,
-                        PlayerState(life=20, creatures=[], poison=0),
+                        PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0),
                     )
                     ps.poison += amount
             else:
@@ -309,7 +310,7 @@ class CombatSimulator:
                 if self.game_state is not None:
                     ps = self.game_state.players.setdefault(
                         player,
-                        PlayerState(life=20, creatures=[], poison=0),
+                        PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0),
                     )
                     ps.life -= amount
             if source.toxic:
@@ -317,7 +318,7 @@ class CombatSimulator:
                 if self.game_state is not None:
                     ps = self.game_state.players.setdefault(
                         player,
-                        PlayerState(life=20, creatures=[], poison=0),
+                        PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0),
                     )
                     ps.poison += source.toxic
         if source.lifelink:
@@ -431,7 +432,7 @@ class CombatSimulator:
                 diff = gain - already
                 if diff:
                     ps = self.game_state.players.setdefault(
-                        player, PlayerState(life=20, creatures=[], poison=0)
+                        player, PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0)
                     )
                     ps.life += diff
                     self._lifegain_applied[player] = gain
