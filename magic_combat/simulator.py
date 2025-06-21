@@ -232,6 +232,51 @@ class CombatSimulator:
                     blocker.temp_power += blocker.bushido
                     blocker.temp_toughness += blocker.bushido
 
+    def _apply_damage_to_creature(
+        self, target: "CombatCreature | str", amount: int, source: CombatCreature
+    ) -> None:
+        """Apply ``amount`` of damage from ``source`` to ``target``.
+
+        ``target`` may be a :class:`CombatCreature` or the name of a player.
+        """
+        if isinstance(target, CombatCreature):
+            if source.wither or source.infect:
+                target.minus1_counters += amount
+            else:
+                target.damage_marked += amount
+            if source.deathtouch and amount > 0:
+                target.damaged_by_deathtouch = True
+        else:
+            player = target
+            if source.infect:
+                self.poison_counters[player] = self.poison_counters.get(player, 0) + amount
+                if self.game_state is not None:
+                    ps = self.game_state.players.setdefault(
+                        player,
+                        PlayerState(life=20, creatures=[], poison=0),
+                    )
+                    ps.poison += amount
+            else:
+                self.player_damage[player] = self.player_damage.get(player, 0) + amount
+                if self.game_state is not None:
+                    ps = self.game_state.players.setdefault(
+                        player,
+                        PlayerState(life=20, creatures=[], poison=0),
+                    )
+                    ps.life -= amount
+            if source.toxic:
+                self.poison_counters[player] = self.poison_counters.get(player, 0) + source.toxic
+                if self.game_state is not None:
+                    ps = self.game_state.players.setdefault(
+                        player,
+                        PlayerState(life=20, creatures=[], poison=0),
+                    )
+                    ps.poison += source.toxic
+        if source.lifelink:
+            self.lifegain[source.controller] = (
+                self.lifegain.get(source.controller, 0) + amount
+            )
+
     def resolve_first_strike_damage(self):
         """Handle the first strike combat damage step."""
         for attacker in self.attackers:
@@ -241,16 +286,7 @@ class CombatSimulator:
                 for blocker in attacker.blocked_by:
                     if blocker.first_strike or blocker.double_strike:
                         dmg = blocker.effective_power()
-                        if blocker.wither or blocker.infect:
-                            attacker.minus1_counters += dmg
-                        else:
-                            attacker.damage_marked += dmg
-                        if blocker.deathtouch and dmg > 0:
-                            attacker.damaged_by_deathtouch = True
-                        if blocker.lifelink:
-                            self.lifegain[blocker.controller] = (
-                                self.lifegain.get(blocker.controller, 0) + dmg
-                            )
+                        self._apply_damage_to_creature(attacker, dmg, blocker)
             else:
                 if attacker.first_strike or attacker.double_strike:
                     self._deal_damage_to_player(attacker)
@@ -265,16 +301,7 @@ class CombatSimulator:
         for blocker in ordered:
             lethal = 1 if attacker.deathtouch else blocker.effective_toughness()
             dmg = min(remaining, lethal)
-            if attacker.wither or attacker.infect:
-                blocker.minus1_counters += dmg
-            else:
-                blocker.damage_marked += dmg
-            if attacker.deathtouch and dmg > 0:
-                blocker.damaged_by_deathtouch = True
-            if attacker.lifelink:
-                self.lifegain[attacker.controller] = (
-                    self.lifegain.get(attacker.controller, 0) + dmg
-                )
+            self._apply_damage_to_creature(blocker, dmg, attacker)
             remaining -= dmg
             if remaining <= 0:
                 break
@@ -288,16 +315,7 @@ class CombatSimulator:
         blockers = blockers if blockers is not None else attacker.blocked_by
         for blocker in blockers:
             dmg = blocker.effective_power()
-            if blocker.wither or blocker.infect:
-                attacker.minus1_counters += dmg
-            else:
-                attacker.damage_marked += dmg
-            if blocker.deathtouch and dmg > 0:
-                attacker.damaged_by_deathtouch = True
-            if blocker.lifelink:
-                self.lifegain[blocker.controller] = (
-                    self.lifegain.get(blocker.controller, 0) + dmg
-                )
+            self._apply_damage_to_creature(attacker, dmg, blocker)
 
     def _deal_damage_to_player(
         self, attacker: CombatCreature, dmg: Optional[int] = None
@@ -305,34 +323,7 @@ class CombatSimulator:
         """Deal combat damage from ``attacker`` to a defending player."""
         defender = self.defenders[0].controller if self.defenders else "defender"
         dmg = attacker.effective_power() if dmg is None else dmg
-        if attacker.infect:
-            self.poison_counters[defender] = self.poison_counters.get(defender, 0) + dmg
-            if self.game_state is not None:
-                ps = self.game_state.players.setdefault(
-                    defender,
-                    PlayerState(life=20, creatures=[], poison=0),
-                )
-                ps.poison += dmg
-        else:
-            self.player_damage[defender] = self.player_damage.get(defender, 0) + dmg
-            if self.game_state is not None:
-                ps = self.game_state.players.setdefault(
-                    defender,
-                    PlayerState(life=20, creatures=[], poison=0),
-                )
-                ps.life -= dmg
-        if attacker.lifelink:
-            self.lifegain[attacker.controller] = (
-                self.lifegain.get(attacker.controller, 0) + dmg
-            )
-        if attacker.toxic:
-            self.poison_counters[defender] = self.poison_counters.get(defender, 0) + attacker.toxic
-            if self.game_state is not None:
-                ps = self.game_state.players.setdefault(
-                    defender,
-                    PlayerState(life=20, creatures=[], poison=0),
-                )
-                ps.poison += attacker.toxic
+        self._apply_damage_to_creature(defender, dmg, attacker)
 
     def resolve_normal_combat_damage(self):
         """Assign and deal damage in the normal damage step."""
