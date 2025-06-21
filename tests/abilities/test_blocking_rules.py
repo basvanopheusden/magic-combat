@@ -111,3 +111,19 @@ def test_blocker_listed_multiple_times():
     sim = CombatSimulator([attacker], [blocker])
     with pytest.raises(ValueError):
         sim.validate_blocking()
+
+
+def test_flying_menace_requires_two_flying_blockers():
+    """CR 702.9b & 702.110b: A creature with flying and menace can't be blocked unless two creatures with flying or reach do so."""
+    attacker = CombatCreature("Horror", 3, 3, "A", flying=True, menace=True)
+    flyer1 = CombatCreature("Bird1", 1, 1, "B", flying=True)
+    attacker.blocked_by.append(flyer1)
+    flyer1.blocking = attacker
+    sim = CombatSimulator([attacker], [flyer1])
+    with pytest.raises(ValueError):
+        sim.validate_blocking()
+    flyer2 = CombatCreature("Bird2", 1, 1, "B", flying=True)
+    attacker.blocked_by.append(flyer2)
+    flyer2.blocking = attacker
+    sim = CombatSimulator([attacker], [flyer1, flyer2])
+    sim.validate_blocking()
