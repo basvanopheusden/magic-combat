@@ -12,7 +12,7 @@ class DamageAssignmentStrategy:
         self, attacker: CombatCreature, blockers: List[CombatCreature]
     ) -> List[CombatCreature]:
         """Return blockers in the order the attacker will assign damage."""
-        return blockers
+        return list(blockers)
 
 
 class MostCreaturesKilledStrategy(DamageAssignmentStrategy):
