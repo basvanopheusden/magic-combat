@@ -413,6 +413,7 @@ class CombatSimulator:
         self.validate_blocking()
         self.apply_precombat_triggers()
         self.check_lethal_damage()
+        self._check_players_lost()
 
         # First strike step
         any_first_strike = any(c.first_strike or c.double_strike for c in self.all_creatures)
