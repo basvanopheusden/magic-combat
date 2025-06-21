@@ -11,8 +11,8 @@ def test_trample_multiple_blockers_ordering():
     big.blocking = attacker
     sim = CombatSimulator([attacker], [small, big])
     result = sim.simulate()
-    assert small in result.creatures_destroyed
-    assert big not in result.creatures_destroyed
+    assert big in result.creatures_destroyed
+    assert small not in result.creatures_destroyed
     assert result.damage_to_players.get("B", 0) == 0
 
 

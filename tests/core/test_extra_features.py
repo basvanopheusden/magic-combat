@@ -61,6 +61,36 @@ def test_most_creatures_killed_strategy_sorts():
     assert ordered == [b2, b1]
 
 
+def test_most_creatures_killed_prefers_value_on_tie():
+    """CR 510.2: When only one kill is possible, the most valuable dies."""
+    strat = MostCreaturesKilledStrategy()
+    attacker = CombatCreature("Attacker", 5, 5, "A")
+    weak = CombatCreature("Weak", 2, 2, "B")
+    big = CombatCreature("Big", 4, 4, "B")
+    ordered = strat.order_blockers(attacker, [weak, big])
+    assert ordered[0] is big
+
+
+def test_indestructible_blocker_goes_last():
+    """CR 702.12b: Indestructible creatures can't be destroyed by damage."""
+    strat = MostCreaturesKilledStrategy()
+    attacker = CombatCreature("Attacker", 3, 3, "A")
+    ind = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
+    norm = CombatCreature("Target", 2, 2, "B")
+    ordered = strat.order_blockers(attacker, [ind, norm])
+    assert ordered[-1] is ind
+
+
+def test_wither_can_target_indestructible_first():
+    """CR 702.90a & 702.12b: Wither counters can kill indestructible blockers."""
+    strat = MostCreaturesKilledStrategy()
+    attacker = CombatCreature("Attacker", 2, 2, "A", wither=True)
+    ind = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
+    small = CombatCreature("Small", 1, 1, "B")
+    ordered = strat.order_blockers(attacker, [ind, small])
+    assert ordered[0] is ind
+
+
 def test_plus1_minus1_counter_setters():
     """CR 122.1a: Counters can increase or decrease stats."""
     creature = CombatCreature(name="Bug", power=1, toughness=1, controller="A")
