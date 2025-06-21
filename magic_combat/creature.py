@@ -2,10 +2,18 @@
 
 from dataclasses import dataclass, field
 from typing import Set, List, Optional
+from enum import Enum
 
 from .utils import check_non_negative, check_positive
 
-Color = str  # e.g., "white", "blue", "black", "red", "green"
+class Color(Enum):
+    """Enumeration of Magic: The Gathering's five colors."""
+
+    WHITE = "white"
+    BLUE = "blue"
+    BLACK = "black"
+    RED = "red"
+    GREEN = "green"
 
 
 @dataclass

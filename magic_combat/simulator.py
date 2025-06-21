@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from .creature import CombatCreature
+from .creature import CombatCreature, Color
 from .damage import DamageAssignmentStrategy, MostCreaturesKilledStrategy
 
 @dataclass
@@ -64,7 +64,9 @@ class CombatSimulator:
                 if attacker.skulk and blocker.effective_power() > attacker.effective_power():
                     raise ValueError("Skulk prevents block by higher power")
 
-                if attacker.fear and not (blocker.artifact or "black" in blocker.colors):
+                if attacker.fear and not (
+                    blocker.artifact or Color.BLACK in blocker.colors
+                ):
                     raise ValueError("Fear creature blocked illegally")
 
                 if attacker.protection_colors & blocker.colors:
