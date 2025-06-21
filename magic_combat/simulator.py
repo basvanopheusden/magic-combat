@@ -7,6 +7,7 @@ from .creature import CombatCreature, Color
 from .damage import DamageAssignmentStrategy, MostCreaturesKilledStrategy
 from .gamestate import GameState, PlayerState, has_player_lost
 from . import DEFAULT_STARTING_LIFE
+from .utils import ensure_player_state
 
 @dataclass
 class CombatResult:
@@ -54,6 +55,10 @@ class CombatSimulator:
         for attacker in attackers:
             if attacker.defender:
                 raise ValueError("Defender creatures can't attack")
+
+    def _get_defending_player(self) -> str:
+        """Return the name of the defending player."""
+        return self.defenders[0].controller if self.defenders else "defender"
 
     def tap_attackers(self) -> None:
         """Mark attackers as attacking and tap those without vigilance."""
@@ -166,7 +171,7 @@ class CombatSimulator:
         (CR 702.111) and others that grant bonuses or counters before damage
         is assigned.
         """
-        defender_player = self.defenders[0].controller if self.defenders else "defender"
+        defender_player = self._get_defending_player()
 
         attackers_by_controller: Dict[str, List[CombatCreature]] = {}
         for atk in self.attackers:
@@ -178,8 +183,8 @@ class CombatSimulator:
         self._handle_melee()
         self._handle_training()
         self._handle_battalion(attackers_by_controller)
-        self._handle_dethrone(defender_player)
-        self._handle_frenzy_afflict(defender_player)
+        self._handle_dethrone()
+        self._handle_frenzy_afflict()
         self._handle_bushido_rampage_flanking()
 
     def _reset_temporary_bonuses(self) -> None:
@@ -233,30 +238,27 @@ class CombatSimulator:
                         atk.temp_power += 1
                         atk.temp_toughness += 1
 
-    def _handle_dethrone(self, defender_player: str) -> None:
+    def _handle_dethrone(self) -> None:
         """Grant counters for dethrone (CR 702.103)."""
         if self.game_state is None:
             return
         max_life = max(ps.life for ps in self.game_state.players.values())
-        defender_life = self.game_state.players.get(
-            defender_player, PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0)
-        ).life
+        defender = self._get_defending_player()
+        defender_life = ensure_player_state(self.game_state, defender).life
         for atk in self.attackers:
             if atk.dethrone and defender_life >= max_life:
                 atk.plus1_counters += 1
 
-    def _handle_frenzy_afflict(self, defender_player: str) -> None:
+    def _handle_frenzy_afflict(self) -> None:
         """Resolve frenzy and afflict abilities (CR 702.35 & 702.131)."""
         for atk in self.attackers:
             if atk.frenzy and not atk.blocked_by:
                 atk.temp_power += atk.frenzy
             if atk.afflict and atk.blocked_by:
-                defender = defender_player if self.defenders else "defender"
+                defender = self._get_defending_player()
                 self.player_damage[defender] = self.player_damage.get(defender, 0) + atk.afflict
                 if self.game_state is not None:
-                    ps = self.game_state.players.setdefault(
-                        defender, PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0)
-                    )
+                    ps = ensure_player_state(self.game_state, defender)
                     ps.life -= atk.afflict
 
     def _handle_bushido_rampage_flanking(self) -> None:
@@ -284,47 +286,40 @@ class CombatSimulator:
     def _apply_damage_to_creature(
         self, target: "CombatCreature | str", amount: int, source: CombatCreature
     ) -> None:
-        """Apply ``amount`` of damage from ``source`` to ``target``.
-
-        ``target`` may be a :class:`CombatCreature` or the name of a player.
-        """
+        """Apply ``amount`` of damage from ``source`` to ``target``."""
         if isinstance(target, CombatCreature):
-            if source.wither or source.infect:
-                target.minus1_counters += amount
-            else:
-                target.damage_marked += amount
-            if source.deathtouch and amount > 0:
-                target.damaged_by_deathtouch = True
+            self._damage_creature(target, amount, source)
         else:
-            player = target
-            if source.infect:
-                self.poison_counters[player] = self.poison_counters.get(player, 0) + amount
-                if self.game_state is not None:
-                    ps = self.game_state.players.setdefault(
-                        player,
-                        PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0),
-                    )
-                    ps.poison += amount
-            else:
-                self.player_damage[player] = self.player_damage.get(player, 0) + amount
-                if self.game_state is not None:
-                    ps = self.game_state.players.setdefault(
-                        player,
-                        PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0),
-                    )
-                    ps.life -= amount
-            if source.toxic:
-                self.poison_counters[player] = self.poison_counters.get(player, 0) + source.toxic
-                if self.game_state is not None:
-                    ps = self.game_state.players.setdefault(
-                        player,
-                        PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0),
-                    )
-                    ps.poison += source.toxic
+            self._damage_player(target, amount, source)
         if source.lifelink:
             self.lifegain[source.controller] = (
                 self.lifegain.get(source.controller, 0) + amount
             )
+
+    def _damage_creature(self, creature: CombatCreature, amount: int, source: CombatCreature) -> None:
+        if source.wither or source.infect:
+            creature.minus1_counters += amount
+        else:
+            creature.damage_marked += amount
+        if source.deathtouch and amount > 0:
+            creature.damaged_by_deathtouch = True
+
+    def _damage_player(self, player: str, amount: int, source: CombatCreature) -> None:
+        if source.infect:
+            self.poison_counters[player] = self.poison_counters.get(player, 0) + amount
+            if self.game_state is not None:
+                ps = ensure_player_state(self.game_state, player)
+                ps.poison += amount
+        else:
+            self.player_damage[player] = self.player_damage.get(player, 0) + amount
+            if self.game_state is not None:
+                ps = ensure_player_state(self.game_state, player)
+                ps.life -= amount
+        if source.toxic:
+            self.poison_counters[player] = self.poison_counters.get(player, 0) + source.toxic
+            if self.game_state is not None:
+                ps = ensure_player_state(self.game_state, player)
+                ps.poison += source.toxic
 
     def resolve_first_strike_damage(self):
         """Handle the first strike combat damage step."""
@@ -370,7 +365,7 @@ class CombatSimulator:
         self, attacker: CombatCreature, dmg: Optional[int] = None
     ) -> None:
         """Deal combat damage from ``attacker`` to a defending player."""
-        defender = self.defenders[0].controller if self.defenders else "defender"
+        defender = self._get_defending_player()
         dmg = attacker.effective_power() if dmg is None else dmg
         self._apply_damage_to_creature(defender, dmg, attacker)
 
@@ -431,9 +426,7 @@ class CombatSimulator:
                 already = self._lifegain_applied.get(player, 0)
                 diff = gain - already
                 if diff:
-                    ps = self.game_state.players.setdefault(
-                        player, PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0)
-                    )
+                    ps = ensure_player_state(self.game_state, player)
                     ps.life += diff
                     self._lifegain_applied[player] = gain
         # lifegain remains tracked for CombatResult
