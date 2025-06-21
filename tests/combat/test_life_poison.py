@@ -1,5 +1,12 @@
 import pytest
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState, has_player_lost
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    DEFAULT_STARTING_LIFE,
+    has_player_lost,
+)
 from tests.conftest import link_block
 
 
@@ -9,8 +16,8 @@ def test_infect_lifelink_poison_lethal():
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[atk]),
-            "B": PlayerState(life=20, creatures=[defender], poison=8),
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=8),
         }
     )
     sim = CombatSimulator([atk], [defender], game_state=state)
@@ -28,7 +35,7 @@ def test_double_strike_lifelink_player_lethal():
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[atk]),
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
             "B": PlayerState(life=3, creatures=[defender]),
         }
     )
@@ -46,8 +53,8 @@ def test_infect_double_strike_lifelink_poison_lethal():
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[atk]),
-            "B": PlayerState(life=20, creatures=[defender], poison=9),
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=9),
         }
     )
     sim = CombatSimulator([atk], [defender], game_state=state)
@@ -77,7 +84,7 @@ def test_trample_deathtouch_lifelink_lethal():
     link_block(atk, blk)
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[atk]),
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
             "B": PlayerState(life=2, creatures=[blk]),
         }
     )

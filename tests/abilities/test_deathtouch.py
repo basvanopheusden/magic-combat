@@ -1,6 +1,12 @@
 import pytest
 
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    DEFAULT_STARTING_LIFE,
+)
 from tests.conftest import link_block
 
 
@@ -44,7 +50,7 @@ def test_deathtouch_lifelink_gain_life():
     atk = CombatCreature("Vampire", 1, 1, "A", deathtouch=True, lifelink=True)
     blk = CombatCreature("Bear", 2, 2, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert blk in result.creatures_destroyed

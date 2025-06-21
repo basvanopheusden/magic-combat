@@ -4,6 +4,7 @@ from magic_combat import (
     CombatSimulator,
     GameState,
     PlayerState,
+    DEFAULT_STARTING_LIFE,
     has_player_lost,
 )
 from tests.conftest import link_block
@@ -15,7 +16,7 @@ def test_player_loses_when_life_zero():
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[atk]),
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
             "B": PlayerState(life=2, creatures=[defender]),
         }
     )
@@ -32,8 +33,8 @@ def test_player_loses_from_poison():
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[atk]),
-            "B": PlayerState(life=20, creatures=[defender], poison=9),
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=9),
         }
     )
     sim = CombatSimulator([atk], [defender], game_state=state)
@@ -50,8 +51,8 @@ def test_trample_infect_assigns_excess_poison():
     link_block(atk, blk)
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[atk]),
-            "B": PlayerState(life=20, creatures=[blk]),
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
         }
     )
     sim = CombatSimulator([atk], [blk], game_state=state)
@@ -69,7 +70,7 @@ def test_infect_with_lifelink_grants_life():
     state = GameState(
         players={
             "A": PlayerState(life=10, creatures=[atk]),
-            "B": PlayerState(life=20, creatures=[defender]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender]),
         }
     )
     sim = CombatSimulator([atk], [defender], game_state=state)
@@ -87,8 +88,8 @@ def test_wither_and_lifelink_vs_creature():
     link_block(atk, blk)
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[atk]),
-            "B": PlayerState(life=20, creatures=[blk]),
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
         }
     )
     sim = CombatSimulator([atk], [blk], game_state=state)
@@ -106,8 +107,8 @@ def test_deathtouch_trample_hits_player():
     link_block(atk, blk)
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[atk]),
-            "B": PlayerState(life=20, creatures=[blk]),
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
         }
     )
     sim = CombatSimulator([atk], [blk], game_state=state)
@@ -125,7 +126,7 @@ def test_double_strike_lifelink_twice():
     state = GameState(
         players={
             "A": PlayerState(life=10, creatures=[atk]),
-            "B": PlayerState(life=20, creatures=[defender]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender]),
         }
     )
     sim = CombatSimulator([atk], [defender], game_state=state)
@@ -141,8 +142,8 @@ def test_double_strike_infect_can_cause_loss():
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(
         players={
-            "A": PlayerState(life=20, creatures=[atk]),
-            "B": PlayerState(life=20, creatures=[defender], poison=8),
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=8),
         }
     )
     sim = CombatSimulator([atk], [defender], game_state=state)

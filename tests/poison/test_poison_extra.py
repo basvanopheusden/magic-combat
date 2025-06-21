@@ -1,5 +1,11 @@
 import pytest
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    DEFAULT_STARTING_LIFE,
+)
 from tests.conftest import link_block
 
 
@@ -19,7 +25,7 @@ def test_infect_lifelink_vs_blocker():
     atk = CombatCreature("Toxic Cleric", 2, 2, "A", infect=True, lifelink=True)
     blk = CombatCreature("Bear", 2, 2, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -100,7 +106,7 @@ def test_lifelink_infect_vs_creature():
     atk = CombatCreature("Toxic Healer", 3, 3, "A", infect=True, lifelink=True)
     blk = CombatCreature("Bear", 3, 3, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert result.lifegain["A"] == 3
@@ -113,7 +119,7 @@ def test_infect_with_afflict_still_causes_life_loss():
     atk = CombatCreature("Tormentor", 2, 2, "A", infect=True, afflict=1)
     blk = CombatCreature("Guard", 2, 2, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert state.players["B"].life == 19

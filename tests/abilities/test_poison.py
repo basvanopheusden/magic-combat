@@ -1,6 +1,13 @@
 import pytest
 
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState, has_player_lost
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    DEFAULT_STARTING_LIFE,
+    has_player_lost,
+)
 from tests.conftest import link_block
 
 
@@ -20,7 +27,7 @@ def test_infect_lifelink_vs_creature():
     atk = CombatCreature("Toxic Healer", 2, 2, "A", infect=True, lifelink=True)
     blk = CombatCreature("Guard", 2, 2, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -33,7 +40,7 @@ def test_trample_infect_lifelink_poison_and_life():
     atk = CombatCreature("Plague Rhino", 3, 3, "A", infect=True, lifelink=True, trample=True)
     blk = CombatCreature("Chump", 1, 1, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert blk.minus1_counters == 1
@@ -82,7 +89,7 @@ def test_infect_and_toxic_stack_poison():
     """CR 702.90b & 702.??: Infect and toxic add poison counters together."""
     atk = CombatCreature("Venomous", 2, 2, "A", infect=True, toxic=1)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[defender])})
+    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender])})
     sim = CombatSimulator([atk], [defender], game_state=state)
     result = sim.simulate()
     assert state.players["B"].poison == 3
@@ -104,7 +111,7 @@ def test_player_loses_at_ten_poison():
     """CR 104.3c: A player with ten or more poison counters loses the game."""
     atk = CombatCreature("Infector", 1, 1, "A", infect=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[defender], poison=9)})
+    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=9)})
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert state.players["B"].poison == 10
@@ -131,7 +138,7 @@ def test_infect_with_afflict_still_deals_life_loss():
     atk = CombatCreature("Torturer", 2, 2, "A", infect=True, afflict=2)
     blk = CombatCreature("Guard", 2, 2, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert result.damage_to_players["B"] == 2
@@ -153,7 +160,7 @@ def test_infect_unblocked_lifelink_gains_life():
     """CR 702.15a & 702.90b: Lifelink triggers even when infect damage becomes poison counters."""
     atk = CombatCreature("Healer", 2, 2, "A", infect=True, lifelink=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=20, creatures=[defender])})
+    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender])})
     sim = CombatSimulator([atk], [defender], game_state=state)
     result = sim.simulate()
     assert result.poison_counters["B"] == 2

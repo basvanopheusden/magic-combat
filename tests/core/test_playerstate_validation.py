@@ -1,6 +1,6 @@
 import pytest
 
-from magic_combat import PlayerState
+from magic_combat import PlayerState, DEFAULT_STARTING_LIFE
 
 
 def test_negative_life_init():
@@ -12,4 +12,4 @@ def test_negative_life_init():
 def test_negative_poison_init():
     """CR 107.1: Numbers like poison counters can't be negative."""
     with pytest.raises(ValueError):
-        PlayerState(life=20, creatures=[], poison=-1)
+        PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=-1)
