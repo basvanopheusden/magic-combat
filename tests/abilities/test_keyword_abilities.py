@@ -97,3 +97,12 @@ def test_skulk_and_bushido_combo():
     result = sim.simulate()
     assert blocker in result.creatures_destroyed
     assert attacker not in result.creatures_destroyed
+
+def test_exalted_not_triggered_with_multiple_attackers():
+    """CR 702.90a: Exalted triggers only if a creature attacks alone."""
+    exalter = CombatCreature("Exalter", 2, 2, "A", exalted_count=1)
+    ally = CombatCreature("Ally", 2, 2, "A")
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    sim = CombatSimulator([exalter, ally], [defender])
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 4
