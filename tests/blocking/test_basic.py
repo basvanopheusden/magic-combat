@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 
 # Ensure the package is importable when running tests from any location
-sys.path.append(str(Path(__file__).resolve().parents[1]))
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from magic_combat import CombatCreature, CombatSimulator
 
@@ -81,10 +81,10 @@ def test_protection_prevents_blocking():
         sim.validate_blocking()
 
 
-def test_skulk_prevents_stronger_blocker_even_with_bushido():
-    """CR 702.65a: Skulk says a creature can't be blocked by creatures with greater power."""
-    attacker = CombatCreature("Sneak", 2, 2, "A", skulk=True, bushido=2)
-    blocker = CombatCreature("Brute", 3, 3, "B")
+def test_unblockable_creature_cant_be_blocked():
+    """CR 509.1b: Unblockable creatures can't be legally blocked."""
+    attacker = CombatCreature("Specter", 2, 2, "A", unblockable=True)
+    blocker = CombatCreature("Guard", 2, 2, "B")
     attacker.blocked_by.append(blocker)
     blocker.blocking = attacker
     sim = CombatSimulator([attacker], [blocker])
@@ -92,28 +92,20 @@ def test_skulk_prevents_stronger_blocker_even_with_bushido():
         sim.validate_blocking()
 
 
-def test_flying_horsemanship_requires_both_abilities():
-    """CR 702.9b & 702.30b: A creature with flying and horsemanship can be blocked only by a creature with both."""
-    attacker = CombatCreature("Hybrid", 1, 1, "A", flying=True, horsemanship=True)
-
-    only_flying = CombatCreature("Pegasus", 1, 2, "B", flying=True)
-    attacker.blocked_by.append(only_flying)
-    only_flying.blocking = attacker
-    sim = CombatSimulator([attacker], [only_flying])
+def test_shadow_blocks_only_shadow():
+    """CR 702.28b: A creature with shadow can block or be blocked only by creatures with shadow."""
+    attacker = CombatCreature("Lurker", 1, 1, "A", shadow=True)
+    blocker = CombatCreature("Bear", 2, 2, "B")
+    attacker.blocked_by.append(blocker)
+    blocker.blocking = attacker
+    sim = CombatSimulator([attacker], [blocker])
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
-    attacker.blocked_by.clear()
-    only_horse = CombatCreature("Horseman", 1, 2, "B", horsemanship=True)
-    attacker.blocked_by.append(only_horse)
-    only_horse.blocking = attacker
-    sim = CombatSimulator([attacker], [only_horse])
-    with pytest.raises(ValueError):
-        sim.validate_blocking()
-
-    attacker.blocked_by.clear()
-    both = CombatCreature("Cavalry", 1, 2, "B", flying=True, horsemanship=True)
-    attacker.blocked_by.append(both)
-    both.blocking = attacker
-    sim = CombatSimulator([attacker], [both])
+    shadow_blocker = CombatCreature("Shade", 1, 1, "B", shadow=True)
+    attacker.blocked_by = [shadow_blocker]
+    shadow_blocker.blocking = attacker
+    sim = CombatSimulator([attacker], [shadow_blocker])
     sim.validate_blocking()
+
+
