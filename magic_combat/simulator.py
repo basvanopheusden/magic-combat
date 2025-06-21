@@ -45,17 +45,19 @@ class CombatSimulator:
             if attacker.defender:
                 raise ValueError("Defender creatures can't attack")
 
+    def tap_attackers(self) -> None:
+        """Mark attackers as attacking and tap those without vigilance."""
+        for attacker in self.attackers:
+            attacker.attacking = True
+            if not attacker.vigilance:
+                attacker.tapped = True
+
     def _check_players_lost(self) -> None:
         """Record any players who have lost the game."""
         if self.game_state is not None:
             for player in list(self.game_state.players.keys()):
                 if has_player_lost(self.game_state, player) and player not in self.players_lost:
                     self.players_lost.append(player)
-
-        for attacker in self.attackers:
-            attacker.attacking = True
-            if not attacker.vigilance:
-                attacker.tapped = True
 
     def validate_blocking(self):
         """Ensure blocking assignments are legal for this simplified simulator."""
@@ -391,6 +393,7 @@ class CombatSimulator:
     def simulate(self) -> CombatResult:
         """Run a full combat phase resolution and return the result."""
         self.dead_creatures: List[CombatCreature] = []
+        self.tap_attackers()
         self.validate_blocking()
         self.apply_precombat_triggers()
         self.check_lethal_damage()
