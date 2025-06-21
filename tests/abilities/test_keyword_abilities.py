@@ -1,12 +1,12 @@
 from magic_combat import CombatCreature, CombatSimulator
+from tests.conftest import link_block
 
 
 def test_bushido_bonus():
     """CR 702.46a: Bushido gives the creature +N/+N when it blocks or becomes blocked."""
     atk = CombatCreature("Samurai", 2, 2, "A", bushido=1)
     blk = CombatCreature("Bear", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -17,8 +17,7 @@ def test_flanking_debuff_blocker():
     """CR 702.25a: Flanking gives blocking creatures without flanking -1/-1."""
     atk = CombatCreature("Knight", 2, 2, "A", flanking=1)
     blk = CombatCreature("Soldier", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -29,8 +28,7 @@ def test_exalted_single_attacker_multiple_instances():
     """CR 702.90a: Each instance of exalted grants +1/+1 if a creature attacks alone."""
     atk = CombatCreature("Lone", 2, 2, "A", exalted_count=2)
     blk = CombatCreature("Grizzly", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -42,9 +40,7 @@ def test_rampage_with_multiple_blockers():
     atk = CombatCreature("Beast", 3, 3, "A", rampage=2)
     b1 = CombatCreature("B1", 2, 2, "B")
     b2 = CombatCreature("B2", 2, 2, "B")
-    atk.blocked_by.extend([b1, b2])
-    b1.blocking = atk
-    b2.blocking = atk
+    link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     result = sim.simulate()
     assert b1 in result.creatures_destroyed
@@ -65,8 +61,7 @@ def test_melee_bonus_on_attack():
     """CR 702.111a: Melee gives the creature +1/+1 for each opponent it's attacking."""
     atk = CombatCreature("Soldier", 2, 2, "A", melee=True)
     blk = CombatCreature("Guard", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -86,8 +81,7 @@ def test_skulk_and_bushido_combo():
     """CR 702.65a & 702.46a: Skulk restricts blocks to weaker creatures and bushido gives +N/+N when blocked."""
     attacker = CombatCreature("Ninja", 2, 2, "A", skulk=True, bushido=1)
     blocker = CombatCreature("Guard", 1, 1, "B")
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert blocker in result.creatures_destroyed
@@ -107,8 +101,7 @@ def test_deathtouch_basic_lethal():
     """CR 702.2b: Any nonzero damage from a creature with deathtouch is lethal."""
     atk = CombatCreature("Assassin", 1, 1, "A", deathtouch=True)
     blk = CombatCreature("Bear", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert atk in result.creatures_destroyed
@@ -120,9 +113,7 @@ def test_deathtouch_multiple_blockers():
     atk = CombatCreature("Venomous", 3, 3, "A", deathtouch=True)
     b1 = CombatCreature("Guard1", 3, 3, "B")
     b2 = CombatCreature("Guard2", 3, 3, "B")
-    atk.blocked_by.extend([b1, b2])
-    b1.blocking = atk
-    b2.blocking = atk
+    link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     result = sim.simulate()
     assert atk in result.creatures_destroyed
@@ -134,8 +125,7 @@ def test_deathtouch_vs_indestructible():
     """CR 702.12b: Indestructible permanents aren't destroyed by deathtouch."""
     atk = CombatCreature("Snake", 1, 1, "A", deathtouch=True)
     blk = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert atk in result.creatures_destroyed
@@ -146,8 +136,7 @@ def test_deathtouch_killed_before_dealing_damage():
     """CR 702.7b: First strike damage can kill a deathtouch creature before it deals damage."""
     atk = CombatCreature("Biter", 2, 2, "A", deathtouch=True)
     blk = CombatCreature("Duelist", 2, 2, "B", first_strike=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert atk in result.creatures_destroyed
@@ -158,8 +147,7 @@ def test_trample_excess_damage_to_player():
     """CR 702.19b: Damage beyond lethal can be assigned to the defending player."""
     atk = CombatCreature("Rhino", 4, 4, "A", trample=True)
     blk = CombatCreature("Wall", 0, 3, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -171,9 +159,7 @@ def test_deathtouch_trample_multiple_blockers():
     atk = CombatCreature("Beast", 3, 3, "A", trample=True, deathtouch=True)
     b1 = CombatCreature("B1", 2, 2, "B")
     b2 = CombatCreature("B2", 2, 2, "B")
-    atk.blocked_by.extend([b1, b2])
-    b1.blocking = atk
-    b2.blocking = atk
+    link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     result = sim.simulate()
     assert b1 in result.creatures_destroyed
@@ -185,8 +171,7 @@ def test_wither_damage_adds_counters():
     """CR 702.90a: Damage from wither is dealt as -1/-1 counters."""
     atk = CombatCreature("Witherer", 3, 3, "A", wither=True)
     blk = CombatCreature("Target", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk.minus1_counters == 2

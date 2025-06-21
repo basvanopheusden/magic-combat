@@ -2,13 +2,13 @@ import pytest
 
 
 from magic_combat import CombatCreature, CombatSimulator
+from tests.conftest import link_block
 
 
 def setup_vanilla():
     attacker = CombatCreature("Bear", 2, 2, "A")
     blocker = CombatCreature("Piker", 3, 1, "B")
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     return attacker, blocker
 
 
@@ -26,9 +26,7 @@ def test_double_block_simple():
     a = CombatCreature("Bear", 2, 2, "A")
     b1 = CombatCreature("Goblin", 1, 1, "B")
     b2 = CombatCreature("Goblin2", 1, 1, "B")
-    a.blocked_by.extend([b1, b2])
-    b1.blocking = a
-    b2.blocking = a
+    link_block(a, b1, b2)
     sim = CombatSimulator([a], [b1, b2])
     result = sim.simulate()
     assert a in result.creatures_destroyed
@@ -40,9 +38,7 @@ def test_most_creatures_killed_ordering():
     a = CombatCreature("Beast", 3, 3, "A")
     wall = CombatCreature("Wall", 0, 4, "B")
     goblin = CombatCreature("Goblin", 1, 1, "B")
-    a.blocked_by.extend([wall, goblin])
-    wall.blocking = a
-    goblin.blocking = a
+    link_block(a, wall, goblin)
     sim = CombatSimulator([a], [wall, goblin])
     result = sim.simulate()
     assert goblin in result.creatures_destroyed
@@ -64,8 +60,7 @@ def test_blocker_survives_nonlethal_damage():
     """CR 704.5g: Creatures with damage less than toughness aren't destroyed."""
     attacker = CombatCreature("Bear", 2, 2, "A")
     blocker = CombatCreature("Wall", 1, 3, "B")
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert result.creatures_destroyed == []
@@ -75,8 +70,7 @@ def test_attacker_survives_and_kills_blocker():
     """CR 704.5g: A creature with lethal damage is destroyed."""
     attacker = CombatCreature("Ogre", 3, 3, "A")
     blocker = CombatCreature("Goblin", 2, 2, "B")
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert blocker in result.creatures_destroyed
@@ -97,8 +91,7 @@ def test_indestructible_creature_survives_lethal_damage():
     """CR 702.12b: Indestructible permanents aren't destroyed by lethal damage."""
     attacker = CombatCreature("Giant", 5, 5, "A")
     blocker = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert attacker not in result.creatures_destroyed
@@ -109,8 +102,7 @@ def test_first_strike_kills_before_normal_damage():
     """CR 702.7b: Creatures with first strike deal combat damage before creatures without it."""
     attacker = CombatCreature("Swift", 2, 2, "A", first_strike=True)
     blocker = CombatCreature("Bear", 2, 2, "B")
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert blocker in result.creatures_destroyed

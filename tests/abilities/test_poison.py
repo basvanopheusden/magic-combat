@@ -1,14 +1,14 @@
 import pytest
 
 from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState, has_player_lost
+from tests.conftest import link_block
 
 
 def test_infect_creature_gets_minus1_counters():
     """CR 702.90a: Damage from a creature with infect gives -1/-1 counters to creatures."""
     atk = CombatCreature("Agent", 2, 2, "A", infect=True)
     blk = CombatCreature("Target", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -19,8 +19,7 @@ def test_infect_lifelink_vs_creature():
     """CR 702.90a & 702.15a: Infect still deals damage for lifelink purposes."""
     atk = CombatCreature("Toxic Healer", 2, 2, "A", infect=True, lifelink=True)
     blk = CombatCreature("Guard", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
@@ -33,8 +32,7 @@ def test_trample_infect_lifelink_poison_and_life():
     """CR 702.19b, 702.90b & 702.15a: Trample with infect gives poison counters for excess and lifelink gains that much life."""
     atk = CombatCreature("Plague Rhino", 3, 3, "A", infect=True, lifelink=True, trample=True)
     blk = CombatCreature("Chump", 1, 1, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
@@ -49,8 +47,7 @@ def test_double_strike_infect_creature_counters_accumulate():
     """CR 702.4b & 702.90a: An infect creature with double strike deals counters in both damage steps."""
     atk = CombatCreature("Toxic Duelist", 1, 1, "A", infect=True, double_strike=True)
     blk = CombatCreature("Giant", 3, 3, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -61,8 +58,7 @@ def test_first_strike_infect_weakens_before_hit_back():
     """CR 702.7b & 702.90a: First strike infect damage is dealt before normal damage."""
     atk = CombatCreature("Plague Knight", 2, 2, "A", infect=True, first_strike=True)
     blk = CombatCreature("Ogre", 3, 3, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -75,8 +71,7 @@ def test_infect_kills_persist_creature_without_return():
     """CR 702.90a & 702.77a: A creature killed with -1/-1 counters doesn't return with persist."""
     atk = CombatCreature("Blighted", 2, 2, "A", infect=True)
     blk = CombatCreature("Undying Wall", 2, 2, "B", persist=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -98,8 +93,7 @@ def test_infect_counters_kill_indestructible():
     """CR 702.90a & 702.12b: Indestructible doesn't prevent death from 0 toughness."""
     atk = CombatCreature("Corruptor", 1, 1, "A", infect=True)
     blk = CombatCreature("Steel Golem", 1, 1, "B", indestructible=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -123,9 +117,7 @@ def test_infect_against_multiple_blockers():
     atk = CombatCreature("Plague Bear", 3, 3, "A", infect=True)
     b1 = CombatCreature("B1", 2, 2, "B")
     b2 = CombatCreature("B2", 2, 2, "B")
-    atk.blocked_by.extend([b1, b2])
-    b1.blocking = atk
-    b2.blocking = atk
+    link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     result = sim.simulate()
     assert b1.minus1_counters == 2
@@ -138,8 +130,7 @@ def test_infect_with_afflict_still_deals_life_loss():
     """CR 702.131 & 702.90a: Afflict damage is normal even if the creature has infect."""
     atk = CombatCreature("Torturer", 2, 2, "A", infect=True, afflict=2)
     blk = CombatCreature("Guard", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
@@ -174,8 +165,7 @@ def test_first_strike_infect_kills_before_damage():
     """CR 702.7b & 702.90b: First strike infect can kill a blocker before it assigns damage."""
     atk = CombatCreature("Fencer", 2, 2, "A", infect=True, first_strike=True)
     blk = CombatCreature("Bear", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -198,9 +188,7 @@ def test_trample_infect_multiple_blockers():
     atk = CombatCreature("Beast", 3, 3, "A", trample=True, infect=True)
     b1 = CombatCreature("Goblin1", 1, 1, "B")
     b2 = CombatCreature("Goblin2", 1, 1, "B")
-    atk.blocked_by.extend([b1, b2])
-    b1.blocking = atk
-    b2.blocking = atk
+    link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     result = sim.simulate()
     assert b1.minus1_counters == 1
@@ -213,8 +201,7 @@ def test_infect_kills_undying_but_it_returns():
     """CR 702.92a & 702.90b: Undying returns a creature even if infect dealt the damage."""
     atk = CombatCreature("Slayer", 2, 2, "A", infect=True)
     blk = CombatCreature("Spirit", 2, 2, "B", undying=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk not in result.creatures_destroyed

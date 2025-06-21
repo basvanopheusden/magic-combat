@@ -6,6 +6,7 @@ from magic_combat import (
     PlayerState,
     has_player_lost,
 )
+from tests.conftest import link_block
 
 
 def test_player_loses_when_life_zero():
@@ -46,8 +47,7 @@ def test_trample_infect_assigns_excess_poison():
     """CR 702.19b & 702.90b: Trample with infect deals excess damage as poison counters."""
     atk = CombatCreature("Toxic Beast", 4, 4, "A", trample=True, infect=True)
     blk = CombatCreature("Chump", 1, 1, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(
         players={
             "A": PlayerState(life=20, creatures=[atk]),
@@ -84,8 +84,7 @@ def test_wither_and_lifelink_vs_creature():
     """CR 702.90a & 702.15a: Wither deals -1/-1 counters but counts as damage for lifelink."""
     atk = CombatCreature("Pain Giver", 3, 3, "A", wither=True, lifelink=True)
     blk = CombatCreature("Target", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(
         players={
             "A": PlayerState(life=20, creatures=[atk]),
@@ -104,8 +103,7 @@ def test_deathtouch_trample_hits_player():
     """CR 702.19b & 702.2b: Only 1 damage must be assigned to the blocker before excess hits the player."""
     atk = CombatCreature("Crusher", 4, 4, "A", trample=True, deathtouch=True)
     blk = CombatCreature("Wall", 5, 5, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(
         players={
             "A": PlayerState(life=20, creatures=[atk]),

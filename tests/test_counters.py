@@ -6,6 +6,7 @@ from magic_combat import (
     GameState,
     PlayerState,
 )
+from tests.conftest import link_block
 
 
 def test_effective_stats_with_plus1_counters():
@@ -56,8 +57,7 @@ def test_wither_damage_gives_minus1_counters():
     """CR 702.90a: Damage from a creature with wither applies -1/-1 counters."""
     atk = CombatCreature("Corrosive", 2, 2, "A", wither=True)
     blk = CombatCreature("Wall", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -68,8 +68,7 @@ def test_persist_returns_with_counter():
     """CR 702.77a: Persist returns a creature that died without -1/-1 counters."""
     atk = CombatCreature("Giant", 3, 3, "A")
     blk = CombatCreature("Spirit", 3, 3, "B", persist=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk not in result.creatures_destroyed
@@ -80,8 +79,7 @@ def test_undying_returns_with_counter():
     """CR 702.92a: Undying returns the creature with a +1/+1 counter if it had none."""
     atk = CombatCreature("Phoenix", 2, 2, "A", undying=True)
     blk = CombatCreature("Bear", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -94,8 +92,7 @@ def test_annihilation_plus1_then_wither():
     atk = CombatCreature("Witherer", 1, 1, "A", wither=True)
     blk = CombatCreature("Veteran", 1, 1, "B")
     blk.plus1_counters = 1
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     sim.simulate()
     assert blk.plus1_counters == 0
@@ -107,8 +104,7 @@ def test_annihilation_multiple_pairs():
     atk = CombatCreature("Witherer", 3, 3, "A", wither=True)
     blk = CombatCreature("Hero", 2, 2, "B")
     blk.plus1_counters = 2
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     sim.simulate()
     assert blk.plus1_counters == 0
