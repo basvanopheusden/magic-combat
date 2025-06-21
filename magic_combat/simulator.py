@@ -131,24 +131,35 @@ class CombatSimulator:
     def apply_precombat_triggers(self):
         """Apply keyword abilities that modify stats before combat damage.
 
-        This method handles a collection of triggered abilities defined in the
-        Comprehensive Rules. It implements effects such as exalted
-        (CR 702.90), battle cry (CR 702.92), melee (CR 702.111), and other
-        abilities that grant temporary power/toughness bonuses or +1/+1
-        counters before damage is assigned.
+        This method resets temporary stat bonuses and then delegates to
+        specialized helpers for each ability. The helpers implement effects
+        such as exalted (CR 702.90), battle cry (CR 702.92), melee
+        (CR 702.111) and others that grant bonuses or counters before damage
+        is assigned.
         """
-        # reset any temporary bonuses
-        for creature in self.all_creatures:
-            creature.reset_temporary_bonuses()
-
         defender_player = self.defenders[0].controller if self.defenders else "defender"
 
-        # group attackers by controller for exalted and training
         attackers_by_controller: Dict[str, List[CombatCreature]] = {}
         for atk in self.attackers:
             attackers_by_controller.setdefault(atk.controller, []).append(atk)
 
-        # Exalted triggers - CR 702.90
+        self._reset_temporary_bonuses()
+        self._handle_exalted(attackers_by_controller)
+        self._handle_battle_cry()
+        self._handle_melee()
+        self._handle_training()
+        self._handle_battalion(attackers_by_controller)
+        self._handle_dethrone(defender_player)
+        self._handle_frenzy_afflict(defender_player)
+        self._handle_bushido_rampage_flanking()
+
+    def _reset_temporary_bonuses(self) -> None:
+        """Clear any temporary power/toughness modifiers on creatures."""
+        for creature in self.all_creatures:
+            creature.reset_temporary_bonuses()
+
+    def _handle_exalted(self, attackers_by_controller: Dict[str, List[CombatCreature]]) -> None:
+        """Apply exalted triggers (CR 702.90)."""
         for controller, atks in attackers_by_controller.items():
             if len(atks) == 1:
                 atk = atks[0]
@@ -156,21 +167,24 @@ class CombatSimulator:
                 atk.temp_power += exalted_total
                 atk.temp_toughness += exalted_total
 
-        # Battle cry - CR 702.92
+    def _handle_battle_cry(self) -> None:
+        """Apply battle cry bonuses (CR 702.92)."""
         for atk in self.attackers:
             if atk.battle_cry_count:
                 for other in self.attackers:
                     if other is not atk and other.controller == atk.controller:
                         other.temp_power += atk.battle_cry_count
 
-        # Melee - CR 702.111
+    def _handle_melee(self) -> None:
+        """Apply melee bonuses (CR 702.111)."""
         num_opponents_attacked = 1 if self.attackers else 0
         for atk in self.attackers:
             if atk.melee and num_opponents_attacked:
                 atk.temp_power += num_opponents_attacked
                 atk.temp_toughness += num_opponents_attacked
 
-        # Training - CR 702.138
+    def _handle_training(self) -> None:
+        """Add +1/+1 counters for training (CR 702.138)."""
         for atk in self.attackers:
             if atk.training:
                 if any(
@@ -181,7 +195,8 @@ class CombatSimulator:
                 ):
                     atk.plus1_counters += 1
 
-        # Battalion - CR 702.101
+    def _handle_battalion(self, attackers_by_controller: Dict[str, List[CombatCreature]]) -> None:
+        """Apply battalion bonuses (CR 702.101)."""
         for controller, atks in attackers_by_controller.items():
             if len(atks) >= 3:
                 for atk in atks:
@@ -189,17 +204,20 @@ class CombatSimulator:
                         atk.temp_power += 1
                         atk.temp_toughness += 1
 
-        # Dethrone - CR 702.103
-        if self.game_state is not None:
-            max_life = max(ps.life for ps in self.game_state.players.values())
-            defender_life = self.game_state.players.get(
-                defender_player, PlayerState(life=20, creatures=[], poison=0)
-            ).life
-            for atk in self.attackers:
-                if atk.dethrone and defender_life >= max_life:
-                    atk.plus1_counters += 1
+    def _handle_dethrone(self, defender_player: str) -> None:
+        """Grant counters for dethrone (CR 702.103)."""
+        if self.game_state is None:
+            return
+        max_life = max(ps.life for ps in self.game_state.players.values())
+        defender_life = self.game_state.players.get(
+            defender_player, PlayerState(life=20, creatures=[], poison=0)
+        ).life
+        for atk in self.attackers:
+            if atk.dethrone and defender_life >= max_life:
+                atk.plus1_counters += 1
 
-        # Frenzy and Afflict - CR 702.35 & 702.131
+    def _handle_frenzy_afflict(self, defender_player: str) -> None:
+        """Resolve frenzy and afflict abilities (CR 702.35 & 702.131)."""
         for atk in self.attackers:
             if atk.frenzy and not atk.blocked_by:
                 atk.temp_power += atk.frenzy
@@ -207,10 +225,13 @@ class CombatSimulator:
                 defender = defender_player if self.defenders else "defender"
                 self.player_damage[defender] = self.player_damage.get(defender, 0) + atk.afflict
                 if self.game_state is not None:
-                    ps = self.game_state.players.setdefault(defender, PlayerState(life=20, creatures=[], poison=0))
+                    ps = self.game_state.players.setdefault(
+                        defender, PlayerState(life=20, creatures=[], poison=0)
+                    )
                     ps.life -= atk.afflict
 
-        # Bushido, Rampage, and Flanking - CR 702.46, 702.23 & 702.25
+    def _handle_bushido_rampage_flanking(self) -> None:
+        """Apply bushido, rampage and flanking bonuses."""
         for attacker in self.attackers:
             if attacker.blocked_by:
                 if attacker.bushido:
@@ -227,10 +248,9 @@ class CombatSimulator:
                             blocker.temp_toughness -= attacker.flanking
 
         for blocker in self.defenders:
-            if blocker.blocking is not None:
-                if blocker.bushido:
-                    blocker.temp_power += blocker.bushido
-                    blocker.temp_toughness += blocker.bushido
+            if blocker.blocking is not None and blocker.bushido:
+                blocker.temp_power += blocker.bushido
+                blocker.temp_toughness += blocker.bushido
 
     def resolve_first_strike_damage(self):
         """Handle the first strike combat damage step."""
