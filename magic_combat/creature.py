@@ -45,6 +45,7 @@ class CombatCreature:
     lifelink: bool = False
     wither: bool = False
     infect: bool = False
+    toxic: int = 0
     indestructible: bool = False
     damaged_by_deathtouch: bool = False
 
@@ -56,6 +57,15 @@ class CombatCreature:
     battle_cry_count: int = 0
     melee: bool = False
     training: bool = False
+    frenzy: int = 0
+    battalion: bool = False
+    dethrone: bool = False
+    undying: bool = False
+    persist: bool = False
+    intimidate: bool = False
+    defender: bool = False
+    afflict: int = 0
+    provoke_target: Optional["CombatCreature"] = field(default=None, repr=False)
 
     # --- Special Protections ---
     protection_colors: Set[Color] = field(default_factory=set)
@@ -81,6 +91,9 @@ class CombatCreature:
         check_non_negative(self._plus1_counters, "plus1 counters")
         check_non_negative(self._minus1_counters, "minus1 counters")
         check_non_negative(self.damage_marked, "damage_marked")
+        check_non_negative(self.frenzy, "frenzy")
+        check_non_negative(self.toxic, "toxic")
+        check_non_negative(self.afflict, "afflict")
 
     def has_protection_from(self, color: Color) -> bool:
         """Return ``True`` if this creature is protected from the color."""
