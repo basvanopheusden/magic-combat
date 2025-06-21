@@ -41,6 +41,10 @@ class CombatSimulator:
         self.game_state = game_state
         self.players_lost: List[str] = []
 
+        for attacker in attackers:
+            if attacker.defender:
+                raise ValueError("Defender creatures can't attack")
+
     def _check_players_lost(self) -> None:
         """Record any players who have lost the game."""
         if self.game_state is not None:
@@ -97,14 +101,29 @@ class CombatSimulator:
                 ):
                     raise ValueError("Fear creature blocked illegally")
 
+                if attacker.intimidate and not (
+                    blocker.artifact or (attacker.colors & blocker.colors)
+                ):
+                    raise ValueError("Intimidate creature blocked illegally")
+
                 if attacker.protection_colors & blocker.colors:
                     raise ValueError("Attacker has protection from blocker's color")
+
+        for attacker in self.attackers:
+            if attacker.provoke_target is not None:
+                target = attacker.provoke_target
+                if target not in self.defenders:
+                    raise ValueError("Provoke target not defending creature")
+                if target.blocking is not attacker:
+                    raise ValueError("Provoke target failed to block")
 
     def apply_precombat_triggers(self):
         """Apply keyword abilities that modify stats before combat damage."""
         # reset any temporary bonuses
         for creature in self.all_creatures:
             creature.reset_temporary_bonuses()
+
+        defender_player = self.defenders[0].controller if self.defenders else "defender"
 
         # group attackers by controller for exalted and training
         attackers_by_controller: Dict[str, List[CombatCreature]] = {}
@@ -143,6 +162,35 @@ class CombatSimulator:
                     for other in self.attackers
                 ):
                     atk.plus1_counters += 1
+
+        # Battalion
+        for controller, atks in attackers_by_controller.items():
+            if len(atks) >= 3:
+                for atk in atks:
+                    if atk.battalion:
+                        atk.temp_power += 1
+                        atk.temp_toughness += 1
+
+        # Dethrone
+        if self.game_state is not None:
+            max_life = max(ps.life for ps in self.game_state.players.values())
+            defender_life = self.game_state.players.get(
+                defender_player, PlayerState(life=20, creatures=[], poison=0)
+            ).life
+            for atk in self.attackers:
+                if atk.dethrone and defender_life >= max_life:
+                    atk.plus1_counters += 1
+
+        # Frenzy and Afflict
+        for atk in self.attackers:
+            if atk.frenzy and not atk.blocked_by:
+                atk.temp_power += atk.frenzy
+            if atk.afflict and atk.blocked_by:
+                defender = defender_player if self.defenders else "defender"
+                self.player_damage[defender] = self.player_damage.get(defender, 0) + atk.afflict
+                if self.game_state is not None:
+                    ps = self.game_state.players.setdefault(defender, PlayerState(life=20, creatures=[], poison=0))
+                    ps.life -= atk.afflict
 
         # Bushido, Rampage, and Flanking
         for attacker in self.attackers:
@@ -259,6 +307,14 @@ class CombatSimulator:
             self.lifegain[attacker.controller] = (
                 self.lifegain.get(attacker.controller, 0) + dmg
             )
+        if attacker.toxic:
+            self.poison_counters[defender] = self.poison_counters.get(defender, 0) + attacker.toxic
+            if self.game_state is not None:
+                ps = self.game_state.players.setdefault(
+                    defender,
+                    PlayerState(life=20, creatures=[], poison=0),
+                )
+                ps.poison += attacker.toxic
 
     def resolve_normal_combat_damage(self):
         """Assign and deal damage in the normal damage step."""
@@ -293,6 +349,20 @@ class CombatSimulator:
         for creature in zero_toughness:
             if creature not in self.dead_creatures:
                 self.dead_creatures.append(creature)
+
+        for creature in list(self.dead_creatures):
+            if creature.undying and creature.plus1_counters == 0:
+                creature.damage_marked = 0
+                creature.damaged_by_deathtouch = False
+                creature.plus1_counters += 1
+                if creature in self.dead_creatures:
+                    self.dead_creatures.remove(creature)
+            elif creature.persist and creature.minus1_counters == 0:
+                creature.damage_marked = 0
+                creature.damaged_by_deathtouch = False
+                creature.minus1_counters += 1
+                if creature in self.dead_creatures:
+                    self.dead_creatures.remove(creature)
 
     def apply_lifelink_and_combat_lifegain(self):
         """Apply lifelink life gain to the game state, if any."""
