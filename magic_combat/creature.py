@@ -57,6 +57,7 @@ class CombatCreature:
     blocking: Optional["CombatCreature"] = None
     blocked_by: List["CombatCreature"] = field(default_factory=list)
     damage_marked: int = 0
+    damaged_by_deathtouch: bool = False
 
     # --- Counters ---
     _plus1_counters: int = field(default=0, repr=False)
@@ -99,7 +100,13 @@ class CombatCreature:
 
     def is_destroyed_by_damage(self) -> bool:
         """Check if marked damage is lethal, accounting for indestructibility"""
-        return not self.indestructible and self.damage_marked >= self.effective_toughness()
+        return (
+            not self.indestructible
+            and (
+                self.damage_marked >= self.effective_toughness()
+                or self.damaged_by_deathtouch
+            )
+        )
 
     def __str__(self) -> str:
         return f"{self.name} ({self.power}/{self.toughness})"

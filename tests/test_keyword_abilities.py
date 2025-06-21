@@ -97,3 +97,42 @@ def test_skulk_and_bushido_combo():
     result = sim.simulate()
     assert blocker in result.creatures_destroyed
     assert attacker not in result.creatures_destroyed
+
+
+def test_deathtouch_single_block():
+    """CR 702.2b: Any amount of damage from a creature with deathtouch is lethal."""
+    attacker = CombatCreature("Assassin", 1, 1, "A", deathtouch=True)
+    blocker = CombatCreature("Giant", 5, 5, "B")
+    attacker.blocked_by.append(blocker)
+    blocker.blocking = attacker
+    sim = CombatSimulator([attacker], [blocker])
+    result = sim.simulate()
+    assert blocker in result.creatures_destroyed
+    assert attacker in result.creatures_destroyed
+
+
+def test_deathtouch_double_block_assignment():
+    """CR 702.2b: With deathtouch, only 1 damage must be assigned to each blocker."""
+    attacker = CombatCreature("Snake", 3, 3, "A", deathtouch=True)
+    b1 = CombatCreature("Guard1", 3, 3, "B")
+    b2 = CombatCreature("Guard2", 3, 3, "B")
+    attacker.blocked_by.extend([b1, b2])
+    b1.blocking = attacker
+    b2.blocking = attacker
+    sim = CombatSimulator([attacker], [b1, b2])
+    result = sim.simulate()
+    assert b1 in result.creatures_destroyed
+    assert b2 in result.creatures_destroyed
+    assert attacker in result.creatures_destroyed
+
+
+def test_deathtouch_vs_indestructible():
+    """CR 702.12b & 702.2b: Indestructible prevents destruction even from deathtouch."""
+    attacker = CombatCreature("Rogue", 1, 1, "A", deathtouch=True)
+    blocker = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
+    attacker.blocked_by.append(blocker)
+    blocker.blocking = attacker
+    sim = CombatSimulator([attacker], [blocker])
+    result = sim.simulate()
+    assert blocker not in result.creatures_destroyed
+    assert attacker in result.creatures_destroyed

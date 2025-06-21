@@ -162,8 +162,11 @@ class CombatSimulator:
         ordered = self.assignment_strategy.order_blockers(attacker, blockers)
         remaining = attacker.effective_power()
         for blocker in ordered:
-            dmg = min(remaining, blocker.effective_toughness())
+            lethal = 1 if attacker.deathtouch else blocker.effective_toughness()
+            dmg = min(remaining, lethal)
             blocker.damage_marked += dmg
+            if attacker.deathtouch and dmg > 0:
+                blocker.damaged_by_deathtouch = True
             if attacker.lifelink:
                 self.lifegain[attacker.controller] = (
                     self.lifegain.get(attacker.controller, 0) + dmg
@@ -180,6 +183,8 @@ class CombatSimulator:
         for blocker in blockers:
             dmg = blocker.effective_power()
             attacker.damage_marked += dmg
+            if blocker.deathtouch and dmg > 0:
+                attacker.damaged_by_deathtouch = True
             if blocker.lifelink:
                 self.lifegain[blocker.controller] = (
                     self.lifegain.get(blocker.controller, 0) + dmg
