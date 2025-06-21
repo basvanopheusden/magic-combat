@@ -51,23 +51,35 @@ class CombatSimulator:
         """No first strike logic for vanilla combat."""
         return
 
+    def _assign_damage_from_attacker(self, attacker: CombatCreature) -> None:
+        """Deal attacker's damage to its blockers."""
+        ordered = self.assignment_strategy.order_blockers(attacker, attacker.blocked_by)
+        remaining = attacker.effective_power()
+        for blocker in ordered:
+            dmg = min(remaining, blocker.effective_toughness())
+            blocker.damage_marked += dmg
+            remaining -= dmg
+            if remaining <= 0:
+                break
+
+    def _assign_damage_to_attacker(self, attacker: CombatCreature) -> None:
+        """Deal each blocker's combat damage to the attacker."""
+        for blocker in attacker.blocked_by:
+            attacker.damage_marked += blocker.effective_power()
+
+    def _deal_damage_to_player(self, attacker: CombatCreature) -> None:
+        """Deal damage from an unblocked attacker to a defending player."""
+        defender = self.defenders[0].controller if self.defenders else "defender"
+        self.player_damage[defender] = self.player_damage.get(defender, 0) + attacker.effective_power()
+
     def resolve_normal_combat_damage(self):
         """Assign and deal damage in the normal damage step for vanilla combat."""
         for attacker in self.attackers:
             if attacker.blocked_by:
-                ordered = self.assignment_strategy.order_blockers(attacker, attacker.blocked_by)
-                remaining = attacker.effective_power()
-                for blocker in ordered:
-                    dmg = min(remaining, blocker.effective_toughness())
-                    blocker.damage_marked += dmg
-                    remaining -= dmg
-                    if remaining <= 0:
-                        break
-                for blocker in attacker.blocked_by:
-                    attacker.damage_marked += blocker.effective_power()
+                self._assign_damage_from_attacker(attacker)
+                self._assign_damage_to_attacker(attacker)
             else:
-                defender = self.defenders[0].controller if self.defenders else "defender"
-                self.player_damage[defender] = self.player_damage.get(defender, 0) + attacker.effective_power()
+                self._deal_damage_to_player(attacker)
 
     def check_lethal_damage(self):
         """Evaluate which creatures die after damage."""

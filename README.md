@@ -13,6 +13,7 @@ future iterations.
 magic_combat/       Core package containing combat code
 magic_combat/creature.py     Basic ``CombatCreature`` dataclass
 magic_combat/simulator.py    ``CombatSimulator`` and ``CombatResult`` stubs
+magic_combat/utils.py        Small utility helpers used internally
 ```
 
 ## Development
