@@ -146,3 +146,77 @@ def test_infect_with_afflict_still_deals_life_loss():
     assert result.damage_to_players["B"] == 2
     assert state.players["B"].life == 18
     assert blk.minus1_counters == 2
+
+
+def test_infect_unblocked_poison_to_player():
+    """CR 702.90b: Infect damage to a player gives poison counters instead of life loss."""
+    atk = CombatCreature("Agent", 2, 2, "A", infect=True)
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    sim = CombatSimulator([atk], [defender])
+    result = sim.simulate()
+    assert result.poison_counters["B"] == 2
+    assert result.damage_to_players.get("B", 0) == 0
+
+
+def test_infect_unblocked_lifelink_gains_life():
+    """CR 702.15a & 702.90b: Lifelink triggers even when infect damage becomes poison counters."""
+    atk = CombatCreature("Healer", 2, 2, "A", infect=True, lifelink=True)
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=20, creatures=[defender])})
+    sim = CombatSimulator([atk], [defender], game_state=state)
+    result = sim.simulate()
+    assert result.poison_counters["B"] == 2
+    assert result.lifegain["A"] == 2
+    assert state.players["A"].life == 12
+
+
+def test_first_strike_infect_kills_before_damage():
+    """CR 702.7b & 702.90b: First strike infect can kill a blocker before it assigns damage."""
+    atk = CombatCreature("Fencer", 2, 2, "A", infect=True, first_strike=True)
+    blk = CombatCreature("Bear", 2, 2, "B")
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk.minus1_counters == 2
+    assert blk in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+
+
+def test_double_strike_infect_poison_twice():
+    """CR 702.4b & 702.90b: Double strike with infect gives poison counters in each damage step."""
+    atk = CombatCreature("Duelist", 1, 1, "A", infect=True, double_strike=True)
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    sim = CombatSimulator([atk], [defender])
+    result = sim.simulate()
+    assert result.poison_counters["B"] == 2
+    assert result.damage_to_players.get("B", 0) == 0
+
+
+def test_trample_infect_multiple_blockers():
+    """CR 702.19b & 702.90b: Excess infect damage with trample becomes poison counters."""
+    atk = CombatCreature("Beast", 3, 3, "A", trample=True, infect=True)
+    b1 = CombatCreature("Goblin1", 1, 1, "B")
+    b2 = CombatCreature("Goblin2", 1, 1, "B")
+    atk.blocked_by.extend([b1, b2])
+    b1.blocking = atk
+    b2.blocking = atk
+    sim = CombatSimulator([atk], [b1, b2])
+    result = sim.simulate()
+    assert b1.minus1_counters == 1
+    assert b2.minus1_counters == 1
+    assert result.poison_counters["B"] == 1
+    assert b1 in result.creatures_destroyed and b2 in result.creatures_destroyed
+
+
+def test_infect_kills_undying_but_it_returns():
+    """CR 702.92a & 702.90b: Undying returns a creature even if infect dealt the damage."""
+    atk = CombatCreature("Slayer", 2, 2, "A", infect=True)
+    blk = CombatCreature("Spirit", 2, 2, "B", undying=True)
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk not in result.creatures_destroyed
+    assert blk.plus1_counters == 1
+    assert blk.minus1_counters == 2
