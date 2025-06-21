@@ -30,6 +30,7 @@ class CombatSimulator:
         self.defenders = defenders
         self.all_creatures = attackers + defenders
         self.player_damage: Dict[str, int] = {}
+        self.lifegain: Dict[str, int] = {}
         self.assignment_strategy = strategy or MostCreaturesKilledStrategy()
 
     def validate_blocking(self):
@@ -136,46 +137,89 @@ class CombatSimulator:
                     blocker.temp_toughness += blocker.bushido
 
     def resolve_first_strike_damage(self):
-        """No first strike logic for vanilla combat."""
-        return
+        """Handle the first strike combat damage step."""
+        for attacker in self.attackers:
+            if attacker.blocked_by:
+                if attacker.first_strike or attacker.double_strike:
+                    self._assign_damage_from_attacker(attacker)
+                for blocker in attacker.blocked_by:
+                    if blocker.first_strike or blocker.double_strike:
+                        attacker.damage_marked += blocker.effective_power()
+                        if blocker.lifelink:
+                            self.lifegain[blocker.controller] = (
+                                self.lifegain.get(blocker.controller, 0)
+                                + blocker.effective_power()
+                            )
+            else:
+                if attacker.first_strike or attacker.double_strike:
+                    self._deal_damage_to_player(attacker)
 
-    def _assign_damage_from_attacker(self, attacker: CombatCreature) -> None:
+    def _assign_damage_from_attacker(
+        self, attacker: CombatCreature, blockers: Optional[List[CombatCreature]] = None
+    ) -> None:
         """Deal attacker's damage to its blockers."""
-        ordered = self.assignment_strategy.order_blockers(attacker, attacker.blocked_by)
+        blockers = blockers if blockers is not None else attacker.blocked_by
+        ordered = self.assignment_strategy.order_blockers(attacker, blockers)
         remaining = attacker.effective_power()
         for blocker in ordered:
             dmg = min(remaining, blocker.effective_toughness())
             blocker.damage_marked += dmg
+            if attacker.lifelink:
+                self.lifegain[attacker.controller] = (
+                    self.lifegain.get(attacker.controller, 0) + dmg
+                )
             remaining -= dmg
             if remaining <= 0:
                 break
 
-    def _assign_damage_to_attacker(self, attacker: CombatCreature) -> None:
+    def _assign_damage_to_attacker(
+        self, attacker: CombatCreature, blockers: Optional[List[CombatCreature]] = None
+    ) -> None:
         """Deal each blocker's combat damage to the attacker."""
-        for blocker in attacker.blocked_by:
-            attacker.damage_marked += blocker.effective_power()
+        blockers = blockers if blockers is not None else attacker.blocked_by
+        for blocker in blockers:
+            dmg = blocker.effective_power()
+            attacker.damage_marked += dmg
+            if blocker.lifelink:
+                self.lifegain[blocker.controller] = (
+                    self.lifegain.get(blocker.controller, 0) + dmg
+                )
 
     def _deal_damage_to_player(self, attacker: CombatCreature) -> None:
         """Deal damage from an unblocked attacker to a defending player."""
         defender = self.defenders[0].controller if self.defenders else "defender"
-        self.player_damage[defender] = self.player_damage.get(defender, 0) + attacker.effective_power()
+        dmg = attacker.effective_power()
+        self.player_damage[defender] = self.player_damage.get(defender, 0) + dmg
+        if attacker.lifelink:
+            self.lifegain[attacker.controller] = (
+                self.lifegain.get(attacker.controller, 0) + dmg
+            )
 
     def resolve_normal_combat_damage(self):
-        """Assign and deal damage in the normal damage step for vanilla combat."""
+        """Assign and deal damage in the normal damage step."""
         for attacker in self.attackers:
-            if attacker.blocked_by:
-                self._assign_damage_from_attacker(attacker)
-                self._assign_damage_to_attacker(attacker)
+            if attacker in self.dead_creatures:
+                continue
+            blockers_alive = [b for b in attacker.blocked_by if b not in self.dead_creatures]
+            if blockers_alive:
+                if not attacker.first_strike or attacker.double_strike:
+                    self._assign_damage_from_attacker(attacker, blockers_alive)
+                eligible_blockers = [
+                    b for b in blockers_alive if not b.first_strike or b.double_strike
+                ]
+                if eligible_blockers:
+                    self._assign_damage_to_attacker(attacker, eligible_blockers)
             else:
-                self._deal_damage_to_player(attacker)
+                if not attacker.first_strike or attacker.double_strike:
+                    self._deal_damage_to_player(attacker)
 
     def check_lethal_damage(self):
         """Evaluate which creatures die after damage."""
         self.dead_creatures = [c for c in self.all_creatures if c.is_destroyed_by_damage()]
 
     def apply_lifelink_and_combat_lifegain(self):
-        """No lifelink implementation for vanilla combat."""
-        self.lifegain = {}
+        """Placeholder for additional combat-related lifegain."""
+        # lifegain has been accumulated during damage assignment
 
     def finalize(self) -> CombatResult:
         """Return the outcome of combat."""

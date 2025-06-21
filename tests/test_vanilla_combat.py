@@ -109,16 +109,16 @@ def test_indestructible_creature_survives_lethal_damage():
     assert blocker not in result.creatures_destroyed
 
 
-def test_first_strike_not_implemented():
-    """CR 702.7b: First strike would let a creature deal damage before others."""
-    attacker = CombatCreature("Swift", 2, 1, "A", first_strike=True)
-    blocker = CombatCreature("Grizzly", 2, 2, "B")
+def test_first_strike_kills_before_normal_damage():
+    """CR 702.7b: Creatures with first strike deal combat damage before creatures without it."""
+    attacker = CombatCreature("Swift", 2, 2, "A", first_strike=True)
+    blocker = CombatCreature("Bear", 2, 2, "B")
     attacker.blocked_by.append(blocker)
     blocker.blocking = attacker
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
-    assert attacker in result.creatures_destroyed
     assert blocker in result.creatures_destroyed
+    assert attacker not in result.creatures_destroyed
 
 
 def test_multiple_attackers_damage_added():
