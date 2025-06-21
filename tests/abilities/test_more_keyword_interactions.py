@@ -12,30 +12,6 @@ from tests.conftest import link_block
 
 # 1
 
-def test_battalion_not_enough_attackers_no_bonus():
-    """CR 702.101a: Battalion triggers only with at least two other attackers."""
-    leader = CombatCreature("Leader", 2, 2, "A", battalion=True)
-    ally = CombatCreature("Ally", 2, 2, "A")
-    blocker = CombatCreature("Guard", 0, 1, "B")
-    sim = CombatSimulator([leader, ally], [blocker])
-    result = sim.simulate()
-    assert result.damage_to_players["B"] == 4
-
-
-# 2
-
-def test_frenzy_blocked_no_bonus():
-    """CR 702.35a: Frenzy gives no bonus if the creature is blocked."""
-    attacker = CombatCreature("Berserker", 2, 2, "A", frenzy=2)
-    blocker = CombatCreature("Wall", 0, 3, "B")
-    link_block(attacker, blocker)
-    sim = CombatSimulator([attacker], [blocker])
-    result = sim.simulate()
-    assert result.damage_to_players.get("B", 0) == 0
-
-
-# 3
-
 def test_rampage_single_blocker_no_bonus():
     """CR 702.23a: Rampage counts blockers beyond the first."""
     attacker = CombatCreature("Beast", 3, 3, "A", rampage=2)

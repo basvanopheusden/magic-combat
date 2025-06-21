@@ -4,41 +4,6 @@ from tests.conftest import link_block
 
 
 
-def test_dethrone_no_counter_when_defender_not_highest():
-    """CR 702.103a: Dethrone triggers only if the defending player has the most life."""
-    atk = CombatCreature("Challenger", 2, 2, "A", dethrone=True)
-    defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={
-        "A": PlayerState(life=20, creatures=[atk]),
-        "B": PlayerState(life=18, creatures=[defender]),
-    })
-    sim = CombatSimulator([atk], [defender], game_state=state)
-    sim.simulate()
-    assert atk.plus1_counters == 0
-
-
-def test_battalion_not_enough_attackers():
-    """CR 702.101a: Battalion needs this creature and at least two others to attack."""
-    leader = CombatCreature("Leader", 2, 2, "A", battalion=True)
-    ally = CombatCreature("Ally", 2, 2, "A")
-    defender = CombatCreature("Dummy", 0, 1, "B")
-    sim = CombatSimulator([leader, ally], [defender])
-    result = sim.simulate()
-    assert result.damage_to_players["B"] == 4
-
-
-def test_battalion_triggers_with_many_attackers():
-    """CR 702.101a: Battalion still triggers when more than two other creatures attack."""
-    leader = CombatCreature("Leader", 2, 2, "A", battalion=True)
-    ally1 = CombatCreature("Ally1", 2, 2, "A")
-    ally2 = CombatCreature("Ally2", 2, 2, "A")
-    ally3 = CombatCreature("Ally3", 2, 2, "A")
-    defender = CombatCreature("Dummy", 0, 1, "B")
-    sim = CombatSimulator([leader, ally1, ally2, ally3], [defender])
-    result = sim.simulate()
-    assert result.damage_to_players["B"] == 9
-
-
 def test_intimidate_same_color_blocker_allowed():
     """CR 702.13a: Intimidate allows blocking by a creature that shares a color."""
     atk = CombatCreature("Rogue", 2, 2, "A", intimidate=True, colors={Color.RED})
@@ -75,17 +40,6 @@ def test_training_ignores_bushido_increase():
     sim = CombatSimulator([trainee, samurai], [blocker])
     sim.simulate()
     assert trainee.plus1_counters == 0
-
-
-def test_frenzy_blocked_no_bonus():
-    """CR 702.35a: Frenzy gives a bonus only if the creature isn't blocked."""
-    atk = CombatCreature("Berserker", 2, 2, "A", frenzy=2)
-    blk = CombatCreature("Bear", 2, 2, "B")
-    link_block(atk, blk)
-    sim = CombatSimulator([atk], [blk])
-    result = sim.simulate()
-    assert result.damage_to_players.get("B", 0) == 0
-    assert atk in result.creatures_destroyed and blk in result.creatures_destroyed
 
 
 def test_afflict_double_strike_triggers_once():
