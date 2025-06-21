@@ -1,6 +1,6 @@
 """Core simulation logic for the combat phase."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from .creature import CombatCreature
@@ -13,6 +13,7 @@ class CombatResult:
     damage_to_players: Dict[str, int]
     creatures_destroyed: List[CombatCreature]
     lifegain: Dict[str, int]
+    poison_counters: Dict[str, int] = field(default_factory=dict)
 
 
 class CombatSimulator:
@@ -30,6 +31,7 @@ class CombatSimulator:
         self.defenders = defenders
         self.all_creatures = attackers + defenders
         self.player_damage: Dict[str, int] = {}
+        self.poison_counters: Dict[str, int] = {}
         self.lifegain: Dict[str, int] = {}
         self.assignment_strategy = strategy or MostCreaturesKilledStrategy()
 
@@ -145,7 +147,10 @@ class CombatSimulator:
                 for blocker in attacker.blocked_by:
                     if blocker.first_strike or blocker.double_strike:
                         dmg = blocker.effective_power()
-                        attacker.damage_marked += dmg
+                        if blocker.wither or blocker.infect:
+                            attacker.minus1_counters += dmg
+                        else:
+                            attacker.damage_marked += dmg
                         if blocker.deathtouch and dmg > 0:
                             attacker.damaged_by_deathtouch = True
                         if blocker.lifelink:
@@ -166,7 +171,10 @@ class CombatSimulator:
         for blocker in ordered:
             lethal = 1 if attacker.deathtouch else blocker.effective_toughness()
             dmg = min(remaining, lethal)
-            blocker.damage_marked += dmg
+            if attacker.wither or attacker.infect:
+                blocker.minus1_counters += dmg
+            else:
+                blocker.damage_marked += dmg
             if attacker.deathtouch and dmg > 0:
                 blocker.damaged_by_deathtouch = True
             if attacker.lifelink:
@@ -186,7 +194,10 @@ class CombatSimulator:
         blockers = blockers if blockers is not None else attacker.blocked_by
         for blocker in blockers:
             dmg = blocker.effective_power()
-            attacker.damage_marked += dmg
+            if blocker.wither or blocker.infect:
+                attacker.minus1_counters += dmg
+            else:
+                attacker.damage_marked += dmg
             if blocker.deathtouch and dmg > 0:
                 attacker.damaged_by_deathtouch = True
             if blocker.lifelink:
@@ -200,7 +211,10 @@ class CombatSimulator:
         """Deal combat damage from ``attacker`` to a defending player."""
         defender = self.defenders[0].controller if self.defenders else "defender"
         dmg = attacker.effective_power() if dmg is None else dmg
-        self.player_damage[defender] = self.player_damage.get(defender, 0) + dmg
+        if attacker.infect:
+            self.poison_counters[defender] = self.poison_counters.get(defender, 0) + dmg
+        else:
+            self.player_damage[defender] = self.player_damage.get(defender, 0) + dmg
         if attacker.lifelink:
             self.lifegain[attacker.controller] = (
                 self.lifegain.get(attacker.controller, 0) + dmg
@@ -248,6 +262,7 @@ class CombatSimulator:
         """Return the outcome of combat."""
         return CombatResult(
             damage_to_players=self.player_damage,
+            poison_counters=self.poison_counters,
             creatures_destroyed=self.dead_creatures,
             lifegain=self.lifegain,
         )

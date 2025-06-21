@@ -184,3 +184,25 @@ def test_deathtouch_trample_multiple_blockers():
     assert b1 in result.creatures_destroyed
     assert b2 in result.creatures_destroyed
     assert result.damage_to_players["B"] == 1
+
+
+def test_wither_damage_adds_counters():
+    """CR 702.90a: Damage from wither is dealt as -1/-1 counters."""
+    atk = CombatCreature("Witherer", 3, 3, "A", wither=True)
+    blk = CombatCreature("Target", 2, 2, "B")
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk.minus1_counters == 2
+    assert blk in result.creatures_destroyed
+
+
+def test_infect_poison_counters_on_player():
+    """CR 702.90b: Damage from infect gives players poison counters instead of life loss."""
+    atk = CombatCreature("Infector", 2, 2, "A", infect=True)
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    sim = CombatSimulator([atk], [defender])
+    result = sim.simulate()
+    assert result.poison_counters["B"] == 2
+    assert result.damage_to_players.get("B", 0) == 0
