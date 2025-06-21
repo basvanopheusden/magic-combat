@@ -46,6 +46,7 @@ def _evaluate_assignment(
             1,
             float("inf"),
             -len(atks) - len(blks),
+            -float("inf"),
             float("inf"),
             float("inf"),
             ass_key,
@@ -68,6 +69,8 @@ def _evaluate_assignment(
     def_cnt = sum(1 for c in result.creatures_destroyed if c.controller == defender)
     cnt_diff = att_cnt - def_cnt
 
+    mana_total = sum(c.mana_value for c in result.creatures_destroyed)
+
     life_lost = result.damage_to_players.get(defender, 0)
     poison = result.poison_counters.get(defender, 0)
 
@@ -81,6 +84,7 @@ def _evaluate_assignment(
         lost,
         -val_diff,
         -cnt_diff,
+        -mana_total,
         life_lost,
         poison,
         ass_key,
@@ -101,9 +105,10 @@ def decide_optimal_blocks(
     2. Maximize the difference in total creature value destroyed (attacker minus
        defender).
     3. Maximize the difference in number of creatures destroyed.
-    4. Minimize life lost.
-    5. Minimize poison counters gained.
-    6. Use a deterministic ordering to break any remaining ties.
+    4. Maximize the total mana value of creatures lost.
+    5. Minimize life lost.
+    6. Minimize poison counters gained.
+    7. Use a deterministic ordering to break any remaining ties.
     """
 
     if not blockers:
