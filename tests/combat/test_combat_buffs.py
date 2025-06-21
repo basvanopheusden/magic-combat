@@ -1,5 +1,6 @@
 import pytest
 from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from tests.conftest import link_block
 
 
 # Rampage tests
@@ -9,9 +10,7 @@ def test_rampage_bonus_with_extra_blockers():
     atk = CombatCreature("Beast", 2, 2, "A", rampage=1)
     b1 = CombatCreature("B1", 2, 2, "B")
     b2 = CombatCreature("B2", 2, 2, "B")
-    atk.blocked_by.extend([b1, b2])
-    b1.blocking = atk
-    b2.blocking = atk
+    link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     result = sim.simulate()
     assert b1 in result.creatures_destroyed
@@ -22,8 +21,7 @@ def test_rampage_no_bonus_single_blocker():
     """CR 702.23a doesn't provide a bonus with only one blocker."""
     atk = CombatCreature("Beast", 2, 2, "A", rampage=2)
     blk = CombatCreature("Wall", 0, 3, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert result.creatures_destroyed == []
@@ -34,8 +32,7 @@ def test_bushido_on_attacker():
     """CR 702.46a: Bushido grants +N/+N when blocked."""
     atk = CombatCreature("Samurai", 2, 2, "A", bushido=2)
     blk = CombatCreature("Ogre", 3, 3, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -45,8 +42,7 @@ def test_bushido_on_blocker():
     """CR 702.46a applies when the creature blocks or becomes blocked."""
     atk = CombatCreature("Bear", 2, 2, "A")
     blk = CombatCreature("Samurai", 2, 2, "B", bushido=1)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert atk in result.creatures_destroyed
@@ -58,8 +54,7 @@ def test_exalted_single_attacker():
     """CR 702.90a: Exalted gives +1/+1 if a creature attacks alone."""
     atk = CombatCreature("Champion", 2, 2, "A", exalted_count=1)
     blk = CombatCreature("Soldier", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -69,8 +64,7 @@ def test_exalted_multiple_instances_stack():
     """CR 702.90a: Multiple instances of exalted each apply."""
     atk = CombatCreature("Hero", 2, 2, "A", exalted_count=2)
     blk = CombatCreature("Giant", 3, 3, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -81,8 +75,7 @@ def test_exalted_no_bonus_with_multiple_attackers():
     atk = CombatCreature("Lone", 2, 2, "A", exalted_count=1)
     ally = CombatCreature("Ally", 2, 2, "A")
     blk = CombatCreature("Guard", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk, ally], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -122,8 +115,7 @@ def test_melee_bonus_when_attacking():
     """CR 702.111a: Melee gives +1/+1 while attacking a player."""
     atk = CombatCreature("Soldier", 2, 2, "A", melee=True)
     blk = CombatCreature("Guard", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -214,8 +206,7 @@ def test_frenzy_no_bonus_when_blocked():
     """CR 702.35a: Frenzy has no effect if the creature is blocked."""
     atk = CombatCreature("Berserker", 2, 2, "A", frenzy=3)
     blk = CombatCreature("Guard", 3, 3, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert atk in result.creatures_destroyed
@@ -228,9 +219,7 @@ def test_rampage_and_bushido_stack():
     atk = CombatCreature("Warrior", 2, 2, "A", rampage=1, bushido=1)
     b1 = CombatCreature("B1", 2, 2, "B")
     b2 = CombatCreature("B2", 2, 2, "B")
-    atk.blocked_by.extend([b1, b2])
-    b1.blocking = atk
-    b2.blocking = atk
+    link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     result = sim.simulate()
     assert b1 in result.creatures_destroyed

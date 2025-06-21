@@ -2,6 +2,7 @@ import pytest
 
 
 from magic_combat import CombatCreature, CombatSimulator, Color
+from tests.conftest import link_block
 
 
 def test_fear_and_protection_from_black():
@@ -12,8 +13,7 @@ def test_fear_and_protection_from_black():
     blk = CombatCreature(
         "Black Artifact", 2, 2, "B", colors={Color.BLACK}, artifact=True
     )
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     with pytest.raises(ValueError):
         sim.validate_blocking()
@@ -30,9 +30,7 @@ def test_menace_and_skulk_two_small_blockers():
     atk = CombatCreature("Tricky Brute", 2, 2, "A", menace=True, skulk=True)
     b1 = CombatCreature("Goblin1", 1, 1, "B")
     b2 = CombatCreature("Goblin2", 1, 1, "B")
-    atk.blocked_by.extend([b1, b2])
-    b1.blocking = atk
-    b2.blocking = atk
+    link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     sim.validate_blocking()
 

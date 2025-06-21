@@ -7,14 +7,14 @@ from magic_combat import (
     PlayerState,
     Color,
 )
+from tests.conftest import link_block
 
 
 def test_wither_prevents_persist_return():
     """CR 702.90a & 702.77a: Wither gives -1/-1 counters so persist won't return if a creature dies with one."""
     attacker = CombatCreature("Corrosive Archer", 2, 2, "A", wither=True)
     blocker = CombatCreature("Everlasting", 2, 2, "B", persist=True)
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert blocker in result.creatures_destroyed
@@ -25,8 +25,7 @@ def test_persist_creature_returns_with_counter():
     """CR 702.77a: Persist returns a creature that died without -1/-1 counters."""
     attacker = CombatCreature("Giant", 3, 3, "A")
     blocker = CombatCreature("Undying Wall", 2, 2, "B", persist=True)
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert blocker not in result.creatures_destroyed
@@ -39,8 +38,7 @@ def test_deathtouch_infect_trample_assigns_poison():
         "Toxic Crusher", 3, 3, "A", trample=True, deathtouch=True, infect=True
     )
     blocker = CombatCreature("Wall", 2, 2, "B")
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert result.poison_counters["B"] == 2
@@ -73,9 +71,7 @@ def test_rampage_battle_cry_melee_combo():
     commander = CombatCreature("Commander", 2, 2, "A", battle_cry_count=1, lifelink=True)
     b1 = CombatCreature("B1", 2, 2, "B")
     b2 = CombatCreature("B2", 2, 2, "B")
-    warleader.blocked_by.extend([b1, b2])
-    b1.blocking = warleader
-    b2.blocking = warleader
+    link_block(warleader, b1, b2)
     sim = CombatSimulator([warleader, commander], [b1, b2])
     result = sim.simulate()
     assert b1 in result.creatures_destroyed
@@ -90,8 +86,7 @@ def test_skulk_flanking_bushido_precombat_death():
     """CR 702.72a, 702.25a & 702.46a: Flanking and bushido bonuses apply before damage when a skulk attacker is blocked."""
     attacker = CombatCreature("Sneaky Knight", 2, 2, "A", skulk=True, flanking=1, bushido=1)
     blocker = CombatCreature("Guard", 1, 1, "B")
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert blocker in result.creatures_destroyed
@@ -102,8 +97,7 @@ def test_provoke_and_menace_insufficient_blockers():
     """CR 702.40a & 702.110b: Provoke requires the targeted creature to block, but menace demands two blockers."""
     attacker = CombatCreature("Taunting Brute", 2, 2, "A", menace=True)
     blocker = CombatCreature("Goblin", 2, 2, "B")
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     attacker.provoke_target = blocker
     sim = CombatSimulator([attacker], [blocker])
     with pytest.raises(ValueError):
@@ -114,8 +108,7 @@ def test_undying_and_persist_prefers_undying():
     """CR 702.92a & 702.77a: A creature with undying and persist returns with a +1/+1 counter."""
     attacker = CombatCreature("Slayer", 3, 3, "A")
     blocker = CombatCreature("Spirit", 2, 2, "B", undying=True, persist=True)
-    attacker.blocked_by.append(blocker)
-    blocker.blocking = attacker
+    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert blocker not in result.creatures_destroyed
@@ -139,8 +132,7 @@ def test_fear_and_intimidate_require_artifact_and_color():
     """CR 702.36b & 702.13a: A creature with fear and intimidate can be blocked only by an artifact that also shares its color."""
     attacker = CombatCreature("Shadow Rogue", 2, 2, "A", fear=True, intimidate=True, colors={Color.RED})
     blk = CombatCreature("Shade", 2, 2, "B", colors={Color.BLACK})
-    attacker.blocked_by.append(blk)
-    blk.blocking = attacker
+    link_block(attacker, blk)
     sim = CombatSimulator([attacker], [blk])
     with pytest.raises(ValueError):
         sim.validate_blocking()

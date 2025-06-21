@@ -1,5 +1,6 @@
 import pytest
 from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState, has_player_lost
+from tests.conftest import link_block
 
 
 
@@ -7,8 +8,7 @@ def test_afflict_lethal_when_blocked():
     """CR 702.131a & 104.3a: Afflict causes life loss when this creature becomes blocked; a player with 0 or less life loses the game."""
     atk = CombatCreature("Tormentor", 2, 2, "A", afflict=2)
     blk = CombatCreature("Guard", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=2, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     sim.simulate()
@@ -21,8 +21,7 @@ def test_afflict_and_trample_combined_lethal():
     """CR 702.131a, 702.19b & 104.3a: Afflict reduces life before damage and excess trample damage can finish a player off."""
     atk = CombatCreature("Rager", 2, 2, "A", afflict=2, trample=True)
     blk = CombatCreature("Chump", 1, 1, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=3, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     sim.simulate()
@@ -71,8 +70,7 @@ def test_double_strike_trample_overkill():
     """CR 702.4b, 702.19b & 104.3a: Damage from both combat steps of a double strike trampler can reduce a player's life below zero."""
     atk = CombatCreature("Crusher", 3, 3, "A", double_strike=True, trample=True)
     blk = CombatCreature("Blocker", 1, 1, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=3, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     sim.simulate()
@@ -85,8 +83,7 @@ def test_first_strike_blocker_barely_survives():
     """CR 702.7b & 104.3a: A blocker with first strike can kill the attacker before it deals damage, letting a low-life player survive."""
     atk = CombatCreature("Brute", 2, 2, "A")
     blk = CombatCreature("Savior", 2, 2, "B", first_strike=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=1, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     sim.simulate()
@@ -99,8 +96,7 @@ def test_trample_lifelink_kills_player():
     """CR 702.19b, 702.15a & 104.3a: Trample can assign lethal damage to the player and lifelink gains that much life for the attacker."""
     atk = CombatCreature("Juggernaut", 4, 4, "A", trample=True, lifelink=True)
     blk = CombatCreature("Chump", 1, 1, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=3, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     sim.simulate()
@@ -127,8 +123,7 @@ def test_afflict_lethal_before_lifelink_can_save():
     """CR 702.131a & 104.3a: Afflict resolves before combat damage. If it drops a player to 0 life, they lose before lifelink damage occurs."""
     atk = CombatCreature("Menace", 2, 2, "A", afflict=1)
     blk = CombatCreature("Healer", 2, 2, "B", lifelink=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=1, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     sim.simulate()

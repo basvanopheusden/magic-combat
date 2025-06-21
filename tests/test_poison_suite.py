@@ -1,13 +1,13 @@
 import pytest
 from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from tests.conftest import link_block
 
 
 def test_infect_kills_creature_with_counters():
     """CR 702.90b: Infect damage to a creature is dealt as -1/-1 counters."""
     atk = CombatCreature("Toxic Bear", 3, 3, "A", infect=True)
     blk = CombatCreature("Wall", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -18,8 +18,7 @@ def test_infect_lifelink_vs_blocker():
     """CR 702.90b & 702.15a: Infect gives counters and lifelink gains that much life."""
     atk = CombatCreature("Toxic Cleric", 2, 2, "A", infect=True, lifelink=True)
     blk = CombatCreature("Bear", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
@@ -32,8 +31,7 @@ def test_infect_first_strike_kills_before_damage():
     """CR 702.7b & 702.90b: First strike infect kills the blocker before it can deal damage."""
     atk = CombatCreature("Toxic Fencer", 2, 2, "A", infect=True, first_strike=True)
     blk = CombatCreature("Bear", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -56,9 +54,7 @@ def test_trample_infect_multiple_blockers():
     atk = CombatCreature("Toxic Beast", 3, 3, "A", trample=True, infect=True)
     b1 = CombatCreature("Goblin1", 1, 1, "B")
     b2 = CombatCreature("Goblin2", 1, 1, "B")
-    atk.blocked_by.extend([b1, b2])
-    b1.blocking = atk
-    b2.blocking = atk
+    link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     result = sim.simulate()
     assert b1.minus1_counters == 1
@@ -71,8 +67,7 @@ def test_infect_prevents_persist_return():
     """CR 702.90b & 702.77a: Infect counters stop a persist creature from returning."""
     atk = CombatCreature("Infecting Knight", 2, 2, "A", infect=True)
     blk = CombatCreature("Everlasting", 2, 2, "B", persist=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -83,8 +78,7 @@ def test_infect_kills_undying_but_it_returns():
     """CR 702.92a & 702.90b: Undying brings back a creature even if infect dealt the damage."""
     atk = CombatCreature("Toxic Slayer", 2, 2, "A", infect=True)
     blk = CombatCreature("Spirit", 2, 2, "B", undying=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk not in result.creatures_destroyed
@@ -105,8 +99,7 @@ def test_lifelink_infect_vs_creature():
     """CR 702.15a & 702.90b: Lifelink gains life even when infect damages a creature."""
     atk = CombatCreature("Toxic Healer", 3, 3, "A", infect=True, lifelink=True)
     blk = CombatCreature("Bear", 3, 3, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
@@ -119,8 +112,7 @@ def test_infect_with_afflict_still_causes_life_loss():
     """CR 702.131a & 702.90b: Afflict causes life loss even when an infect creature is blocked."""
     atk = CombatCreature("Tormentor", 2, 2, "A", infect=True, afflict=1)
     blk = CombatCreature("Guard", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()

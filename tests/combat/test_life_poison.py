@@ -1,5 +1,6 @@
 import pytest
 from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState, has_player_lost
+from tests.conftest import link_block
 
 
 def test_infect_lifelink_poison_lethal():
@@ -61,8 +62,7 @@ def test_lifelink_killed_before_dealing_damage():
     """CR 702.7b & 702.15a: A lifelink creature killed by first strike deals no damage and grants no life."""
     atk = CombatCreature("Cleric", 2, 2, "A", lifelink=True)
     blk = CombatCreature("First Striker", 2, 2, "B", first_strike=True)
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert result.lifegain.get("A", 0) == 0
@@ -74,8 +74,7 @@ def test_trample_deathtouch_lifelink_lethal():
     """CR 702.2b, 702.19b & 702.15a: With trample and deathtouch only 1 damage must be assigned to the blocker; the rest hits the player and lifelink gains total damage."""
     atk = CombatCreature("Charging Snake", 3, 3, "A", trample=True, deathtouch=True, lifelink=True)
     blk = CombatCreature("Bear", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     state = GameState(
         players={
             "A": PlayerState(life=20, creatures=[atk]),

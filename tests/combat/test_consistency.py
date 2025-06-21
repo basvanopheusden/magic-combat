@@ -2,6 +2,7 @@ import random
 
 
 from magic_combat import CombatCreature, CombatSimulator
+from tests.conftest import link_block
 
 
 def random_creature(name, controller):
@@ -9,8 +10,7 @@ def random_creature(name, controller):
 
 
 def simulate_pair(a, b):
-    a.blocked_by.append(b)
-    b.blocking = a
+    link_block(a, b)
     sim = CombatSimulator([a], [b])
     return sim.simulate()
 
@@ -25,10 +25,8 @@ def test_combat_independence():
         b2 = random_creature("b2", "B")
 
         # combined simulation
-        a1.blocked_by.append(b1)
-        b1.blocking = a1
-        a2.blocked_by.append(b2)
-        b2.blocking = a2
+        link_block(a1, b1)
+        link_block(a2, b2)
         combined = CombatSimulator([a1, a2], [b1, b2])
         comb_res = combined.simulate()
 

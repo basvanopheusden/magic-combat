@@ -1,6 +1,7 @@
 import pytest
 
 from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState, Color
+from tests.conftest import link_block
 
 
 def test_defender_cannot_attack():
@@ -35,8 +36,7 @@ def test_undying_returns_with_counter():
     """CR 702.92a: Undying returns the creature with a +1/+1 counter if it had none."""
     atk = CombatCreature("Phoenix", 2, 2, "A", undying=True)
     blk = CombatCreature("Bear", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -48,8 +48,7 @@ def test_intimidate_blocking_restriction():
     """CR 702.13a: Intimidate allows blocking only by artifacts or creatures that share a color."""
     atk = CombatCreature("Rogue", 2, 2, "A", intimidate=True, colors={Color.RED})
     blk = CombatCreature("Guard", 2, 2, "B", colors={Color.WHITE})
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     with pytest.raises(ValueError):
         sim.validate_blocking()
@@ -70,8 +69,7 @@ def test_afflict_life_loss_when_blocked():
     """CR 702.131a: Afflict causes life loss when the creature becomes blocked."""
     atk = CombatCreature("Tormentor", 2, 2, "A", afflict=2)
     blk = CombatCreature("Soldier", 2, 2, "B")
-    atk.blocked_by.append(blk)
-    blk.blocking = atk
+    link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert result.damage_to_players["B"] == 2
