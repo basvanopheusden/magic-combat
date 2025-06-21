@@ -106,3 +106,54 @@ def test_exalted_not_triggered_with_multiple_attackers():
     sim = CombatSimulator([exalter, ally], [defender])
     result = sim.simulate()
     assert result.damage_to_players["B"] == 4
+
+
+def test_deathtouch_basic_lethal():
+    """CR 702.2b: Any nonzero damage from a creature with deathtouch is lethal."""
+    atk = CombatCreature("Assassin", 1, 1, "A", deathtouch=True)
+    blk = CombatCreature("Bear", 2, 2, "B")
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert atk in result.creatures_destroyed
+    assert blk in result.creatures_destroyed
+
+
+def test_deathtouch_multiple_blockers():
+    """CR 510.1a: Deathtouch lets an attacker assign only 1 damage per blocker."""
+    atk = CombatCreature("Venomous", 3, 3, "A", deathtouch=True)
+    b1 = CombatCreature("Guard1", 3, 3, "B")
+    b2 = CombatCreature("Guard2", 3, 3, "B")
+    atk.blocked_by.extend([b1, b2])
+    b1.blocking = atk
+    b2.blocking = atk
+    sim = CombatSimulator([atk], [b1, b2])
+    result = sim.simulate()
+    assert atk in result.creatures_destroyed
+    assert b1 in result.creatures_destroyed
+    assert b2 in result.creatures_destroyed
+
+
+def test_deathtouch_vs_indestructible():
+    """CR 702.12b: Indestructible permanents aren't destroyed by deathtouch."""
+    atk = CombatCreature("Snake", 1, 1, "A", deathtouch=True)
+    blk = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert atk in result.creatures_destroyed
+    assert blk not in result.creatures_destroyed
+
+
+def test_deathtouch_killed_before_dealing_damage():
+    """CR 702.7b: First strike damage can kill a deathtouch creature before it deals damage."""
+    atk = CombatCreature("Biter", 2, 2, "A", deathtouch=True)
+    blk = CombatCreature("Duelist", 2, 2, "B", first_strike=True)
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert atk in result.creatures_destroyed
+    assert blk not in result.creatures_destroyed

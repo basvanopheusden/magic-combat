@@ -38,6 +38,7 @@ class CombatCreature:
     wither: bool = False
     infect: bool = False
     indestructible: bool = False
+    damaged_by_deathtouch: bool = False
 
     # --- Stackable Keyword Abilities ---
     bushido: int = 0
@@ -98,8 +99,10 @@ class CombatCreature:
         )
 
     def is_destroyed_by_damage(self) -> bool:
-        """Check if marked damage is lethal, accounting for indestructibility"""
-        return not self.indestructible and self.damage_marked >= self.effective_toughness()
+        """Check if damage received is lethal, including deathtouch."""
+        if self.indestructible:
+            return False
+        return self.damage_marked >= self.effective_toughness() or self.damaged_by_deathtouch
 
     def __str__(self) -> str:
         return f"{self.name} ({self.power}/{self.toughness})"
