@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List
 
+from .utils import check_non_negative
+
 from .creature import CombatCreature
 
 
@@ -15,6 +17,10 @@ class PlayerState:
     life: int
     creatures: List[CombatCreature]
     poison: int = 0
+
+    def __post_init__(self) -> None:
+        check_non_negative(self.life, "life")
+        check_non_negative(self.poison, "poison")
 
 
 @dataclass
