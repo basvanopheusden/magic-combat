@@ -94,3 +94,12 @@ def test_validate_blocking_inconsistent():
     sim = CombatSimulator([attacker], [blocker])
     with pytest.raises(ValueError):
         sim.validate_blocking()
+
+
+def test_repr_includes_characteristics():
+    """CR 109.3: An object's characteristics include its name, power, toughness, and controller."""
+    creature = CombatCreature(name="Elf", power=1, toughness=1, controller="A")
+    assert (
+        repr(creature)
+        == "CombatCreature(name='Elf', power=1, toughness=1, controller='A')"
+    )
