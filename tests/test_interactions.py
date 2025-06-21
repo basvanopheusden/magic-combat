@@ -84,3 +84,38 @@ def test_menace_and_skulk_two_small_blockers():
     b2.blocking = atk
     sim = CombatSimulator([atk], [b1, b2])
     sim.validate_blocking()
+
+
+def test_exalted_ignored_with_multiple_attackers():
+    """CR 702.90a: Exalted triggers only if the creature attacks alone."""
+    exalted_atk = CombatCreature("Paladin", 2, 2, "A", exalted_count=1)
+    ally = CombatCreature("Ally", 2, 2, "A")
+    blocker = CombatCreature("Guardian", 3, 3, "B")
+    exalted_atk.blocked_by.append(blocker)
+    blocker.blocking = exalted_atk
+    sim = CombatSimulator([exalted_atk, ally], [blocker])
+    result = sim.simulate()
+    assert blocker not in result.creatures_destroyed
+    assert exalted_atk in result.creatures_destroyed
+
+
+def test_battle_cry_and_melee_combine():
+    """CR 702.92a & 702.111a: Battle cry boosts allies while melee boosts the creature."""
+    commander = CombatCreature("Commander", 2, 2, "A", battle_cry_count=1, melee=True)
+    ally = CombatCreature("Squire", 2, 2, "A")
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    sim = CombatSimulator([commander, ally], [defender])
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 6
+
+
+def test_flanking_blocker_not_debuffed():
+    """CR 702.25b: Flanking doesn't give –1/–1 to a blocker that also has flanking."""
+    attacker = CombatCreature("Lancer", 2, 2, "A", flanking=1)
+    blocker = CombatCreature("Veteran", 2, 2, "B", flanking=1)
+    attacker.blocked_by.append(blocker)
+    blocker.blocking = attacker
+    sim = CombatSimulator([attacker], [blocker])
+    result = sim.simulate()
+    assert attacker in result.creatures_destroyed
+    assert blocker in result.creatures_destroyed
