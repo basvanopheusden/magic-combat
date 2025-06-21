@@ -157,3 +157,30 @@ def test_deathtouch_killed_before_dealing_damage():
     result = sim.simulate()
     assert atk in result.creatures_destroyed
     assert blk not in result.creatures_destroyed
+
+
+def test_trample_excess_damage_to_player():
+    """CR 702.19b: Damage beyond lethal can be assigned to the defending player."""
+    atk = CombatCreature("Rhino", 4, 4, "A", trample=True)
+    blk = CombatCreature("Wall", 0, 3, "B")
+    atk.blocked_by.append(blk)
+    blk.blocking = atk
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+    assert result.damage_to_players["B"] == 1
+
+
+def test_deathtouch_trample_multiple_blockers():
+    """CR 702.19b & 702.2b: With deathtouch, only 1 damage is lethal per blocker."""
+    atk = CombatCreature("Beast", 3, 3, "A", trample=True, deathtouch=True)
+    b1 = CombatCreature("B1", 2, 2, "B")
+    b2 = CombatCreature("B2", 2, 2, "B")
+    atk.blocked_by.extend([b1, b2])
+    b1.blocking = atk
+    b2.blocking = atk
+    sim = CombatSimulator([atk], [b1, b2])
+    result = sim.simulate()
+    assert b1 in result.creatures_destroyed
+    assert b2 in result.creatures_destroyed
+    assert result.damage_to_players["B"] == 1
