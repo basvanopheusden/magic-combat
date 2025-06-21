@@ -17,6 +17,15 @@ class CombatResult:
     poison_counters: Dict[str, int] = field(default_factory=dict)
     players_lost: List[str] = field(default_factory=list)
 
+    def __repr__(self) -> str:
+        cls = self.__class__.__name__
+        destroyed = [c.name for c in self.creatures_destroyed]
+        return (
+            f"{cls}(damage_to_players={self.damage_to_players}, "
+            f"creatures_destroyed={destroyed}, lifegain={self.lifegain}, "
+            f"poison_counters={self.poison_counters}, players_lost={self.players_lost})"
+        )
+
 
 class CombatSimulator:
     """High level orchestrator for combat resolution."""
