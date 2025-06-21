@@ -35,6 +35,11 @@ class CombatSimulator:
         self.lifegain: Dict[str, int] = {}
         self.assignment_strategy = strategy or MostCreaturesKilledStrategy()
 
+        for attacker in self.attackers:
+            attacker.attacking = True
+            if not attacker.vigilance:
+                attacker.tapped = True
+
     def validate_blocking(self):
         """Ensure blocking assignments are legal for this simplified simulator."""
         for blocker in self.defenders:
