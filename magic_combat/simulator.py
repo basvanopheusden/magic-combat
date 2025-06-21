@@ -23,37 +23,57 @@ class CombatSimulator:
         self.attackers = attackers
         self.defenders = defenders
         self.all_creatures = attackers + defenders
+        self.player_damage: Dict[str, int] = {}
 
     def validate_blocking(self):
-        """Ensure blocking assignments are legal (e.g., flying, menace, skulk, etc.)"""
-        raise NotImplementedError("Blocking legality checks not yet implemented.")
+        """Ensure blocking assignments are legal for this simplified simulator."""
+        for attacker in self.attackers:
+            if len(attacker.blocked_by) > 1:
+                # TODO: allow double blocking in the future
+                raise ValueError("Multiple blockers are not supported yet")
+
+        for blocker in self.defenders:
+            if blocker.blocking is not None and blocker.blocking not in self.attackers:
+                raise ValueError("Blocker assigned to unknown attacker")
 
     def apply_precombat_triggers(self):
-        """Handle effects like Exalted, Battle Cry, Training, Melee, Bushido, Flanking, etc."""
-        raise NotImplementedError("Pre-combat triggers not yet implemented.")
+        """Placeholder for future precombat trigger logic."""
+        return
 
     def resolve_first_strike_damage(self):
-        """Assign and deal damage in the first strike step."""
-        raise NotImplementedError("First strike damage not yet implemented.")
+        """No first strike logic for vanilla combat."""
+        return
 
     def resolve_normal_combat_damage(self):
-        """Assign and deal damage in the normal damage step."""
-        raise NotImplementedError("Normal combat damage not yet implemented.")
+        """Assign and deal damage in the normal damage step for vanilla combat."""
+        for attacker in self.attackers:
+            if attacker.blocked_by:
+                blocker = attacker.blocked_by[0]
+                blocker.damage_marked += attacker.effective_power()
+                attacker.damage_marked += blocker.effective_power()
+            else:
+                defender = self.defenders[0].controller if self.defenders else "defender"
+                self.player_damage[defender] = self.player_damage.get(defender, 0) + attacker.effective_power()
 
     def check_lethal_damage(self):
-        """Evaluate which creatures die after damage, accounting for indestructible, -1/-1 counters, etc."""
-        raise NotImplementedError("Lethal damage evaluation not yet implemented.")
+        """Evaluate which creatures die after damage."""
+        self.dead_creatures = [c for c in self.all_creatures if c.is_destroyed_by_damage()]
 
     def apply_lifelink_and_combat_lifegain(self):
-        """Apply lifelink for any combat damage dealt."""
-        raise NotImplementedError("Lifelink/lifegain not yet implemented.")
+        """No lifelink implementation for vanilla combat."""
+        self.lifegain = {}
 
     def finalize(self) -> CombatResult:
         """Return the outcome of combat."""
-        raise NotImplementedError("Final result aggregation not yet implemented.")
+        return CombatResult(
+            damage_to_players=self.player_damage,
+            creatures_destroyed=self.dead_creatures,
+            lifegain=self.lifegain,
+        )
 
     def simulate(self) -> CombatResult:
         """Run a full combat phase resolution and return the result."""
+        self.dead_creatures: List[CombatCreature] = []
         self.validate_blocking()
         self.apply_precombat_triggers()
 
