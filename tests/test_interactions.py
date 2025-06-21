@@ -84,3 +84,52 @@ def test_menace_and_skulk_two_small_blockers():
     b2.blocking = atk
     sim = CombatSimulator([atk], [b1, b2])
     sim.validate_blocking()
+
+
+def test_battle_cry_prevents_training_trigger():
+    """CR 702.92a & 702.138a: Battle cry's bonus is applied before training checks for a stronger creature."""
+    trainee = CombatCreature("Recruit", 2, 2, "A", training=True)
+    leader = CombatCreature("War Leader", 2, 2, "A", battle_cry_count=1)
+    sim = CombatSimulator([leader, trainee], [])
+    sim.simulate()
+    assert trainee.plus1_counters == 0
+
+
+def test_training_before_bushido():
+    """CR 702.138a & 702.46a: Training compares power before bushido bonuses are granted."""
+    trainee = CombatCreature("Student", 2, 2, "A", training=True)
+    master = CombatCreature("Master", 3, 3, "A", bushido=1)
+    blocker = CombatCreature("Bear", 2, 2, "B")
+    master.blocked_by.append(blocker)
+    blocker.blocking = master
+    sim = CombatSimulator([master, trainee], [blocker])
+    sim.simulate()
+    assert trainee.plus1_counters == 1
+
+
+def test_rampage_and_flanking_synergy():
+    """CR 702.23a & 702.25a: Rampage boosts attackers while flanking weakens blockers."""
+    attacker = CombatCreature("Warrior", 2, 2, "A", rampage=1, flanking=1)
+    b1 = CombatCreature("Guard1", 2, 2, "B")
+    b2 = CombatCreature("Guard2", 2, 2, "B")
+    attacker.blocked_by.extend([b1, b2])
+    b1.blocking = attacker
+    b2.blocking = attacker
+    sim = CombatSimulator([attacker], [b1, b2])
+    result = sim.simulate()
+    assert b1 in result.creatures_destroyed
+    assert b2 in result.creatures_destroyed
+    assert attacker not in result.creatures_destroyed
+
+
+def test_unblockable_overrides_menace():
+    """CR 509.1f: A creature that can't be blocked ignores blockers even if it has menace."""
+    attacker = CombatCreature("Stalker", 1, 1, "A", unblockable=True, menace=True)
+    blocker1 = CombatCreature("Guard", 2, 2, "B")
+    blocker2 = CombatCreature("Guard2", 2, 2, "B")
+    attacker.blocked_by.extend([blocker1, blocker2])
+    blocker1.blocking = attacker
+    blocker2.blocking = attacker
+    sim = CombatSimulator([attacker], [blocker1, blocker2])
+    with pytest.raises(ValueError):
+        sim.validate_blocking()
