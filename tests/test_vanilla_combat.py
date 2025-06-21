@@ -25,8 +25,8 @@ def test_simple_trade():
     assert b in result.creatures_destroyed
 
 
-def test_double_block_not_supported():
-    """CR 509.1h: each creature can block a single attacker."""
+def test_double_block_simple():
+    """Two 1/1 creatures trade with a 2/2 attacker."""
     a = CombatCreature("Bear", 2, 2, "A")
     b1 = CombatCreature("Goblin", 1, 1, "B")
     b2 = CombatCreature("Goblin2", 1, 1, "B")
@@ -34,8 +34,24 @@ def test_double_block_not_supported():
     b1.blocking = a
     b2.blocking = a
     sim = CombatSimulator([a], [b1, b2])
-    with pytest.raises(ValueError):
-        sim.simulate()
+    result = sim.simulate()
+    assert a in result.creatures_destroyed
+    assert b1 in result.creatures_destroyed
+    assert b2 in result.creatures_destroyed
+
+
+def test_most_creatures_killed_ordering():
+    a = CombatCreature("Beast", 3, 3, "A")
+    wall = CombatCreature("Wall", 0, 4, "B")
+    goblin = CombatCreature("Goblin", 1, 1, "B")
+    a.blocked_by.extend([wall, goblin])
+    wall.blocking = a
+    goblin.blocking = a
+    sim = CombatSimulator([a], [wall, goblin])
+    result = sim.simulate()
+    assert goblin in result.creatures_destroyed
+    assert wall not in result.creatures_destroyed
+    assert a not in result.creatures_destroyed
 
 
 def test_unblocked_attacker_hits_player():

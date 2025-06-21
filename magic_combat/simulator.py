@@ -1,9 +1,10 @@
 """Core simulation logic for the combat phase."""
 
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .creature import CombatCreature
+from .damage import DamageAssignmentStrategy, MostCreaturesKilledStrategy
 
 @dataclass
 class CombatResult:
@@ -17,24 +18,30 @@ class CombatResult:
 class CombatSimulator:
     """High level orchestrator for combat resolution."""
 
-    def __init__(self, attackers: List[CombatCreature], defenders: List[CombatCreature]):
+    def __init__(
+        self,
+        attackers: List[CombatCreature],
+        defenders: List[CombatCreature],
+        strategy: Optional[DamageAssignmentStrategy] = None,
+    ):
         """Store combatants taking part in the current combat phase."""
 
         self.attackers = attackers
         self.defenders = defenders
         self.all_creatures = attackers + defenders
         self.player_damage: Dict[str, int] = {}
+        self.assignment_strategy = strategy or MostCreaturesKilledStrategy()
 
     def validate_blocking(self):
         """Ensure blocking assignments are legal for this simplified simulator."""
-        for attacker in self.attackers:
-            if len(attacker.blocked_by) > 1:
-                # TODO: allow double blocking in the future
-                raise ValueError("Multiple blockers are not supported yet")
-
         for blocker in self.defenders:
             if blocker.blocking is not None and blocker.blocking not in self.attackers:
                 raise ValueError("Blocker assigned to unknown attacker")
+
+        for attacker in self.attackers:
+            for blocker in attacker.blocked_by:
+                if blocker.blocking is not attacker:
+                    raise ValueError("Inconsistent blocking assignments")
 
     def apply_precombat_triggers(self):
         """Placeholder for future precombat trigger logic."""
@@ -48,9 +55,16 @@ class CombatSimulator:
         """Assign and deal damage in the normal damage step for vanilla combat."""
         for attacker in self.attackers:
             if attacker.blocked_by:
-                blocker = attacker.blocked_by[0]
-                blocker.damage_marked += attacker.effective_power()
-                attacker.damage_marked += blocker.effective_power()
+                ordered = self.assignment_strategy.order_blockers(attacker, attacker.blocked_by)
+                remaining = attacker.effective_power()
+                for blocker in ordered:
+                    dmg = min(remaining, blocker.effective_toughness())
+                    blocker.damage_marked += dmg
+                    remaining -= dmg
+                    if remaining <= 0:
+                        break
+                for blocker in attacker.blocked_by:
+                    attacker.damage_marked += blocker.effective_power()
             else:
                 defender = self.defenders[0].controller if self.defenders else "defender"
                 self.player_damage[defender] = self.player_damage.get(defender, 0) + attacker.effective_power()
