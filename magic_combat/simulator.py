@@ -120,7 +120,14 @@ class CombatSimulator:
                     raise ValueError("Provoke target failed to block")
 
     def apply_precombat_triggers(self):
-        """Apply keyword abilities that modify stats before combat damage."""
+        """Apply keyword abilities that modify stats before combat damage.
+
+        This method handles a collection of triggered abilities defined in the
+        Comprehensive Rules. It implements effects such as exalted
+        (CR 702.90), battle cry (CR 702.92), melee (CR 702.111), and other
+        abilities that grant temporary power/toughness bonuses or +1/+1
+        counters before damage is assigned.
+        """
         # reset any temporary bonuses
         for creature in self.all_creatures:
             creature.reset_temporary_bonuses()
@@ -132,7 +139,7 @@ class CombatSimulator:
         for atk in self.attackers:
             attackers_by_controller.setdefault(atk.controller, []).append(atk)
 
-        # Exalted triggers
+        # Exalted triggers - CR 702.90
         for controller, atks in attackers_by_controller.items():
             if len(atks) == 1:
                 atk = atks[0]
@@ -140,21 +147,21 @@ class CombatSimulator:
                 atk.temp_power += exalted_total
                 atk.temp_toughness += exalted_total
 
-        # Battle cry
+        # Battle cry - CR 702.92
         for atk in self.attackers:
             if atk.battle_cry_count:
                 for other in self.attackers:
                     if other is not atk and other.controller == atk.controller:
                         other.temp_power += atk.battle_cry_count
 
-        # Melee
+        # Melee - CR 702.111
         num_opponents_attacked = 1 if self.attackers else 0
         for atk in self.attackers:
             if atk.melee and num_opponents_attacked:
                 atk.temp_power += num_opponents_attacked
                 atk.temp_toughness += num_opponents_attacked
 
-        # Training
+        # Training - CR 702.138
         for atk in self.attackers:
             if atk.training:
                 if any(
@@ -165,7 +172,7 @@ class CombatSimulator:
                 ):
                     atk.plus1_counters += 1
 
-        # Battalion
+        # Battalion - CR 702.101
         for controller, atks in attackers_by_controller.items():
             if len(atks) >= 3:
                 for atk in atks:
@@ -173,7 +180,7 @@ class CombatSimulator:
                         atk.temp_power += 1
                         atk.temp_toughness += 1
 
-        # Dethrone
+        # Dethrone - CR 702.103
         if self.game_state is not None:
             max_life = max(ps.life for ps in self.game_state.players.values())
             defender_life = self.game_state.players.get(
@@ -183,7 +190,7 @@ class CombatSimulator:
                 if atk.dethrone and defender_life >= max_life:
                     atk.plus1_counters += 1
 
-        # Frenzy and Afflict
+        # Frenzy and Afflict - CR 702.35 & 702.131
         for atk in self.attackers:
             if atk.frenzy and not atk.blocked_by:
                 atk.temp_power += atk.frenzy
@@ -194,7 +201,7 @@ class CombatSimulator:
                     ps = self.game_state.players.setdefault(defender, PlayerState(life=20, creatures=[], poison=0))
                     ps.life -= atk.afflict
 
-        # Bushido, Rampage, and Flanking
+        # Bushido, Rampage, and Flanking - CR 702.46, 702.23 & 702.25
         for attacker in self.attackers:
             if attacker.blocked_by:
                 if attacker.bushido:
