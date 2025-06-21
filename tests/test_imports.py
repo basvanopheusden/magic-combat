@@ -8,7 +8,7 @@ from magic_combat import CombatCreature, CombatResult, CombatSimulator
 
 
 def test_imports():
-    creature = CombatCreature(name="Goblin", power=1, toughness=1)
+    creature = CombatCreature(name="Goblin", power=1, toughness=1, controller="player")
     simulator = CombatSimulator([creature], [creature])
     assert isinstance(simulator.attackers[0], CombatCreature)
     assert simulator.all_creatures == [creature, creature]
