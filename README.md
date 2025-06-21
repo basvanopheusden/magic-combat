@@ -63,3 +63,10 @@ from magic_combat import fetch_french_vanilla_cards, save_cards
 cards = fetch_french_vanilla_cards()
 save_cards(cards, "data/cards.json")
 ```
+
+For convenience you can also run ``fetch_cards.py`` from the repository
+root to download the card data directly:
+
+```bash
+python fetch_cards.py data/cards.json
+```
