@@ -5,6 +5,78 @@ from typing import List, Tuple
 from .creature import CombatCreature
 
 
+# Keyword sets used for estimating combat value of a creature
+_POSITIVE_KEYWORDS = [
+    "flying",
+    "reach",
+    "menace",
+    "fear",
+    "shadow",
+    "horsemanship",
+    "skulk",
+    "unblockable",
+    "vigilance",
+    "first_strike",
+    "double_strike",
+    "deathtouch",
+    "trample",
+    "lifelink",
+    "wither",
+    "infect",
+    "indestructible",
+    "melee",
+    "training",
+    "battalion",
+    "dethrone",
+    "intimidate",
+    "undying",
+    "persist",
+]
+
+_STACKABLE_KEYWORDS = [
+    "bushido",
+    "flanking",
+    "rampage",
+    "exalted_count",
+    "battle_cry_count",
+    "frenzy",
+    "afflict",
+]
+
+
+def _blocker_value(blocker: CombatCreature) -> float:
+    """Heuristic combat value for tie-breaking."""
+
+    positive = sum(1 for attr in _POSITIVE_KEYWORDS if getattr(blocker, attr, False))
+    positive += sum(getattr(blocker, attr, 0) for attr in _STACKABLE_KEYWORDS)
+    return blocker.power + blocker.toughness + positive / 2
+
+
+def _select_kill_indices(power: int, costs: List[float], values: List[float]) -> List[int]:
+    """Return indices of blockers that should be destroyed first."""
+
+    dp: List[Tuple[int, float, List[int]]] = [(0, 0.0, []) for _ in range(power + 1)]
+    for i, cost in enumerate(costs):
+        if cost == float("inf") or cost > power:
+            continue
+        int_cost = int(cost)
+        for w in range(power, int_cost - 1, -1):
+            prev_cnt, prev_val, prev_set = dp[w - int_cost]
+            cand_cnt = prev_cnt + 1
+            cand_val = prev_val + values[i]
+            curr_cnt, curr_val, _ = dp[w]
+            if cand_cnt > curr_cnt or (cand_cnt == curr_cnt and cand_val > curr_val):
+                dp[w] = (cand_cnt, cand_val, prev_set + [i])
+
+    best = dp[0]
+    for w in range(1, power + 1):
+        cnt, val, _ = dp[w]
+        if cnt > best[0] or (cnt == best[0] and val > best[1]):
+            best = dp[w]
+
+    return best[2]
+
+
 class DamageAssignmentStrategy:
     """Base strategy for ordering blockers when assigning combat damage."""
 
@@ -31,76 +103,15 @@ class MostCreaturesKilledStrategy(DamageAssignmentStrategy):
                 return 1
             return blocker.effective_toughness()
 
-        POSITIVE_KEYWORDS = [
-            "flying",
-            "reach",
-            "menace",
-            "fear",
-            "shadow",
-            "horsemanship",
-            "skulk",
-            "unblockable",
-            "vigilance",
-            "first_strike",
-            "double_strike",
-            "deathtouch",
-            "trample",
-            "lifelink",
-            "wither",
-            "infect",
-            "indestructible",
-            "melee",
-            "training",
-            "battalion",
-            "dethrone",
-            "intimidate",
-            "undying",
-            "persist",
-        ]
-
-        STACKABLE_KEYWORDS = [
-            "bushido",
-            "flanking",
-            "rampage",
-            "exalted_count",
-            "battle_cry_count",
-            "frenzy",
-            "afflict",
-        ]
-
-        def value(blocker: CombatCreature) -> float:
-            """Heuristic combat value for tie-breaking."""
-            positive = sum(1 for attr in POSITIVE_KEYWORDS if getattr(blocker, attr, False))
-            positive += sum(1 for attr in STACKABLE_KEYWORDS if getattr(blocker, attr, 0))
-            return blocker.power + blocker.toughness + positive / 2
-
         costs = [lethal_cost(b) for b in blockers]
-        values = [value(b) for b in blockers]
-        n = len(blockers)
+        values = [_blocker_value(b) for b in blockers]
 
-        # Dynamic program over available power to maximize kills then value
-        dp: List[Tuple[int, float, List[int]]] = [(0, 0.0, []) for _ in range(power + 1)]
-        for i in range(n):
-            cost = costs[i]
-            if cost == float("inf") or cost > power:
-                continue
-            int_cost = int(cost)
-            for w in range(power, int_cost - 1, -1):
-                prev_cnt, prev_val, prev_set = dp[w - int_cost]
-                cand_cnt = prev_cnt + 1
-                cand_val = prev_val + values[i]
-                curr_cnt, curr_val, curr_set = dp[w]
-                if cand_cnt > curr_cnt or (cand_cnt == curr_cnt and cand_val > curr_val):
-                    dp[w] = (cand_cnt, cand_val, prev_set + [i])
+        kill_indices = set(_select_kill_indices(power, costs, values))
 
-        best = dp[0]
-        for w in range(1, power + 1):
-            if dp[w][0] > best[0] or (dp[w][0] == best[0] and dp[w][1] > best[1]):
-                best = dp[w]
-
-        kill_indices = set(best[2])
         kill_first = [blockers[i] for i in kill_indices]
-        kill_first.sort(key=value, reverse=True)
+        kill_first.sort(key=_blocker_value, reverse=True)
+
         remaining = [b for idx, b in enumerate(blockers) if idx not in kill_indices]
-        remaining.sort(key=value, reverse=True)
+        remaining.sort(key=_blocker_value, reverse=True)
+
         return kill_first + remaining
