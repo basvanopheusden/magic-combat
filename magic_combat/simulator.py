@@ -38,6 +38,7 @@ class CombatSimulator:
         defenders: List[CombatCreature],
         strategy: Optional[DamageAssignmentStrategy] = None,
         game_state: Optional["GameState"] = None,
+        provoke_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
     ):
         """Store combatants taking part in the current combat phase."""
 
@@ -50,6 +51,7 @@ class CombatSimulator:
         self._lifegain_applied: Dict[str, int] = {}
         self.assignment_strategy = strategy or MostCreaturesKilledStrategy()
         self.game_state = game_state
+        self.provoke_map: Dict[CombatCreature, CombatCreature] = provoke_map or {}
         self.players_lost: List[str] = []
 
         for attacker in attackers:
@@ -144,13 +146,13 @@ class CombatSimulator:
 
     def _check_provoke(self) -> None:
         """Verify provoke targets are blocking as required."""
-        for attacker in self.attackers:
-            if attacker.provoke_target is not None:
-                target = attacker.provoke_target
-                if target not in self.defenders:
-                    raise ValueError("Provoke target not defending creature")
-                if target.blocking is not attacker:
-                    raise ValueError("Provoke target failed to block")
+        for attacker, target in self.provoke_map.items():
+            if attacker not in self.attackers:
+                raise ValueError("Provoke attacker not in combat")
+            if target not in self.defenders:
+                raise ValueError("Provoke target not defending creature")
+            if target.blocking is not attacker:
+                raise ValueError("Provoke target failed to block")
 
     def validate_blocking(self):
         """Ensure blocking assignments are legal for this simplified simulator."""

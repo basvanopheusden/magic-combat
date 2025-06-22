@@ -233,9 +233,8 @@ def test_provoke_battalion_no_bonus_without_three_attackers():
     provoker = CombatCreature("Leader", 2, 2, "A", battalion=True)
     ally = CombatCreature("Ally", 2, 2, "A")
     blocker = CombatCreature("Guard", 2, 2, "B")
-    provoker.provoke_target = blocker
     link_block(provoker, blocker)
-    sim = CombatSimulator([provoker, ally], [blocker])
+    sim = CombatSimulator([provoker, ally], [blocker], provoke_map={provoker: blocker})
     result = sim.simulate()
     assert provoker in result.creatures_destroyed
     assert blocker in result.creatures_destroyed

@@ -10,7 +10,13 @@ from .damage import DamageAssignmentStrategy, MostCreaturesKilledStrategy
 from .blocking_ai import decide_optimal_blocks
 from .utils import calculate_mana_value
 from .gamestate import GameState, PlayerState, has_player_lost
-from .scryfall_loader import fetch_french_vanilla_cards, load_cards, save_cards
+from .scryfall_loader import (
+    fetch_french_vanilla_cards,
+    load_cards,
+    save_cards,
+    card_to_creature,
+    cards_to_creatures,
+)
 
 __all__ = [
     "CombatCreature",
@@ -28,4 +34,6 @@ __all__ = [
     "fetch_french_vanilla_cards",
     "load_cards",
     "save_cards",
+    "card_to_creature",
+    "cards_to_creatures",
 ]

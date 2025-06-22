@@ -66,7 +66,7 @@ class CombatCreature:
     intimidate: bool = False
     defender: bool = False
     afflict: int = 0
-    provoke_target: Optional["CombatCreature"] = field(default=None, repr=False)
+    provoke: bool = False
 
     # --- Special Protections ---
     protection_colors: Set[Color] = field(default_factory=set)
@@ -85,6 +85,9 @@ class CombatCreature:
     # --- Temporary stat modifiers (until end of turn) ---
     temp_power: int = field(default=0, repr=False)
     temp_toughness: int = field(default=0, repr=False)
+
+    # Allow use as dictionary keys by object identity
+    __hash__ = object.__hash__
 
     def __post_init__(self) -> None:
         check_non_negative(self.power, "power")
