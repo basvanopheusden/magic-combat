@@ -32,6 +32,25 @@ class CombatResult:
             f"poison_counters={self.poison_counters}, players_lost={self.players_lost})"
         )
 
+    def __str__(self) -> str:
+        """Return a readable multi-line summary of the result."""
+        parts: List[str] = []
+        if self.damage_to_players:
+            dmg = ", ".join(f"{p} {d}" for p, d in self.damage_to_players.items())
+            parts.append(f"Damage to players: {dmg}")
+        if self.poison_counters:
+            poison = ", ".join(f"{p} +{c}" for p, c in self.poison_counters.items())
+            parts.append(f"Poison counters: {poison}")
+        if self.lifegain:
+            gain = ", ".join(f"{p} +{g}" for p, g in self.lifegain.items())
+            parts.append(f"Life gain: {gain}")
+        if self.creatures_destroyed:
+            dead = ", ".join(c.name for c in self.creatures_destroyed)
+            parts.append(f"Creatures destroyed: {dead}")
+        if self.players_lost:
+            parts.append("Players lost: " + ", ".join(self.players_lost))
+        return "\n".join(parts) if parts else "No changes"
+
 
 class CombatSimulator:
     """High level orchestrator for combat resolution."""

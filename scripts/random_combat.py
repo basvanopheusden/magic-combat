@@ -310,7 +310,8 @@ def main() -> None:
         if mentor_map_display:
             print("Mentor targets:", mentor_map_display)
 
-        print("Outcome:", result)
+        print("Outcome:")
+        print(result)
 
         print("Final state:")
         for p in ["A", "B"]:
