@@ -7,7 +7,7 @@ from itertools import product
 from typing import List, Optional, Sequence, Tuple
 
 from .creature import CombatCreature
-from .damage import _blocker_value, OptimalDamageStrategy
+from .damage import _blocker_value, OptimalDamageStrategy, score_combat_result
 from .gamestate import GameState
 from .simulator import CombatSimulator
 from .creature import Color
@@ -72,40 +72,12 @@ def _evaluate_assignment(
     defender = blks[0].controller if blks else "defender"
     attacker_player = atks[0].controller if atks else "attacker"
 
-    lost = 1 if defender in result.players_lost else 0
-
-    att_val = sum(
-        _creature_value(c) for c in result.creatures_destroyed if c.controller == attacker_player
-    )
-    def_val = sum(
-        _creature_value(c) for c in result.creatures_destroyed if c.controller == defender
-    )
-    val_diff = att_val - def_val
-
-    att_cnt = sum(1 for c in result.creatures_destroyed if c.controller == attacker_player)
-    def_cnt = sum(1 for c in result.creatures_destroyed if c.controller == defender)
-    cnt_diff = att_cnt - def_cnt
-
-    mana_total = sum(c.mana_value for c in result.creatures_destroyed)
-
-    life_lost = result.damage_to_players.get(defender, 0)
-    poison = result.poison_counters.get(defender, 0)
-
     # Lower tuple values are preferred. Convert ``assignment`` to a tuple of
     # integers so Python can compare scores deterministically even when ``None``
     # is present.
-    ass_key = tuple(
-        len(attackers) if choice is None else choice for choice in assignment
-    )
-    return (
-        lost,
-        -val_diff,
-        -cnt_diff,
-        -mana_total,
-        life_lost,
-        poison,
-        ass_key,
-    )
+    ass_key = tuple(len(attackers) if choice is None else choice for choice in assignment)
+    score = score_combat_result(result, attacker_player, defender) + (ass_key,)
+    return score
 
 
 def decide_optimal_blocks(

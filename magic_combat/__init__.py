@@ -6,11 +6,7 @@ from .creature import CombatCreature, Color
 DEFAULT_STARTING_LIFE = 20
 
 from .simulator import CombatResult, CombatSimulator
-from .damage import (
-    DamageAssignmentStrategy,
-    MostCreaturesKilledStrategy,
-    OptimalDamageStrategy,
-)
+from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
 from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
 from .utils import calculate_mana_value
 from .gamestate import GameState, PlayerState, has_player_lost
@@ -29,7 +25,6 @@ __all__ = [
     "CombatResult",
     "CombatSimulator",
     "DamageAssignmentStrategy",
-    "MostCreaturesKilledStrategy",
     "OptimalDamageStrategy",
     "decide_optimal_blocks",
     "decide_simple_blocks",

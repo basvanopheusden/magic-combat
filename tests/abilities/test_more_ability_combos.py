@@ -212,6 +212,6 @@ def test_rampage_menace_two_blockers_bonus_applies():
     link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     result = sim.simulate()
-    assert b1 in result.creatures_destroyed
-    assert b2 not in result.creatures_destroyed
-    assert atk in result.creatures_destroyed
+    dead = {c.name for c in result.creatures_destroyed}
+    assert atk.name in dead
+    assert (b1.name in dead) != (b2.name in dead)

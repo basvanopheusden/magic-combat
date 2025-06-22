@@ -4,7 +4,7 @@ import pytest
 from magic_combat import (
     CombatCreature,
     DamageAssignmentStrategy,
-    MostCreaturesKilledStrategy,
+    OptimalDamageStrategy,
     CombatSimulator,
     Color,
 )
@@ -53,7 +53,7 @@ def test_damage_assignment_strategy_identity():
 
 def test_most_creatures_killed_strategy_sorts():
     """CR 510.2: Attackers may order blockers to maximize kills."""
-    strat = MostCreaturesKilledStrategy()
+    strat = OptimalDamageStrategy()
     a = CombatCreature("A", 3, 3, "A")
     b1 = CombatCreature("Wall", 0, 4, "B")
     b2 = CombatCreature("Goblin", 1, 1, "B")
@@ -63,7 +63,7 @@ def test_most_creatures_killed_strategy_sorts():
 
 def test_most_creatures_killed_prefers_value_on_tie():
     """CR 510.2: When only one kill is possible, the most valuable dies."""
-    strat = MostCreaturesKilledStrategy()
+    strat = OptimalDamageStrategy()
     attacker = CombatCreature("Attacker", 5, 5, "A")
     weak = CombatCreature("Weak", 2, 2, "B")
     big = CombatCreature("Big", 4, 4, "B")
@@ -73,7 +73,7 @@ def test_most_creatures_killed_prefers_value_on_tie():
 
 def test_indestructible_blocker_goes_last():
     """CR 702.12b: Indestructible creatures can't be destroyed by damage."""
-    strat = MostCreaturesKilledStrategy()
+    strat = OptimalDamageStrategy()
     attacker = CombatCreature("Attacker", 3, 3, "A")
     ind = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
     norm = CombatCreature("Target", 2, 2, "B")
@@ -83,7 +83,7 @@ def test_indestructible_blocker_goes_last():
 
 def test_wither_can_target_indestructible_first():
     """CR 702.90a & 702.12b: Wither counters can kill indestructible blockers."""
-    strat = MostCreaturesKilledStrategy()
+    strat = OptimalDamageStrategy()
     attacker = CombatCreature("Attacker", 2, 2, "A", wither=True)
     ind = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
     small = CombatCreature("Small", 1, 1, "B")

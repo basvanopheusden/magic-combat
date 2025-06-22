@@ -86,6 +86,34 @@ def _select_kill_indices(power: int, costs: List[float], values: List[float]) ->
     return best[2]
 
 
+def score_combat_result(
+    result,
+    attacker_player: str,
+    defender: str,
+) -> Tuple[int, float, int, int, int, int]:
+    """Return a scoring tuple evaluating combat from the defender's perspective."""
+
+    lost = 1 if defender in getattr(result, "players_lost", []) else 0
+
+    att_val = sum(
+        _blocker_value(c) for c in result.creatures_destroyed if c.controller == attacker_player
+    )
+    def_val = sum(
+        _blocker_value(c) for c in result.creatures_destroyed if c.controller == defender
+    )
+    val_diff = def_val - att_val
+
+    att_cnt = sum(1 for c in result.creatures_destroyed if c.controller == attacker_player)
+    def_cnt = sum(1 for c in result.creatures_destroyed if c.controller == defender)
+    cnt_diff = def_cnt - att_cnt
+
+    mana_total = sum(c.mana_value for c in result.creatures_destroyed)
+    life_lost = result.damage_to_players.get(defender, 0)
+    poison = result.poison_counters.get(defender, 0)
+
+    return (lost, val_diff, cnt_diff, -mana_total, life_lost, poison)
+
+
 class DamageAssignmentStrategy:
     """Base strategy for ordering blockers when assigning combat damage."""
 
@@ -96,34 +124,6 @@ class DamageAssignmentStrategy:
         return list(blockers)
 
 
-class MostCreaturesKilledStrategy(DamageAssignmentStrategy):
-    """Order blockers so the attacker tries to kill as many as possible."""
-
-    def order_blockers(
-        self, attacker: CombatCreature, blockers: List[CombatCreature]
-    ) -> List[CombatCreature]:
-        power = attacker.effective_power()
-
-        def lethal_cost(blocker: CombatCreature) -> float:
-            """Damage needed to remove ``blocker`` from combat."""
-            if blocker.indestructible and not (attacker.infect or attacker.wither):
-                return float("inf")
-            if attacker.deathtouch and not blocker.indestructible:
-                return 1
-            return blocker.effective_toughness()
-
-        costs = [lethal_cost(b) for b in blockers]
-        values = [_blocker_value(b) for b in blockers]
-
-        kill_indices = set(_select_kill_indices(power, costs, values))
-
-        kill_first = [blockers[i] for i in kill_indices]
-        kill_first.sort(key=_blocker_value, reverse=True)
-
-        remaining = [b for idx, b in enumerate(blockers) if idx not in kill_indices]
-        remaining.sort(key=_blocker_value, reverse=True)
-
-        return kill_first + remaining
 
 class OptimalDamageStrategy(DamageAssignmentStrategy):
     """Order blockers to maximize value destroyed similarly to optimal blocks."""
@@ -166,34 +166,9 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
 
             attacker_player = attacker.controller
             defender = blockers[0].controller
-            att_val = sum(
-                _blocker_value(c)
-                for c in result.creatures_destroyed
-                if c.controller == attacker_player
-            )
-            def_val = sum(
-                _blocker_value(c)
-                for c in result.creatures_destroyed
-                if c.controller == defender
-            )
-            val_diff = def_val - att_val
-
-            att_cnt = sum(
-                1 for c in result.creatures_destroyed if c.controller == attacker_player
-            )
-            def_cnt = sum(
-                1 for c in result.creatures_destroyed if c.controller == defender
-            )
-            cnt_diff = def_cnt - att_cnt
-
-            att_life = result.lifegain.get(attacker_player, 0)
-            def_life = result.lifegain.get(defender, 0)
-            life_diff = def_life - att_life
-
-            mana_total = sum(c.mana_value for c in result.creatures_destroyed)
             key = tuple(index_map[id(b)] for b in perm)
-            score = (-val_diff, -cnt_diff, life_diff, -mana_total, key)
-            if best_score is None or score < best_score:
+            score = score_combat_result(result, attacker_player, defender) + (key,)
+            if best_score is None or score > best_score:
                 best_score = score
                 best_order = list(perm)
 
