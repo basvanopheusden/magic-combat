@@ -25,6 +25,7 @@ def _evaluate_assignment(
     assignment: Sequence[Optional[int]],
     state: Optional[GameState],
     counter: "IterationCounter",
+    provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
 ) -> Tuple[int, float, int, int, int, Tuple[Optional[int], ...]]:
     """Simulate combat for a blocking assignment and score it."""
     atks = deepcopy(list(attackers))
@@ -36,11 +37,18 @@ def _evaluate_assignment(
             blk.blocking = atk
             atk.blocked_by.append(blk)
 
+    prov_copies: dict[CombatCreature, CombatCreature] = {}
+    if provoke_map:
+        for atk, blk in provoke_map.items():
+            if atk in attackers and blk in blockers:
+                prov_copies[atks[attackers.index(atk)]] = blks[blockers.index(blk)]
+
     sim = CombatSimulator(
         atks,
         blks,
         game_state=deepcopy(state),
         strategy=OptimalDamageStrategy(counter),
+        provoke_map=prov_copies or None,
     )
     try:
         counter.increment()
@@ -105,6 +113,7 @@ def decide_optimal_blocks(
     blockers: List[CombatCreature],
     game_state: Optional[GameState] = None,
     *,
+    provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
     max_iterations: int = int(1e6),
 ) -> int:
     """Assign blockers to attackers using a heuristic evaluation.
@@ -127,7 +136,19 @@ def decide_optimal_blocks(
 
     counter = IterationCounter(max_iterations)
 
-    options = [list(range(len(attackers))) + [None] for _ in blockers]
+    provoked: dict[CombatCreature, CombatCreature] = {}
+    if provoke_map:
+        for atk, blk in provoke_map.items():
+            if atk in attackers and blk in blockers:
+                provoked[blk] = atk
+
+    options = []
+    for blk in blockers:
+        forced = provoked.get(blk)
+        if forced is not None and _can_block(forced, blk):
+            options.append([attackers.index(forced)])
+        else:
+            options.append(list(range(len(attackers))) + [None])
 
     best: Optional[Tuple[Optional[int], ...]] = None
     best_score: Optional[Tuple] = None
@@ -140,6 +161,7 @@ def decide_optimal_blocks(
             assignment,
             game_state,
             counter,
+            provoke_map,
         )
         if best_score is None or score < best_score:
             best_score = score
