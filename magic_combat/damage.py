@@ -49,6 +49,9 @@ def _blocker_value(blocker: CombatCreature) -> float:
     """Heuristic combat value for tie-breaking."""
 
     positive = sum(1 for attr in _POSITIVE_KEYWORDS if getattr(blocker, attr, False))
+    if blocker.double_strike:
+        # Count double strike twice so it contributes 1 point instead of 0.5.
+        positive += 1
     positive += sum(getattr(blocker, attr, 0) for attr in _STACKABLE_KEYWORDS)
     return blocker.power + blocker.toughness + positive / 2
 
