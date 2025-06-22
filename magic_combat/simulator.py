@@ -5,8 +5,7 @@ from typing import Dict, List, Optional
 
 from .creature import CombatCreature, Color
 from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
-from .gamestate import GameState, PlayerState, has_player_lost
-from . import DEFAULT_STARTING_LIFE
+from .gamestate import GameState, has_player_lost
 from .utils import ensure_player_state, _can_block
 
 @dataclass

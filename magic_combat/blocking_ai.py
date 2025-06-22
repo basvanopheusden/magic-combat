@@ -11,7 +11,6 @@ from .damage import _blocker_value, OptimalDamageStrategy, score_combat_result
 from .gamestate import GameState
 from .simulator import CombatSimulator
 from .limits import IterationCounter
-from . import DEFAULT_STARTING_LIFE
 from .utils import _can_block
 
 
@@ -181,6 +180,8 @@ def decide_simple_blocks(
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
 ) -> None:
     """Assign blocks using a simple non-searching heuristic."""
+
+    from . import DEFAULT_STARTING_LIFE
 
     for atk in attackers:
         atk.blocked_by.clear()
