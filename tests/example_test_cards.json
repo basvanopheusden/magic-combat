@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Winged Drake",
+    "mana_cost": "{2}{U}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Flying",
+    "keywords": ["Flying"]
+  },
+  {
+    "name": "Goblin Menace",
+    "mana_cost": "{1}{R}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Menace",
+    "keywords": ["Menace"]
+  },
+  {
+    "name": "White Knight",
+    "mana_cost": "{W}{W}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "First strike\nProtection from black",
+    "keywords": ["First strike"]
+  },
+  {
+    "name": "Oak Guardian",
+    "mana_cost": "{3}{G}",
+    "power": "3",
+    "toughness": "3",
+    "oracle_text": "Reach",
+    "keywords": ["Reach"]
+  },
+  {
+    "name": "Samurai Elite",
+    "mana_cost": "{1}{R}{R}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Bushido 2",
+    "keywords": ["Bushido"]
+  },
+  {
+    "name": "Frenzied Goblin",
+    "mana_cost": "{R}",
+    "power": "1",
+    "toughness": "1",
+    "oracle_text": "Frenzy 1",
+    "keywords": ["Frenzy"]
+  },
+  {
+    "name": "Toxic Lizard",
+    "mana_cost": "{2}{G}",
+    "power": "2",
+    "toughness": "1",
+    "oracle_text": "Toxic 2",
+    "keywords": ["Toxic"]
+  },
+  {
+    "name": "Elemental Beast",
+    "mana_cost": "{2}{G/U}{R}",
+    "power": "3",
+    "toughness": "3",
+    "oracle_text": "Trample",
+    "keywords": ["Trample"]
+  },
+  {
+    "name": "Undying Horror",
+    "mana_cost": "{2}{B}",
+    "power": "3",
+    "toughness": "2",
+    "oracle_text": "Undying",
+    "keywords": ["Undying"]
+  },
+  {
+    "name": "Spirit Guardian",
+    "mana_cost": "{3}{W}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Persist\nProtection from red and from green",
+    "keywords": ["Persist"]
+  }
+]
