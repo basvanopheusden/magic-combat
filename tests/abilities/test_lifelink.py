@@ -16,6 +16,50 @@ def test_wither_lifelink_blocker_gains_life():
     assert result.lifegain["B"] == 1
 
 
+def test_lifelink_blocker_vs_wither_attacker():
+    """CR 510.2 & 702.90a: Combat damage is simultaneous, so lifelink uses pre-wither power."""
+    atk = CombatCreature("Corrosive Fiend", 2, 2, "A", wither=True)
+    blk = CombatCreature("Healer", 3, 3, "B", lifelink=True)
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.lifegain["B"] == 3
+    assert blk.minus1_counters == 2
+
+
+def test_lifelink_blocker_vs_infect_attacker():
+    """CR 510.2 & 702.90b: Infect doesn't reduce damage dealt simultaneously with lifelink."""
+    atk = CombatCreature("Plaguebearer", 2, 2, "A", infect=True)
+    blk = CombatCreature("Healer", 3, 3, "B", lifelink=True)
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.lifegain["B"] == 3
+    assert blk.minus1_counters == 2
+
+
+def test_lifelink_attacker_vs_wither_blocker():
+    """CR 510.2 & 702.90a: Wither doesn't cut lifelink damage from an attacker."""
+    atk = CombatCreature("Paladin", 3, 3, "A", lifelink=True)
+    blk = CombatCreature("Corrosive Guard", 1, 3, "B", wither=True)
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.lifegain["A"] == 3
+    assert atk.minus1_counters == 1
+
+
+def test_lifelink_attacker_vs_infect_blocker():
+    """CR 510.2 & 702.90b: Infect counters don't reduce lifelink damage."""
+    atk = CombatCreature("Angel", 3, 3, "A", lifelink=True)
+    blk = CombatCreature("Toxic Guard", 1, 3, "B", infect=True)
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.lifegain["A"] == 3
+    assert atk.minus1_counters == 1
+
+
 def test_afflict_lifelink_no_extra_life():
     """CR 702.131a & 702.15a: Afflict causes life loss that isn't damage, so lifelink only counts combat damage."""
     atk = CombatCreature("Tormentor", 3, 3, "A", afflict=2, lifelink=True)
