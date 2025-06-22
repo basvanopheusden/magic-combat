@@ -249,6 +249,20 @@ def main() -> None:
                 }
             )
 
+            print(f"\n=== Scenario {i+1} ===")
+            print("Starting life totals:")
+            for p in ["A", "B"]:
+                ps = state.players[p]
+                print(f"  Player {p}: {ps.life} life, {ps.poison} poison")
+
+            print("Attackers:")
+            for atk in attackers:
+                print(f"  {summarize_creature(atk)}, {_blocker_value(atk)}")
+            print("Blockers:")
+            for blk in blockers:
+                print(f"  {summarize_creature(blk)}, {_blocker_value(blk)}")
+
+
             provoke_map = {
                 atk: random.choice(blockers)
                 for atk in attackers
@@ -284,19 +298,6 @@ def main() -> None:
         prov_map_display = {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None
         mentor_map_display = {m.name: t.name for m, t in mentor_map.items()} if mentor_map else None
 
-
-        print(f"\n=== Scenario {i+1} ===")
-        print("Starting life totals:")
-        for p in ["A", "B"]:
-            ps = start_state.players[p]
-            print(f"  Player {p}: {ps.life} life, {ps.poison} poison")
-
-        print("Attackers:")
-        for atk in attackers:
-            print(f"  {summarize_creature(atk)}")
-        print("Blockers:")
-        for blk in blockers:
-            print(f"  {summarize_creature(blk)}")
 
         print("Block assignments:")
         for atk in attackers:
