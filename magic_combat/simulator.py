@@ -4,7 +4,11 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from .creature import CombatCreature, Color
-from .damage import DamageAssignmentStrategy, MostCreaturesKilledStrategy
+from .damage import (
+    DamageAssignmentStrategy,
+    MostCreaturesKilledStrategy,
+    OptimalDamageStrategy,
+)
 from .gamestate import GameState, PlayerState, has_player_lost
 from . import DEFAULT_STARTING_LIFE
 from .utils import ensure_player_state
@@ -50,7 +54,7 @@ class CombatSimulator:
         self.poison_counters: Dict[str, int] = {}
         self.lifegain: Dict[str, int] = {}
         self._lifegain_applied: Dict[str, int] = {}
-        self.assignment_strategy = strategy or MostCreaturesKilledStrategy()
+        self.assignment_strategy = strategy or OptimalDamageStrategy()
         self.game_state = game_state
         self.provoke_map: Dict[CombatCreature, CombatCreature] = provoke_map or {}
         self.mentor_map: Dict[CombatCreature, CombatCreature] = mentor_map or {}

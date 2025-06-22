@@ -119,3 +119,69 @@ class MostCreaturesKilledStrategy(DamageAssignmentStrategy):
         remaining.sort(key=_blocker_value, reverse=True)
 
         return kill_first + remaining
+
+class OptimalDamageStrategy(DamageAssignmentStrategy):
+    """Order blockers to maximize value destroyed similarly to optimal blocks."""
+
+    def order_blockers(
+        self, attacker: CombatCreature, blockers: List[CombatCreature]
+    ) -> List[CombatCreature]:
+        if len(blockers) <= 1:
+            return list(blockers)
+
+        from itertools import permutations
+        from copy import deepcopy
+        from .simulator import CombatSimulator
+        
+        index_map = {id(b): i for i, b in enumerate(blockers)}
+        best_order = list(blockers)
+        best_score = None
+
+        for perm in permutations(blockers):
+            atk = deepcopy(attacker)
+            blks = [deepcopy(b) for b in blockers]
+            clone_map = {id(orig): clone for orig, clone in zip(blockers, blks)}
+            atk.blocked_by = [clone_map[id(b)] for b in perm]
+            for b in perm:
+                clone_map[id(b)].blocking = atk
+            
+            class _Fixed(DamageAssignmentStrategy):
+                def __init__(self, order):
+                    self._order = order
+                def order_blockers(self, a, bs):
+                    return self._order
+            strat = _Fixed([clone_map[id(b)] for b in perm])
+            sim = CombatSimulator([atk], blks, strategy=strat)
+            result = sim.simulate()
+
+            attacker_player = attacker.controller
+            defender = blockers[0].controller
+            att_val = sum(
+                _blocker_value(c)
+                for c in result.creatures_destroyed
+                if c.controller == attacker_player
+            )
+            def_val = sum(
+                _blocker_value(c)
+                for c in result.creatures_destroyed
+                if c.controller == defender
+            )
+            val_diff = def_val - att_val
+
+            att_cnt = sum(
+                1 for c in result.creatures_destroyed if c.controller == attacker_player
+            )
+            def_cnt = sum(
+                1 for c in result.creatures_destroyed if c.controller == defender
+            )
+            cnt_diff = def_cnt - att_cnt
+
+            mana_total = sum(c.mana_value for c in result.creatures_destroyed)
+            key = tuple(index_map[id(b)] for b in perm)
+            score = (-val_diff, -cnt_diff, -mana_total, key)
+            if best_score is None or score < best_score:
+                best_score = score
+                best_order = list(perm)
+
+        return best_order
+
