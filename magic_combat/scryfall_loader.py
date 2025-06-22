@@ -228,6 +228,8 @@ def card_to_creature(card: Dict[str, Any], controller: str) -> CombatCreature:
         kwargs["persist"] = True
     if "Intimidate" in keywords:
         kwargs["intimidate"] = True
+    if "Daunt" in keywords:
+        kwargs["daunt"] = True
     if "Defender" in keywords:
         kwargs["defender"] = True
     if "Afflict" in keywords:

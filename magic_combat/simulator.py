@@ -123,6 +123,9 @@ class CombatSimulator:
                 if attacker.skulk and blocker.effective_power() > attacker.effective_power():
                     raise ValueError("Skulk prevents block by higher power")
 
+                if attacker.daunt and blocker.effective_power() <= 2:
+                    raise ValueError("Daunt prevents block by small creature")
+
     def _check_fear_intimidate(self) -> None:
         """Validate fear and intimidate blocking restrictions."""
         for attacker in self.attackers:
