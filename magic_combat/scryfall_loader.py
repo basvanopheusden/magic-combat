@@ -216,6 +216,8 @@ def card_to_creature(card: Dict[str, Any], controller: str) -> CombatCreature:
         kwargs["melee"] = True
     if "Training" in keywords:
         kwargs["training"] = True
+    if "Mentor" in keywords:
+        kwargs["mentor"] = True
     if "Frenzy" in keywords:
         kwargs["frenzy"] = _parse_value(oracle_text, "Frenzy")
     if "Battalion" in keywords:

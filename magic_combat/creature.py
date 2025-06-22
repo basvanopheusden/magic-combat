@@ -58,6 +58,7 @@ class CombatCreature:
     battle_cry_count: int = 0
     melee: bool = False
     training: bool = False
+    mentor: bool = False
     frenzy: int = 0
     battalion: bool = False
     dethrone: bool = False

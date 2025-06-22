@@ -39,6 +39,7 @@ class CombatSimulator:
         strategy: Optional[DamageAssignmentStrategy] = None,
         game_state: Optional["GameState"] = None,
         provoke_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
+        mentor_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
     ):
         """Store combatants taking part in the current combat phase."""
 
@@ -52,6 +53,7 @@ class CombatSimulator:
         self.assignment_strategy = strategy or MostCreaturesKilledStrategy()
         self.game_state = game_state
         self.provoke_map: Dict[CombatCreature, CombatCreature] = provoke_map or {}
+        self.mentor_map: Dict[CombatCreature, CombatCreature] = mentor_map or {}
         self.players_lost: List[str] = []
 
         for attacker in attackers:
@@ -154,6 +156,18 @@ class CombatSimulator:
             if target.blocking is not attacker:
                 raise ValueError("Provoke target failed to block")
 
+    def _check_mentor(self) -> None:
+        """Validate mentor targets before applying counters."""
+        for mentor, target in self.mentor_map.items():
+            if mentor not in self.attackers:
+                raise ValueError("Mentor creature not attacking")
+            if not mentor.mentor:
+                raise ValueError("Mentor map key lacks mentor ability")
+            if target not in self.attackers:
+                raise ValueError("Mentor target not attacking")
+            if target.effective_power() >= mentor.effective_power():
+                raise ValueError("Mentor target not lower power")
+
     def validate_blocking(self):
         """Ensure blocking assignments are legal for this simplified simulator."""
         self._check_block_assignments()
@@ -179,8 +193,10 @@ class CombatSimulator:
         for atk in self.attackers:
             attackers_by_controller.setdefault(atk.controller, []).append(atk)
 
+        self._check_mentor()
         self._reset_temporary_bonuses()
         self._handle_exalted(attackers_by_controller)
+        self._handle_mentor()
         self._handle_battle_cry()
         self._handle_melee()
         self._handle_training()
@@ -230,6 +246,16 @@ class CombatSimulator:
                     for other in self.attackers
                 ):
                     atk.plus1_counters += 1
+
+    def _handle_mentor(self) -> None:
+        """Apply mentor counters (CR 702.121)."""
+        for mentor, target in self.mentor_map.items():
+            if (
+                mentor in self.attackers
+                and target in self.attackers
+                and target.effective_power() < mentor.effective_power()
+            ):
+                target.plus1_counters += 1
 
     def _handle_battalion(self, attackers_by_controller: Dict[str, List[CombatCreature]]) -> None:
         """Apply battalion bonuses (CR 702.101)."""
