@@ -129,6 +129,14 @@ def main() -> None:
             if atk.provoke
         }
 
+        print("Attackers")
+        for atk in attackers:
+            print(atk)
+        print("Blockers")
+        for blk in blockers:
+            print(blk)
+        
+        
         decide_optimal_blocks(attackers, blockers, game_state=state)
         sim = CombatSimulator(
             attackers,
