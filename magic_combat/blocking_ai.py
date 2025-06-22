@@ -20,6 +20,18 @@ def _creature_value(creature: CombatCreature) -> float:
     return _blocker_value(creature)
 
 
+def _reset_block_assignments(
+    attackers: Sequence[CombatCreature],
+    blockers: Sequence[CombatCreature],
+) -> None:
+    """Clear ``blocked_by`` and ``blocking`` fields on all combatants."""
+
+    for atk in attackers:
+        atk.blocked_by.clear()
+    for blk in blockers:
+        blk.blocking = None
+
+
 def _evaluate_assignment(
     attackers: Sequence[CombatCreature],
     blockers: Sequence[CombatCreature],
@@ -157,10 +169,7 @@ def decide_optimal_blocks(
                 optimal_count += 1
 
     # Apply the chosen assignment to the real objects
-    for atk in attackers:
-        atk.blocked_by.clear()
-    for blk in blockers:
-        blk.blocking = None
+    _reset_block_assignments(attackers, blockers)
     if best is not None:
         for blk_idx, choice in enumerate(best):
             if choice is not None:
@@ -182,10 +191,7 @@ def decide_simple_blocks(
 ) -> None:
     """Assign blocks using a simple non-searching heuristic."""
 
-    for atk in attackers:
-        atk.blocked_by.clear()
-    for blk in blockers:
-        blk.blocking = None
+    _reset_block_assignments(attackers, blockers)
 
     if not blockers:
         return
