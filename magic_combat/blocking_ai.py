@@ -123,7 +123,7 @@ def decide_optimal_blocks(
     """
 
     if not blockers:
-        return 0
+        return 0, 1
 
     counter = IterationCounter(max_iterations)
 
@@ -131,6 +131,7 @@ def decide_optimal_blocks(
 
     best: Optional[Tuple[Optional[int], ...]] = None
     best_score: Optional[Tuple] = None
+    optimal_count = 0
 
     for assignment in product(*options):
         score = _evaluate_assignment(
@@ -143,6 +144,9 @@ def decide_optimal_blocks(
         if best_score is None or score < best_score:
             best_score = score
             best = tuple(assignment)
+            optimal_count = 1
+        elif score == best_score:
+            optimal_count += 1
 
     # Apply the chosen assignment to the real objects
     for atk in attackers:
@@ -157,7 +161,7 @@ def decide_optimal_blocks(
                 blk.blocking = atk
                 atk.blocked_by.append(blk)
 
-    return counter.count
+    return counter.count, optimal_count
 
 
 def _can_block(attacker: CombatCreature, blocker: CombatCreature) -> bool:
