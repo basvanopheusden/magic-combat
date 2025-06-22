@@ -204,6 +204,12 @@ def main() -> None:
         default=42,
         help="Random seed controlling sampling",
     )
+    parser.add_argument(
+        "--max-iterations",
+        type=int,
+        default=int(1e6),
+        help="Maximum combat simulations per scenario",
+    )
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -267,7 +273,12 @@ def main() -> None:
                         mentor_map[mentor] = random.choice(targets)
 
             try:
-                decide_optimal_blocks(attackers, blockers, game_state=state)
+                decide_optimal_blocks(
+                    attackers,
+                    blockers,
+                    game_state=state,
+                    max_iterations=args.max_iterations,
+                )
                 start_state = copy.deepcopy(state)
                 sim = CombatSimulator(
                     attackers,
@@ -277,7 +288,7 @@ def main() -> None:
                     mentor_map=mentor_map,
                 )
                 result = sim.simulate()
-            except ValueError:
+            except (ValueError, RuntimeError):
                 continue
             break
 
