@@ -13,9 +13,6 @@ from .scryfall_loader import cards_to_creatures
 from .abilities import BOOL_ATTRIBUTES as _BOOL_ABILITIES, INT_ATTRIBUTES as _INT_ABILITIES
 
 
-
-
-
 def compute_card_statistics(cards: Iterable[dict]) -> Dict[str, object]:
     """Return first and second order statistics for ``cards``.
 
