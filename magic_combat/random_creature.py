@@ -12,9 +12,22 @@ from .creature import CombatCreature, Color
 from .scryfall_loader import cards_to_creatures
 from .abilities import BOOL_ATTRIBUTES as _BOOL_ABILITIES, INT_ATTRIBUTES as _INT_ABILITIES
 
+# Probability thresholds for assigning +1/+1 or -1/-1 counters
+PLUS1_PROB = 0.1
+MINUS1_PROB = 0.2
 
+# Default probability used when randomly tapping creatures
+DEFAULT_TAP_PROB = 0.3
 
-
+__all__ = [
+    "PLUS1_PROB",
+    "MINUS1_PROB",
+    "DEFAULT_TAP_PROB",
+    "compute_card_statistics",
+    "generate_random_creature",
+    "assign_random_counters",
+    "assign_random_tapped",
+]
 
 def compute_card_statistics(cards: Iterable[dict]) -> Dict[str, object]:
     """Return first and second order statistics for ``cards``.
@@ -129,16 +142,16 @@ def assign_random_counters(creatures: Iterable[CombatCreature], *, rng: random.R
     rng = rng or random
     for cr in creatures:
         roll = rng.random()
-        if roll < 0.1:
+        if roll < PLUS1_PROB:
             cr.plus1_counters = rng.randint(1, 2)
-        elif roll < 0.2:
+        elif roll < MINUS1_PROB:
             max_minus = min(2, cr.toughness)
             if max_minus > 0:
                 cr.minus1_counters = rng.randint(1, max_minus)
 
 
 def assign_random_tapped(
-    creatures: Iterable[CombatCreature], *, rng: random.Random | None = None, prob: float = 0.3
+    creatures: Iterable[CombatCreature], *, rng: random.Random | None = None, prob: float = DEFAULT_TAP_PROB
 ) -> None:
     """Randomly tap creatures without vigilance.
 
