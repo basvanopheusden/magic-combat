@@ -89,7 +89,7 @@ def test_infect_kills_undying_but_it_returns():
     result = sim.simulate()
     assert blk not in result.creatures_destroyed
     assert blk.plus1_counters == 1
-    assert blk.minus1_counters == 2
+    assert blk.minus1_counters == 0
 
 
 def test_infect_and_toxic_stack_poison():

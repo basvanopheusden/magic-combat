@@ -67,7 +67,7 @@ def test_wither_damage_gives_minus1_counters():
 
 def test_persist_returns_with_counter():
     """CR 702.77a: Persist returns a creature that died without -1/-1 counters."""
-    atk = CombatCreature("Giant", 3, 3, "A")
+    atk = CombatCreature("Crusher", 5, 5, "A")
     blk = CombatCreature("Spirit", 3, 3, "B", persist=True)
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
@@ -86,6 +86,34 @@ def test_undying_returns_with_counter():
     assert blk in result.creatures_destroyed
     assert atk.plus1_counters == 1
     assert atk not in result.creatures_destroyed
+
+
+def test_persist_returns_clean_and_untapped():
+    """CR 400.7 & 702.77a: A persist creature returns as a new object untapped with only one -1/-1 counter."""
+    atk = CombatCreature("Crusher", 5, 5, "A")
+    blk = CombatCreature("Spirit", 3, 3, "B", persist=True)
+    blk.plus1_counters = 2
+    blk.tapped = True
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    sim.simulate()
+    assert blk.plus1_counters == 0
+    assert blk.minus1_counters == 1
+    assert not blk.tapped
+
+
+def test_undying_returns_clean_and_untapped():
+    """CR 400.7 & 702.92a: An undying creature returns untapped with only one +1/+1 counter."""
+    atk = CombatCreature("Phoenix", 2, 2, "A", undying=True)
+    blk = CombatCreature("Bear", 2, 2, "B")
+    atk.minus1_counters = 1
+    atk.tapped = True
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    sim.simulate()
+    assert atk.minus1_counters == 0
+    assert atk.plus1_counters == 1
+    assert not atk.tapped
 
 
 def test_annihilation_plus1_then_wither():
