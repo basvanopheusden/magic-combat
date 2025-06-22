@@ -344,7 +344,6 @@ def main() -> None:
                     blockers,
                     game_state=state,
                     max_iterations=args.max_iterations,
-                    provoke_map=provoke_map,
                 )
                 if args.unique_optimal and opt_count != 1:
                     print(

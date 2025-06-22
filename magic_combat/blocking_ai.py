@@ -25,7 +25,6 @@ def _evaluate_assignment(
     assignment: Sequence[Optional[int]],
     state: Optional[GameState],
     counter: "IterationCounter",
-    provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
 ) -> Tuple[int, float, int, int, int, Tuple[Optional[int], ...]]:
     """Simulate combat for a blocking assignment and score it."""
     atks = deepcopy(list(attackers))
@@ -42,7 +41,6 @@ def _evaluate_assignment(
         blks,
         game_state=deepcopy(state),
         strategy=OptimalDamageStrategy(counter),
-        provoke_map=provoke_map,
     )
     try:
         counter.increment()
@@ -108,7 +106,6 @@ def decide_optimal_blocks(
     game_state: Optional[GameState] = None,
     *,
     max_iterations: int = int(1e6),
-    provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
 ) -> int:
     """Assign blockers to attackers using a heuristic evaluation.
 
@@ -143,7 +140,6 @@ def decide_optimal_blocks(
             assignment,
             game_state,
             counter,
-            provoke_map,
         )
         if best_score is None or score < best_score:
             best_score = score
