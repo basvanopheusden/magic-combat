@@ -378,3 +378,20 @@ def test_iteration_limit_allows_fast_run():
     duration = time.perf_counter() - start
     assert duration < 2
 
+
+def test_optimal_ai_respects_provoke():
+    """CR 702.40a: Provoke requires the chosen creature to block if able."""
+    atk = CombatCreature("Taunter", 2, 2, "A", provoke=True)
+    blk = CombatCreature("Guard", 2, 2, "B")
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
+        }
+    )
+    decide_optimal_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    sim = CombatSimulator([atk], [blk], game_state=state, provoke_map={atk: blk})
+    sim.validate_blocking()
+    assert blk.blocking is atk
+    assert atk.blocked_by == [blk]
+
