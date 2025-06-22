@@ -129,6 +129,10 @@ def decide_optimal_blocks(
     5. Minimize life lost.
     6. Minimize poison counters gained.
     7. Use a deterministic ordering to break any remaining ties.
+
+    The function returns a tuple ``(iterations, optimal_count)``. ``optimal_count``
+    counts how many blocking assignments are tied on criteria 1–6,
+    before applying the deterministic ordering in step 7.
     """
 
     if not blockers:
@@ -164,11 +168,20 @@ def decide_optimal_blocks(
             provoke_map,
         )
         if best_score is None or score < best_score:
+            # Update the chosen assignment whenever we find a strictly better
+            # score. Only reset ``optimal_count`` if the numeric portion of the
+            # score actually improved; otherwise we simply update the stored
+            # best score so the deterministic tiebreaker picks this assignment.
+            if best_score is None or score[:-1] < best_score[:-1]:
+                optimal_count = 1
             best_score = score
             best = tuple(assignment)
-            optimal_count = 1
-        elif score == best_score:
-            optimal_count += 1
+        else:
+            # ``optimal_count`` should include all assignments that are tied on
+            # the numeric criteria. Ignore the deterministic tiebreaker when
+            # counting optimal results.
+            if best_score is not None and score[:-1] == best_score[:-1]:
+                optimal_count += 1
 
     # Apply the chosen assignment to the real objects
     for atk in attackers:
