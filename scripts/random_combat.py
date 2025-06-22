@@ -26,49 +26,9 @@ from magic_combat import (
     PlayerState,
 )
 from magic_combat.damage import _blocker_value
+from magic_combat.abilities import BOOL_NAMES as _BOOL_ABILITIES, INT_NAMES as _INT_ABILITIES
 
-# Ability name mappings for pretty printing
-_BOOL_ABILITIES = {
-    "flying": "Flying",
-    "reach": "Reach",
-    "menace": "Menace",
-    "fear": "Fear",
-    "shadow": "Shadow",
-    "horsemanship": "Horsemanship",
-    "skulk": "Skulk",
-    "unblockable": "Unblockable",
-    "daunt": "Daunt",
-    "vigilance": "Vigilance",
-    "first_strike": "First strike",
-    "double_strike": "Double strike",
-    "deathtouch": "Deathtouch",
-    "trample": "Trample",
-    "lifelink": "Lifelink",
-    "wither": "Wither",
-    "infect": "Infect",
-    "indestructible": "Indestructible",
-    "melee": "Melee",
-    "training": "Training",
-    "mentor": "Mentor",
-    "battalion": "Battalion",
-    "dethrone": "Dethrone",
-    "undying": "Undying",
-    "persist": "Persist",
-    "intimidate": "Intimidate",
-    "defender": "Defender",
-    "provoke": "Provoke",
-}
-
-_INT_ABILITIES = {
-    "toxic": "Toxic",
-    "bushido": "Bushido",
-    "flanking": "Flanking",
-    "rampage": "Rampage",
-    "exalted_count": "Exalted",
-    "battle_cry_count": "Battle cry",
-    "frenzy": "Frenzy",
-    "afflict": "Afflict",
-}
+# Ability name mappings for pretty printing come from ``magic_combat.abilities``
 
 
 def describe_abilities(creature) -> str:
