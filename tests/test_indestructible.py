@@ -84,7 +84,7 @@ def test_undying_indestructible_returns_with_counter():
     result = sim.simulate()
     assert blocker not in result.creatures_destroyed
     assert blocker.plus1_counters == 1
-    assert blocker.minus1_counters == 1
+    assert blocker.minus1_counters == 0
 
 
 def test_indestructible_lifelink_gains_life():

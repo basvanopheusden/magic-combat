@@ -404,6 +404,41 @@ class CombatSimulator:
         dmg = attacker.effective_power() if dmg is None else dmg
         self._apply_damage_to_creature(defender, dmg, attacker)
 
+    def _revive_creature(
+        self,
+        creature: CombatCreature,
+        *,
+        plus1: bool = False,
+        minus1: bool = False,
+    ) -> None:
+        """Return ``creature`` to the battlefield with specified counters."""
+
+        creature.damage_marked = 0
+        creature.damaged_by_deathtouch = False
+        creature.reset_temporary_bonuses()
+        creature.tapped = False
+        creature.attacking = False
+
+        if creature.blocking is not None:
+            attacker = creature.blocking
+            if creature in attacker.blocked_by:
+                attacker.blocked_by.remove(creature)
+            creature.blocking = None
+
+        for atk in self.attackers:
+            if creature in atk.blocked_by:
+                atk.blocked_by.remove(creature)
+
+        creature.blocked_by.clear()
+
+        if creature in self.attackers:
+            self.attackers.remove(creature)
+        if creature in self.defenders:
+            self.defenders.remove(creature)
+
+        creature.plus1_counters = 1 if plus1 else 0
+        creature.minus1_counters = 1 if minus1 else 0
+
     def resolve_normal_combat_damage(self):
         """Assign and deal damage in the normal damage step."""
         for attacker in self.attackers:
@@ -442,15 +477,11 @@ class CombatSimulator:
 
         for creature in list(self.dead_creatures):
             if creature.undying and creature.plus1_counters == 0:
-                creature.damage_marked = 0
-                creature.damaged_by_deathtouch = False
-                creature.plus1_counters += 1
+                self._revive_creature(creature, plus1=True)
                 if creature in self.dead_creatures:
                     self.dead_creatures.remove(creature)
             elif creature.persist and creature.minus1_counters == 0:
-                creature.damage_marked = 0
-                creature.damaged_by_deathtouch = False
-                creature.minus1_counters += 1
+                self._revive_creature(creature, minus1=True)
                 if creature in self.dead_creatures:
                     self.dead_creatures.remove(creature)
 
