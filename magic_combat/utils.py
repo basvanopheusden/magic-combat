@@ -1,5 +1,7 @@
 """Utility helpers used across the combat simulator."""
 
+from __future__ import annotations
+
 def check_non_negative(value: int, name: str) -> None:
     """Validate that ``value`` is not negative.
 
@@ -142,3 +144,32 @@ def calculate_mana_value(mana_cost: str, x_value: int) -> int:
         i += 1
 
     return total_value
+
+
+def _can_block(attacker: "CombatCreature", blocker: "CombatCreature") -> bool:
+    """Return ``True`` if ``blocker`` can legally block ``attacker``."""
+
+    # Import locally to avoid circular dependencies at module import time.
+    from .creature import Color
+
+    if attacker.unblockable:
+        return False
+    if attacker.flying and not (blocker.flying or blocker.reach):
+        return False
+    if attacker.shadow and not blocker.shadow:
+        return False
+    if attacker.horsemanship and not blocker.horsemanship:
+        return False
+    if attacker.skulk and blocker.effective_power() > attacker.effective_power():
+        return False
+    if attacker.daunt and blocker.effective_power() <= 2:
+        return False
+    if attacker.fear and not (blocker.artifact or Color.BLACK in blocker.colors):
+        return False
+    if attacker.intimidate and not (
+        blocker.artifact or (attacker.colors & blocker.colors)
+    ):
+        return False
+    if attacker.protection_colors & blocker.colors:
+        return False
+    return True

@@ -10,8 +10,8 @@ from .creature import CombatCreature
 from .damage import _blocker_value, OptimalDamageStrategy, score_combat_result
 from .gamestate import GameState
 from .simulator import CombatSimulator
-from .creature import Color
 from .limits import IterationCounter
+from .utils import _can_block
 
 
 def _creature_value(creature: CombatCreature) -> float:
@@ -171,29 +171,6 @@ def decide_optimal_blocks(
     return counter.count, optimal_count
 
 
-def _can_block(attacker: CombatCreature, blocker: CombatCreature) -> bool:
-    """Return ``True`` if ``blocker`` can legally block ``attacker``."""
-    if attacker.unblockable:
-        return False
-    if attacker.flying and not (blocker.flying or blocker.reach):
-        return False
-    if attacker.shadow and not blocker.shadow:
-        return False
-    if attacker.horsemanship and not blocker.horsemanship:
-        return False
-    if attacker.skulk and blocker.effective_power() > attacker.effective_power():
-        return False
-    if attacker.daunt and blocker.effective_power() <= 2:
-        return False
-    if attacker.fear and not (blocker.artifact or Color.BLACK in blocker.colors):
-        return False
-    if attacker.intimidate and not (
-        blocker.artifact or (attacker.colors & blocker.colors)
-    ):
-        return False
-    if attacker.protection_colors & blocker.colors:
-        return False
-    return True
 
 
 def decide_simple_blocks(

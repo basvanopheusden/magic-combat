@@ -7,7 +7,7 @@ from .creature import CombatCreature, Color
 from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
 from .gamestate import GameState, PlayerState, has_player_lost
 from . import DEFAULT_STARTING_LIFE
-from .utils import ensure_player_state
+from .utils import ensure_player_state, _can_block
 
 @dataclass
 class CombatResult:
@@ -168,29 +168,6 @@ class CombatSimulator:
                 if attacker.protection_colors & blocker.colors:
                     raise ValueError("Attacker has protection from blocker's color")
 
-    def _can_block(self, attacker: CombatCreature, blocker: CombatCreature) -> bool:
-        """Return ``True`` if ``blocker`` can legally block ``attacker``."""
-        if attacker.unblockable:
-            return False
-        if attacker.flying and not (blocker.flying or blocker.reach):
-            return False
-        if attacker.shadow and not blocker.shadow:
-            return False
-        if attacker.horsemanship and not blocker.horsemanship:
-            return False
-        if attacker.skulk and blocker.effective_power() > attacker.effective_power():
-            return False
-        if attacker.daunt and blocker.effective_power() <= 2:
-            return False
-        if attacker.fear and not (blocker.artifact or Color.BLACK in blocker.colors):
-            return False
-        if attacker.intimidate and not (
-            blocker.artifact or (attacker.colors & blocker.colors)
-        ):
-            return False
-        if attacker.protection_colors & blocker.colors:
-            return False
-        return True
 
     def _check_provoke(self) -> None:
         """Verify provoke targets are blocking as required."""
@@ -199,7 +176,7 @@ class CombatSimulator:
                 raise ValueError("Provoke attacker not in combat")
             if target not in self.defenders:
                 raise ValueError("Provoke target not defending creature")
-            if self._can_block(attacker, target) and target.blocking is not attacker:
+            if _can_block(attacker, target) and target.blocking is not attacker:
                 raise ValueError("Provoke target failed to block")
 
     def _check_mentor(self) -> None:
