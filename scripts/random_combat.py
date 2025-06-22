@@ -247,6 +247,11 @@ def main() -> None:
         action="store_true",
         help="Use randomly generated creatures instead of real cards",
     )
+    parser.add_argument(
+        "--unique-optimal",
+        action="store_true",
+        help="Skip scenarios without a single optimal blocking set",
+    )
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -334,12 +339,17 @@ def main() -> None:
                 simple_assignment = None
 
             try:
-                decide_optimal_blocks(
+                iters, opt_count = decide_optimal_blocks(
                     attackers,
                     blockers,
                     game_state=state,
                     max_iterations=args.max_iterations,
                 )
+                if args.unique_optimal and opt_count != 1:
+                    print(
+                        f"Skipping scenario {i+1}_{attempts}: {opt_count} optimal assignments"
+                    )
+                    continue
             except (ValueError, RuntimeError):
                 continue
 
