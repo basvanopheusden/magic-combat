@@ -17,6 +17,7 @@ from magic_combat import (
     fetch_french_vanilla_cards,
     compute_card_statistics,
     generate_random_creature,
+    assign_random_counters,
     decide_optimal_blocks,
     decide_simple_blocks,
     CombatSimulator,
@@ -283,6 +284,8 @@ def main() -> None:
                     blockers = cards_to_creatures((cards[j] for j in blk_idx), "B")
             except ValueError:
                 continue
+
+            assign_random_counters(attackers + blockers)
 
             poison_relevant = any(c.infect or c.toxic for c in attackers + blockers)
 
