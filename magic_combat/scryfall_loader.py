@@ -4,8 +4,6 @@ from typing import List, Dict, Any, Iterable
 from .creature import CombatCreature
 from .parsing import (
     parse_colors as _parse_colors,
-    parse_protection as _parse_protection,
-    parse_value as _parse_value,
     apply_keyword_attributes,
 )
 
