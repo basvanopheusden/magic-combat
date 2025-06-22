@@ -11,6 +11,7 @@ from .blocking_ai import decide_optimal_blocks
 from .utils import calculate_mana_value
 from .gamestate import GameState, PlayerState, has_player_lost
 from .scryfall_loader import fetch_french_vanilla_cards, load_cards, save_cards
+from .random_setup import load_or_fetch_cards, card_to_creature, create_random_combat
 
 __all__ = [
     "CombatCreature",
@@ -28,4 +29,7 @@ __all__ = [
     "fetch_french_vanilla_cards",
     "load_cards",
     "save_cards",
+    "load_or_fetch_cards",
+    "card_to_creature",
+    "create_random_combat",
 ]
