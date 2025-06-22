@@ -2,6 +2,8 @@
 
 from typing import List, Tuple
 
+from .limits import IterationCounter
+
 from .creature import CombatCreature
 
 
@@ -123,6 +125,9 @@ class MostCreaturesKilledStrategy(DamageAssignmentStrategy):
 class OptimalDamageStrategy(DamageAssignmentStrategy):
     """Order blockers to maximize value destroyed similarly to optimal blocks."""
 
+    def __init__(self, counter: "IterationCounter | None" = None) -> None:
+        self.counter = counter
+
     def order_blockers(
         self, attacker: CombatCreature, blockers: List[CombatCreature]
     ) -> List[CombatCreature]:
@@ -152,6 +157,8 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
                     return self._order
             strat = _Fixed([clone_map[id(b)] for b in perm])
             sim = CombatSimulator([atk], blks, strategy=strat)
+            if self.counter is not None:
+                self.counter.increment()
             result = sim.simulate()
 
             attacker_player = attacker.controller

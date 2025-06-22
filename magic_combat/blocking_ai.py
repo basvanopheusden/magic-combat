@@ -7,9 +7,10 @@ from itertools import product
 from typing import List, Optional, Sequence, Tuple
 
 from .creature import CombatCreature
-from .damage import _blocker_value
+from .damage import _blocker_value, OptimalDamageStrategy
 from .gamestate import GameState
 from .simulator import CombatSimulator
+from .limits import IterationCounter
 
 
 def _creature_value(creature: CombatCreature) -> float:
@@ -22,6 +23,7 @@ def _evaluate_assignment(
     blockers: Sequence[CombatCreature],
     assignment: Sequence[Optional[int]],
     state: Optional[GameState],
+    counter: "IterationCounter",
 ) -> Tuple[int, float, int, int, int, Tuple[Optional[int], ...]]:
     """Simulate combat for a blocking assignment and score it."""
     atks = deepcopy(list(attackers))
@@ -33,8 +35,14 @@ def _evaluate_assignment(
             blk.blocking = atk
             atk.blocked_by.append(blk)
 
-    sim = CombatSimulator(atks, blks, game_state=deepcopy(state))
+    sim = CombatSimulator(
+        atks,
+        blks,
+        game_state=deepcopy(state),
+        strategy=OptimalDamageStrategy(counter),
+    )
     try:
+        counter.increment()
         result = sim.simulate()
     except ValueError:
         # Illegal block configuration. Convert ``assignment`` to numbers to avoid
@@ -95,7 +103,9 @@ def decide_optimal_blocks(
     attackers: List[CombatCreature],
     blockers: List[CombatCreature],
     game_state: Optional[GameState] = None,
-) -> None:
+    *,
+    max_iterations: int = int(1e6),
+) -> int:
     """Assign blockers to attackers using a heuristic evaluation.
 
     This function enumerates all legal block configurations and chooses the one
@@ -112,7 +122,9 @@ def decide_optimal_blocks(
     """
 
     if not blockers:
-        return
+        return 0
+
+    counter = IterationCounter(max_iterations)
 
     options = [list(range(len(attackers))) + [None] for _ in blockers]
 
@@ -120,7 +132,13 @@ def decide_optimal_blocks(
     best_score: Optional[Tuple] = None
 
     for assignment in product(*options):
-        score = _evaluate_assignment(attackers, blockers, assignment, game_state)
+        score = _evaluate_assignment(
+            attackers,
+            blockers,
+            assignment,
+            game_state,
+            counter,
+        )
         if best_score is None or score < best_score:
             best_score = score
             best = tuple(assignment)
@@ -137,3 +155,5 @@ def decide_optimal_blocks(
                 atk = attackers[choice]
                 blk.blocking = atk
                 atk.blocked_by.append(blk)
+
+    return counter.count
