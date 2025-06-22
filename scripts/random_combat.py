@@ -117,22 +117,42 @@ def build_value_map(cards: List[dict]) -> Dict[int, float]:
 def sample_balanced(
     cards: List[dict], values: Dict[int, float], n_att: int, n_blk: int
 ) -> tuple[List[int], List[int]]:
-    """Select creatures for each side with roughly equal total value."""
+    """Select creatures for each side with roughly equal total value.
+
+    If no sufficiently balanced pairing is found after many attempts, a
+    ``ValueError`` is raised so the caller can try different creature
+    counts.  This prevents wildly unbalanced scenarios such as a single
+    small attacker facing an entire army of blockers.
+    """
+
     idxs = list(values.keys())
     if n_att + n_blk > len(idxs):
         raise ValueError("Not enough cards to sample from")
-    attempts = 0
-    while attempts < 1000:
-        attempts += 1
+
+    best: tuple[list[int], list[int]] | None = None
+    best_diff = float("inf")
+
+    for _ in range(1000):
         att_idx = random.sample(idxs, n_att)
         remaining = [i for i in idxs if i not in att_idx]
         blk_idx = random.sample(remaining, n_blk)
+
         att_val = sum(values[i] for i in att_idx)
         blk_val = sum(values[i] for i in blk_idx)
         avg = (att_val + blk_val) / 2 or 1
-        if abs(att_val - blk_val) / avg <= 0.25:
+        diff = abs(att_val - blk_val) / avg
+
+        if diff < best_diff:
+            best = (att_idx, blk_idx)
+            best_diff = diff
+
+        if diff <= 0.25:
             return att_idx, blk_idx
-    return att_idx, blk_idx
+
+    # No sufficiently balanced selection found
+    if best is None:
+        raise ValueError("Failed to sample creatures")
+    raise ValueError("Unable to generate balanced creature sets")
 
 
 def main() -> None:
@@ -178,7 +198,10 @@ def main() -> None:
             n_atk = max(1, min(n_atk, valid_len // 2))
             n_blk = max(1, min(n_blk, valid_len // 2))
 
-            atk_idx, blk_idx = sample_balanced(cards, values, n_atk, n_blk)
+            try:
+                atk_idx, blk_idx = sample_balanced(cards, values, n_atk, n_blk)
+            except ValueError:
+                continue
             attackers = cards_to_creatures((cards[j] for j in atk_idx), "A")
             blockers = cards_to_creatures((cards[j] for j in blk_idx), "B")
 
