@@ -62,28 +62,29 @@ def fetch_french_vanilla_cards() -> List[Dict[str, Any]]:
     url = SCRYFALL_API
     params = {"q": QUERY}
     cards: List[Dict[str, Any]] = []
-    while url:
-        resp = requests.get(url, params=params)
-        resp.raise_for_status()
-        data = resp.json()
-        for c in data.get("data", []):
-            if c.get("object") != "card":
-                continue
-            keywords = c.get("keywords", [])
-            if not all(k in ALLOWED_KEYWORDS for k in keywords):
-                continue
-            cards.append(
-                {
-                    "name": c["name"],
-                    "mana_cost": c.get("mana_cost"),
-                    "power": c.get("power"),
-                    "toughness": c.get("toughness"),
-                    "oracle_text": c.get("oracle_text"),
-                    "keywords": keywords,
-                }
-            )
-        url = data.get("next_page")
-        params = None
+    with requests.Session() as session:
+        while url:
+            resp = session.get(url, params=params)
+            resp.raise_for_status()
+            data = resp.json()
+            for c in data.get("data", []):
+                if c.get("object") != "card":
+                    continue
+                keywords = c.get("keywords", [])
+                if not all(k in ALLOWED_KEYWORDS for k in keywords):
+                    continue
+                cards.append(
+                    {
+                        "name": c["name"],
+                        "mana_cost": c.get("mana_cost"),
+                        "power": c.get("power"),
+                        "toughness": c.get("toughness"),
+                        "oracle_text": c.get("oracle_text"),
+                        "keywords": keywords,
+                    }
+                )
+            url = data.get("next_page")
+            params = None
     return cards
 
 
