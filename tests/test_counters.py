@@ -138,3 +138,13 @@ def test_annihilation_multiple_pairs():
     sim.simulate()
     assert blk.plus1_counters == 0
     assert blk.minus1_counters == 1
+
+
+def test_apply_counter_annihilation():
+    """CR 704.5q: +1/+1 and -1/-1 counters annihilate one another."""
+    cr = CombatCreature("Test", 2, 2, "A")
+    cr.plus1_counters = 3
+    cr.minus1_counters = 1
+    cr.apply_counter_annihilation()
+    assert cr.plus1_counters == 2
+    assert cr.minus1_counters == 0
