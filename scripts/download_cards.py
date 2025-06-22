@@ -9,6 +9,10 @@ parent directory will be created if it does not already exist.
 
 import argparse
 import os
+import sys
+
+# Allow running this script without installing the package
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from magic_combat import fetch_french_vanilla_cards, save_cards
 
