@@ -15,6 +15,8 @@ from magic_combat import (
     load_cards,
     save_cards,
     fetch_french_vanilla_cards,
+    compute_card_statistics,
+    generate_random_creature,
     decide_optimal_blocks,
     CombatSimulator,
     GameState,
@@ -182,6 +184,35 @@ def sample_balanced(
     raise ValueError("Unable to generate balanced creature sets")
 
 
+def generate_balanced_creatures(
+    stats: Dict[str, object], n_att: int, n_blk: int
+) -> tuple[List, List]:
+    """Generate two sets of creatures with roughly equal value."""
+
+    best: tuple[list, list] | None = None
+    best_diff = float("inf")
+
+    for _ in range(1000):
+        attackers = [generate_random_creature(stats, controller="A") for _ in range(n_att)]
+        blockers = [generate_random_creature(stats, controller="B") for _ in range(n_blk)]
+
+        att_val = sum(_blocker_value(c) for c in attackers)
+        blk_val = sum(_blocker_value(c) for c in blockers)
+        avg = (att_val + blk_val) / 2 or 1
+        diff = abs(att_val - blk_val) / avg
+
+        if diff < best_diff:
+            best = (attackers, blockers)
+            best_diff = diff
+
+        if diff <= 0.25:
+            return attackers, blockers
+
+    if best is None:
+        raise ValueError("Failed to generate creatures")
+    raise ValueError("Unable to generate balanced creature sets")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Simulate random combat scenarios"
@@ -210,6 +241,11 @@ def main() -> None:
         default=int(1e6),
         help="Maximum combat simulations per scenario",
     )
+    parser.add_argument(
+        "--generated-cards",
+        action="store_true",
+        help="Use randomly generated creatures instead of real cards",
+    )
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -217,6 +253,7 @@ def main() -> None:
 
     cards = ensure_cards(args.cards)
     values = build_value_map(cards)
+    stats = compute_card_statistics(cards) if args.generated_cards else None
     valid_len = len(values)
 
     for i in range(args.iterations):
@@ -232,11 +269,14 @@ def main() -> None:
             n_blk = max(1, min(n_blk, valid_len // 2))
 
             try:
-                atk_idx, blk_idx = sample_balanced(cards, values, n_atk, n_blk)
+                if args.generated_cards:
+                    attackers, blockers = generate_balanced_creatures(stats, n_atk, n_blk)
+                else:
+                    atk_idx, blk_idx = sample_balanced(cards, values, n_atk, n_blk)
+                    attackers = cards_to_creatures((cards[j] for j in atk_idx), "A")
+                    blockers = cards_to_creatures((cards[j] for j in blk_idx), "B")
             except ValueError:
                 continue
-            attackers = cards_to_creatures((cards[j] for j in atk_idx), "A")
-            blockers = cards_to_creatures((cards[j] for j in blk_idx), "B")
 
             poison_relevant = any(c.infect or c.toxic for c in attackers + blockers)
 
