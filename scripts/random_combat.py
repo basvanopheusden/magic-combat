@@ -249,20 +249,6 @@ def main() -> None:
                 }
             )
 
-            print(f"\n=== Scenario {i+1} ===")
-            print("Starting life totals:")
-            for p in ["A", "B"]:
-                ps = state.players[p]
-                print(f"  Player {p}: {ps.life} life, {ps.poison} poison")
-
-            print("Attackers:")
-            for atk in attackers:
-                print(f"  {summarize_creature(atk)}, {_blocker_value(atk)}")
-            print("Blockers:")
-            for blk in blockers:
-                print(f"  {summarize_creature(blk)}, {_blocker_value(blk)}")
-
-
             provoke_map = {
                 atk: random.choice(blockers)
                 for atk in attackers
@@ -295,15 +281,28 @@ def main() -> None:
                 continue
             break
 
+        print(f"\n=== Scenario {i+1} ===")
+        print("Starting life totals:")
+        for p in ["A", "B"]:
+            ps = start_state.players[p]
+            print(f"  Player {p}: {ps.life} life, {ps.poison} poison")
+
+        print("Attackers:")
+        for atk in start_state.players["A"].creatures:
+            print(f"  {summarize_creature(atk)}, {_blocker_value(atk)}")
+        print("Blockers:")
+        for blk in start_state.players["B"].creatures:
+            print(f"  {summarize_creature(blk)}, {_blocker_value(blk)}")
+
         prov_map_display = {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None
         mentor_map_display = {m.name: t.name for m, t in mentor_map.items()} if mentor_map else None
 
 
         print("Block assignments:")
-        for atk in attackers:
+        for atk in start_state.players["A"].creatures:
             blocks = ", ".join(b.name for b in atk.blocked_by) or "unblocked"
             print(f"  {atk.name} -> {blocks}")
-        for blk in blockers:
+        for blk in start_state.players["B"].creatures:
             target = blk.blocking.name if blk.blocking else "none"
             print(f"  {blk.name} -> {target}")
         if prov_map_display:
