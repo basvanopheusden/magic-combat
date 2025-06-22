@@ -276,4 +276,4 @@ def test_provoke_target_cannot_block():
     blk = CombatCreature("Bear", 2, 2, "B")
     sim = CombatSimulator([atk], [blk], provoke_map={atk: blk})
     sim.validate_blocking()
-    result = sim.simulate()
+    sim.simulate()
