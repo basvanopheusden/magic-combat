@@ -10,6 +10,7 @@ from .creature import CombatCreature
 from .damage import _blocker_value, OptimalDamageStrategy
 from .gamestate import GameState
 from .simulator import CombatSimulator
+from .creature import Color
 from .limits import IterationCounter
 
 
@@ -157,3 +158,90 @@ def decide_optimal_blocks(
                 atk.blocked_by.append(blk)
 
     return counter.count
+
+
+def _can_block(attacker: CombatCreature, blocker: CombatCreature) -> bool:
+    """Return ``True`` if ``blocker`` can legally block ``attacker``."""
+    if attacker.unblockable:
+        return False
+    if attacker.flying and not (blocker.flying or blocker.reach):
+        return False
+    if attacker.shadow and not blocker.shadow:
+        return False
+    if attacker.horsemanship and not blocker.horsemanship:
+        return False
+    if attacker.skulk and blocker.effective_power() > attacker.effective_power():
+        return False
+    if attacker.daunt and blocker.effective_power() <= 2:
+        return False
+    if attacker.fear and not (blocker.artifact or Color.BLACK in blocker.colors):
+        return False
+    if attacker.intimidate and not (
+        blocker.artifact or (attacker.colors & blocker.colors)
+    ):
+        return False
+    if attacker.protection_colors & blocker.colors:
+        return False
+    return True
+
+
+def decide_simple_blocks(
+    attackers: List[CombatCreature],
+    blockers: List[CombatCreature],
+    game_state: Optional[GameState] = None,
+) -> None:
+    """Assign blocks using a simple non-searching heuristic."""
+
+    for atk in attackers:
+        atk.blocked_by.clear()
+    for blk in blockers:
+        blk.blocking = None
+
+    if not blockers:
+        return
+
+    defender = blockers[0].controller
+    life = game_state.players[defender].life if game_state else 20
+    poison = game_state.players[defender].poison if game_state else 0
+
+    available = list(blockers)
+    attackers_sorted = sorted(attackers, key=_creature_value, reverse=True)
+
+    # First pass: take favorable 1:1 trades
+    for atk in attackers_sorted:
+        choices = [b for b in available if _can_block(atk, b)]
+        choices.sort(key=_creature_value)
+        for blk in choices:
+            if (
+                blk.effective_power() >= atk.effective_toughness()
+                and atk.effective_power() >= blk.effective_toughness()
+                and _creature_value(blk) <= _creature_value(atk)
+            ):
+                blk.blocking = atk
+                atk.blocked_by.append(blk)
+                available.remove(blk)
+                break
+
+    # Second pass: chump block if lethal damage would occur
+    def remaining_threat() -> tuple[int, int]:
+        dmg = 0
+        psn = 0
+        for a in attackers:
+            if not a.blocked_by:
+                dmg += a.effective_power()
+                psn += (a.effective_power() if a.infect else 0) + a.toxic
+        return dmg, psn
+
+    for atk in sorted([a for a in attackers if not a.blocked_by], key=lambda a: a.effective_power(), reverse=True):
+        if not available:
+            break
+        dmg, psn = remaining_threat()
+        if life <= dmg or poison + psn >= 10:
+            choices = [b for b in available if _can_block(atk, b)]
+            if not choices:
+                continue
+            blk = min(choices, key=_creature_value)
+            blk.blocking = atk
+            atk.blocked_by.append(blk)
+            available.remove(blk)
+

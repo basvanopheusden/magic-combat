@@ -11,7 +11,7 @@ from .damage import (
     MostCreaturesKilledStrategy,
     OptimalDamageStrategy,
 )
-from .blocking_ai import decide_optimal_blocks
+from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
 from .utils import calculate_mana_value
 from .gamestate import GameState, PlayerState, has_player_lost
 from .scryfall_loader import (
@@ -32,6 +32,7 @@ __all__ = [
     "MostCreaturesKilledStrategy",
     "OptimalDamageStrategy",
     "decide_optimal_blocks",
+    "decide_simple_blocks",
     "GameState",
     "PlayerState",
     "has_player_lost",
