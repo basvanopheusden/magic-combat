@@ -10,49 +10,10 @@ import numpy as np
 
 from .creature import CombatCreature, Color
 from .scryfall_loader import cards_to_creatures
+from .abilities import BOOL_ATTRIBUTES as _BOOL_ABILITIES, INT_ATTRIBUTES as _INT_ABILITIES
 
 
-_BOOL_ABILITIES = {
-    "flying",
-    "reach",
-    "menace",
-    "fear",
-    "shadow",
-    "horsemanship",
-    "skulk",
-    "unblockable",
-    "daunt",
-    "vigilance",
-    "first_strike",
-    "double_strike",
-    "deathtouch",
-    "trample",
-    "lifelink",
-    "wither",
-    "infect",
-    "indestructible",
-    "melee",
-    "training",
-    "mentor",
-    "battalion",
-    "dethrone",
-    "undying",
-    "persist",
-    "intimidate",
-    "defender",
-    "provoke",
-}
 
-_INT_ABILITIES = {
-    "toxic",
-    "bushido",
-    "flanking",
-    "rampage",
-    "exalted_count",
-    "battle_cry_count",
-    "frenzy",
-    "afflict",
-}
 
 
 def compute_card_statistics(cards: Iterable[dict]) -> Dict[str, object]:
