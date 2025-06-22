@@ -11,7 +11,7 @@ from .damage import _blocker_value, OptimalDamageStrategy, score_combat_result
 from .gamestate import GameState
 from .simulator import CombatSimulator
 from .limits import IterationCounter
-from . import DEFAULT_STARTING_LIFE
+from . import DEFAULT_STARTING_LIFE, POISON_LOSS_THRESHOLD
 from .utils import _can_block
 
 
@@ -236,7 +236,7 @@ def decide_simple_blocks(
         if not available:
             break
         dmg, psn = remaining_threat()
-        if life <= dmg or poison + psn >= 10:
+        if life <= dmg or poison + psn >= POISON_LOSS_THRESHOLD:
             choices = [b for b in available if _can_block(atk, b)]
             if not choices:
                 continue

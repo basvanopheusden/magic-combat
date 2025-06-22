@@ -5,6 +5,7 @@ from magic_combat import (
     GameState,
     PlayerState,
     DEFAULT_STARTING_LIFE,
+    POISON_LOSS_THRESHOLD,
     has_player_lost,
 )
 from tests.conftest import link_block
@@ -56,7 +57,7 @@ def test_infect_and_toxic_exactly_ten_poison():
     state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=6)})
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
-    assert state.players["B"].poison == 10
+    assert state.players["B"].poison == POISON_LOSS_THRESHOLD
     assert has_player_lost(state, "B")
     assert "B" in sim.players_lost
 
@@ -121,7 +122,7 @@ def test_lifelink_cannot_prevent_poison_loss():
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert state.players["A"].life == 6
-    assert state.players["B"].poison == 10
+    assert state.players["B"].poison == POISON_LOSS_THRESHOLD
     assert has_player_lost(state, "B")
     assert "B" in sim.players_lost
 

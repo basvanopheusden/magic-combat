@@ -5,6 +5,9 @@ from .creature import CombatCreature, Color
 # Default life total used when initializing ``PlayerState`` instances
 DEFAULT_STARTING_LIFE = 20
 
+# Number of poison counters that causes a player to lose the game
+POISON_LOSS_THRESHOLD = 10
+
 from .simulator import CombatResult, CombatSimulator
 from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
 from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
@@ -38,6 +41,7 @@ __all__ = [
     "has_player_lost",
     "calculate_mana_value",
     "DEFAULT_STARTING_LIFE",
+    "POISON_LOSS_THRESHOLD",
     "fetch_french_vanilla_cards",
     "load_cards",
     "save_cards",
