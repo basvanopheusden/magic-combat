@@ -377,13 +377,21 @@ class CombatSimulator:
 
     def resolve_first_strike_damage(self):
         """Handle the first strike combat damage step."""
+        # Capture blockers' power before any damage is assigned so damage is
+        # simultaneous even when wither or infect would reduce it.
+        first_strike_power = {}
+        for attacker in self.attackers:
+            for blocker in attacker.blocked_by:
+                if blocker.first_strike or blocker.double_strike:
+                    first_strike_power[blocker] = blocker.effective_power()
+
         for attacker in self.attackers:
             if attacker.blocked_by:
                 if attacker.first_strike or attacker.double_strike:
                     self._assign_damage_from_attacker(attacker)
                 for blocker in attacker.blocked_by:
                     if blocker.first_strike or blocker.double_strike:
-                        dmg = blocker.effective_power()
+                        dmg = first_strike_power[blocker]
                         self._apply_damage_to_creature(attacker, dmg, blocker)
             else:
                 if attacker.first_strike or attacker.double_strike:
@@ -460,6 +468,14 @@ class CombatSimulator:
 
     def resolve_normal_combat_damage(self):
         """Assign and deal damage in the normal damage step."""
+        # Record blocker power before any damage so lifelink isn't reduced by
+        # simultaneous wither/infect damage.
+        normal_power = {}
+        for attacker in self.attackers:
+            for blocker in attacker.blocked_by:
+                if blocker not in self.dead_creatures and (not blocker.first_strike or blocker.double_strike):
+                    normal_power[blocker] = blocker.effective_power()
+
         for attacker in self.attackers:
             if attacker in self.dead_creatures:
                 continue
@@ -471,7 +487,9 @@ class CombatSimulator:
                     b for b in blockers_alive if not b.first_strike or b.double_strike
                 ]
                 if eligible_blockers:
-                    self._assign_damage_to_attacker(attacker, eligible_blockers)
+                    for blocker in eligible_blockers:
+                        dmg = normal_power[blocker]
+                        self._apply_damage_to_creature(attacker, dmg, blocker)
             else:
                 if not attacker.first_strike or attacker.double_strike:
                     if not attacker.blocked_by:
