@@ -119,3 +119,15 @@ def test_multiple_attackers_damage_added():
     assert result.damage_to_players["B"] == 4
     assert result.creatures_destroyed == []
 
+
+def test_damage_order_prefers_value_over_kills():
+    """CR 510.1a: The attacking player chooses damage assignment order."""
+    attacker = CombatCreature("Warrior", 5, 5, "A")
+    big = CombatCreature("Big", 4, 4, "B")
+    small1 = CombatCreature("S1", 1, 1, "B")
+    small2 = CombatCreature("S2", 1, 1, "B")
+    link_block(attacker, big, small1, small2)
+    sim = CombatSimulator([attacker], [big, small1, small2])
+    result = sim.simulate()
+    dead = {c.name for c in result.creatures_destroyed}
+    assert dead == {"Warrior", "Big", "S1"}
