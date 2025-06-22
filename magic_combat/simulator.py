@@ -5,8 +5,7 @@ from typing import Dict, List, Optional
 
 from .creature import CombatCreature, Color
 from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
-from .gamestate import GameState, PlayerState, has_player_lost
-from . import DEFAULT_STARTING_LIFE
+from .gamestate import GameState, has_player_lost
 from .utils import ensure_player_state, _can_block
 
 @dataclass
@@ -210,8 +209,6 @@ class CombatSimulator:
         (CR 702.111) and others that grant bonuses or counters before damage
         is assigned.
         """
-        defender_player = self._get_defending_player()
-
         attackers_by_controller: Dict[str, List[CombatCreature]] = {}
         for atk in self.attackers:
             attackers_by_controller.setdefault(atk.controller, []).append(atk)

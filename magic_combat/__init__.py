@@ -1,10 +1,11 @@
 """Core package for the Magic Combat simulator."""
 
-from .creature import CombatCreature, Color
+# ruff: noqa: E402
 
 # Default life total used when initializing ``PlayerState`` instances
 DEFAULT_STARTING_LIFE = 20
 
+from .creature import CombatCreature, Color
 from .simulator import CombatResult, CombatSimulator
 from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
 from .blocking_ai import decide_optimal_blocks, decide_simple_blocks

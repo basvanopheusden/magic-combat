@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Game state representation for the combat simulator."""
+
+from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Dict, List

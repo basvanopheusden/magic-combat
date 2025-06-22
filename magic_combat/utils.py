@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # pragma: no cover - for type checking only
+    from .creature import CombatCreature
+
 def check_non_negative(value: int, name: str) -> None:
     """Validate that ``value`` is not negative.
 
