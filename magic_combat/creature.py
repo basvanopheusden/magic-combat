@@ -37,6 +37,7 @@ class CombatCreature:
     horsemanship: bool = False
     skulk: bool = False
     unblockable: bool = False
+    daunt: bool = False
     vigilance: bool = False
 
     first_strike: bool = False

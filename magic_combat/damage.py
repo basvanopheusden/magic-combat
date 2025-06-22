@@ -16,6 +16,7 @@ _POSITIVE_KEYWORDS = [
     "skulk",
     "unblockable",
     "vigilance",
+    "daunt",
     "first_strike",
     "double_strike",
     "deathtouch",
