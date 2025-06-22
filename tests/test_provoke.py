@@ -268,3 +268,12 @@ def test_provoke_wither_applies_counters():
     result = sim.simulate()
     assert blk.minus1_counters == 2
     assert blk in result.creatures_destroyed
+
+
+def test_provoke_target_cannot_block():
+    """CR 702.40a: The chosen creature blocks if able; otherwise nothing happens."""
+    atk = CombatCreature("Dragon", 3, 3, "A", flying=True, provoke=True)
+    blk = CombatCreature("Bear", 2, 2, "B")
+    sim = CombatSimulator([atk], [blk], provoke_map={atk: blk})
+    sim.validate_blocking()
+    result = sim.simulate()
