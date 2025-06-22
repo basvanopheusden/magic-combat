@@ -18,6 +18,7 @@ from magic_combat import (
     compute_card_statistics,
     generate_random_creature,
     assign_random_counters,
+    assign_random_tapped,
     decide_optimal_blocks,
     decide_simple_blocks,
     CombatSimulator,
@@ -286,6 +287,7 @@ def main() -> None:
                 continue
 
             assign_random_counters(attackers + blockers)
+            assign_random_tapped(blockers)
 
             poison_relevant = any(c.infect or c.toxic for c in attackers + blockers)
 
@@ -309,6 +311,8 @@ def main() -> None:
                 for atk in attackers
                 if atk.provoke
             }
+            for blk in provoke_map.values():
+                blk.tapped = False
 
             mentor_map = {}
             for mentor in attackers:

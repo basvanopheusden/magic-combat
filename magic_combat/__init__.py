@@ -17,7 +17,12 @@ from .scryfall_loader import (
     card_to_creature,
     cards_to_creatures,
 )
-from .random_creature import compute_card_statistics, generate_random_creature
+from .random_creature import (
+    compute_card_statistics,
+    generate_random_creature,
+    assign_random_counters,
+    assign_random_tapped,
+)
 
 __all__ = [
     "CombatCreature",
@@ -40,4 +45,6 @@ __all__ = [
     "cards_to_creatures",
     "compute_card_statistics",
     "generate_random_creature",
+    "assign_random_counters",
+    "assign_random_tapped",
 ]
