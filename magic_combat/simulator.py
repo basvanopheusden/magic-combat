@@ -93,7 +93,7 @@ class CombatSimulator:
     def _check_players_lost(self) -> None:
         """Record any players who have lost the game."""
         if self.game_state is not None:
-            for player in list(self.game_state.players.keys()):
+            for player in self.game_state.players:
                 if has_player_lost(self.game_state, player) and player not in self.players_lost:
                     self.players_lost.append(player)
 
