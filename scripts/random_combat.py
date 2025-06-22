@@ -36,11 +36,20 @@ def ensure_cards(path: str) -> List[dict]:
 
 
 def build_value_map(cards: List[dict]) -> Dict[int, float]:
-    """Return a mapping of card index to combat value."""
+    """Return a mapping of card index to combat value.
+
+    Cards with invalid stats (e.g. ``"*"`` toughness) are skipped.
+    """
     values: Dict[int, float] = {}
     for idx, card in enumerate(cards):
-        creature = card_to_creature(card, "A")
+        try:
+            creature = card_to_creature(card, "A")
+        except ValueError as exc:  # toughness/power may be invalid
+            print(f"Skipping {card.get('name', '?')}: {exc}")
+            continue
         values[idx] = _blocker_value(creature)
+    if not values:
+        raise ValueError("No usable creatures found in card data")
     return values
 
 
@@ -48,13 +57,14 @@ def sample_balanced(
     cards: List[dict], values: Dict[int, float], n_att: int, n_blk: int
 ) -> tuple[List[int], List[int]]:
     """Select creatures for each side with roughly equal total value."""
-    if n_att + n_blk > len(cards):
+    idxs = list(values.keys())
+    if n_att + n_blk > len(idxs):
         raise ValueError("Not enough cards to sample from")
     attempts = 0
     while attempts < 1000:
         attempts += 1
-        att_idx = random.sample(range(len(cards)), n_att)
-        remaining = [i for i in range(len(cards)) if i not in att_idx]
+        att_idx = random.sample(idxs, n_att)
+        remaining = [i for i in idxs if i not in att_idx]
         blk_idx = random.sample(remaining, n_blk)
         att_val = sum(values[i] for i in att_idx)
         blk_val = sum(values[i] for i in blk_idx)
@@ -84,12 +94,13 @@ def main() -> None:
 
     cards = ensure_cards(args.cards)
     values = build_value_map(cards)
+    valid_len = len(values)
 
     for i in range(args.iterations):
         n_atk = int(np.random.geometric(1 / 2.5))
         n_blk = int(np.random.geometric(1 / 2.5))
-        n_atk = max(1, min(n_atk, len(cards) // 2))
-        n_blk = max(1, min(n_blk, len(cards) // 2))
+        n_atk = max(1, min(n_atk, valid_len // 2))
+        n_blk = max(1, min(n_blk, valid_len // 2))
 
         atk_idx, blk_idx = sample_balanced(cards, values, n_atk, n_blk)
         attackers = cards_to_creatures((cards[i] for i in atk_idx), "A")
