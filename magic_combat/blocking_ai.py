@@ -81,6 +81,79 @@ def _evaluate_assignment(
     return score
 
 
+def _apply_provoke_assignments(
+    attackers: Sequence[CombatCreature],
+    available: List[CombatCreature],
+    provoke_map: Optional[dict[CombatCreature, CombatCreature]],
+) -> None:
+    """Assign blocks dictated by provoke."""
+
+    if not provoke_map:
+        return
+
+    for attacker, target in provoke_map.items():
+        if attacker in attackers and target in available and _can_block(attacker, target):
+            target.blocking = attacker
+            attacker.blocked_by.append(target)
+            available.remove(target)
+
+
+def _assign_favorable_trades(
+    attackers_sorted: Sequence[CombatCreature],
+    available: List[CombatCreature],
+) -> None:
+    """Block with favorable 1:1 trades when possible."""
+
+    for atk in attackers_sorted:
+        choices = [b for b in available if _can_block(atk, b)]
+        choices.sort(key=_creature_value)
+        for blk in choices:
+            if (
+                blk.effective_power() >= atk.effective_toughness()
+                and atk.effective_power() >= blk.effective_toughness()
+                and _creature_value(blk) <= _creature_value(atk)
+            ):
+                blk.blocking = atk
+                atk.blocked_by.append(blk)
+                available.remove(blk)
+                break
+
+
+def _perform_chump_blocks(
+    attackers: Sequence[CombatCreature],
+    available: List[CombatCreature],
+    life: int,
+    poison: int,
+) -> None:
+    """Chump block attackers if lethal damage would be dealt."""
+
+    def remaining_threat() -> tuple[int, int]:
+        dmg = 0
+        psn = 0
+        for a in attackers:
+            if not a.blocked_by:
+                dmg += a.effective_power()
+                psn += (a.effective_power() if a.infect else 0) + a.toxic
+        return dmg, psn
+
+    for atk in sorted(
+        [a for a in attackers if not a.blocked_by],
+        key=lambda a: a.effective_power(),
+        reverse=True,
+    ):
+        if not available:
+            break
+        dmg, psn = remaining_threat()
+        if life <= dmg or poison + psn >= 10:
+            choices = [b for b in available if _can_block(atk, b)]
+            if not choices:
+                continue
+            blk = min(choices, key=_creature_value)
+            blk.blocking = atk
+            atk.blocked_by.append(blk)
+            available.remove(blk)
+
+
 def decide_optimal_blocks(
     attackers: List[CombatCreature],
     blockers: List[CombatCreature],
@@ -199,49 +272,10 @@ def decide_simple_blocks(
     poison = game_state.players[defender].poison if game_state else 0
 
     available = list(blockers)
-    if provoke_map:
-        for attacker, target in provoke_map.items():
-            if attacker in attackers and target in available and _can_block(attacker, target):
-                target.blocking = attacker
-                attacker.blocked_by.append(target)
-                available.remove(target)
+    _apply_provoke_assignments(attackers, available, provoke_map)
+
     attackers_sorted = sorted(attackers, key=_creature_value, reverse=True)
+    _assign_favorable_trades(attackers_sorted, available)
 
-    # First pass: take favorable 1:1 trades
-    for atk in attackers_sorted:
-        choices = [b for b in available if _can_block(atk, b)]
-        choices.sort(key=_creature_value)
-        for blk in choices:
-            if (
-                blk.effective_power() >= atk.effective_toughness()
-                and atk.effective_power() >= blk.effective_toughness()
-                and _creature_value(blk) <= _creature_value(atk)
-            ):
-                blk.blocking = atk
-                atk.blocked_by.append(blk)
-                available.remove(blk)
-                break
-
-    # Second pass: chump block if lethal damage would occur
-    def remaining_threat() -> tuple[int, int]:
-        dmg = 0
-        psn = 0
-        for a in attackers:
-            if not a.blocked_by:
-                dmg += a.effective_power()
-                psn += (a.effective_power() if a.infect else 0) + a.toxic
-        return dmg, psn
-
-    for atk in sorted([a for a in attackers if not a.blocked_by], key=lambda a: a.effective_power(), reverse=True):
-        if not available:
-            break
-        dmg, psn = remaining_threat()
-        if life <= dmg or poison + psn >= 10:
-            choices = [b for b in available if _can_block(atk, b)]
-            if not choices:
-                continue
-            blk = min(choices, key=_creature_value)
-            blk.blocking = atk
-            atk.blocked_by.append(blk)
-            available.remove(blk)
+    _perform_chump_blocks(attackers, available, life, poison)
 
