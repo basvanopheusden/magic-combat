@@ -4,6 +4,7 @@
 import argparse
 import os
 import random
+import copy
 from typing import Dict, List
 
 import numpy as np
@@ -81,6 +82,32 @@ def describe_abilities(creature) -> str:
     if creature.artifact:
         parts.append("Artifact")
     return ", ".join(parts) if parts else "none"
+
+
+def summarize_creature(creature) -> str:
+    """Return a readable one-line summary of ``creature``."""
+    extra: List[str] = []
+    if creature.plus1_counters:
+        extra.append(f"+1/+1 x{creature.plus1_counters}")
+    if creature.minus1_counters:
+        extra.append(f"-1/-1 x{creature.minus1_counters}")
+    if creature.damage_marked:
+        extra.append(f"{creature.damage_marked} dmg")
+    if creature.tapped:
+        extra.append("tapped")
+    extras = f" [{' ,'.join(extra)}]" if extra else ""
+    return f"{creature}{extras} -- {describe_abilities(creature)}"
+
+
+def print_player_state(label: str, ps: PlayerState, destroyed: List) -> None:
+    """Display life total and surviving creatures for a player."""
+    print(f"{label}: {ps.life} life, {ps.poison} poison")
+    survivors = [c for c in ps.creatures if c not in destroyed]
+    if survivors:
+        for cr in survivors:
+            print(f"  {summarize_creature(cr)}")
+    else:
+        print("  no creatures")
 
 
 def ensure_cards(path: str) -> List[dict]:
@@ -218,6 +245,7 @@ def main() -> None:
 
             try:
                 decide_optimal_blocks(attackers, blockers, game_state=state)
+                start_state = copy.deepcopy(state)
                 sim = CombatSimulator(
                     attackers,
                     blockers,
@@ -230,30 +258,43 @@ def main() -> None:
                 continue
             break
 
-        print("Attackers")
-        for atk in attackers:
-            print(f"{atk} -- {describe_abilities(atk)}")
-        print("Blockers")
-        for blk in blockers:
-            print(f"{blk} -- {describe_abilities(blk)}")
-
         prov_map_display = {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None
         mentor_map_display = {m.name: t.name for m, t in mentor_map.items()} if mentor_map else None
 
+
         print(f"\n=== Scenario {i+1} ===")
+        print("Starting life totals:")
+        for p in ["A", "B"]:
+            ps = start_state.players[p]
+            print(f"  Player {p}: {ps.life} life, {ps.poison} poison")
+
         print("Attackers:")
         for atk in attackers:
-            blocks = ", ".join(b.name for b in atk.blocked_by) or "unblocked"
-            print(f"  {atk} -> {blocks}")
+            print(f"  {summarize_creature(atk)}")
         print("Blockers:")
         for blk in blockers:
+            print(f"  {summarize_creature(blk)}")
+
+        print("Block assignments:")
+        for atk in attackers:
+            blocks = ", ".join(b.name for b in atk.blocked_by) or "unblocked"
+            print(f"  {atk.name} -> {blocks}")
+        for blk in blockers:
             target = blk.blocking.name if blk.blocking else "none"
-            print(f"  {blk} -> {target}")
+            print(f"  {blk.name} -> {target}")
         if prov_map_display:
             print("Provoke targets:", prov_map_display)
         if mentor_map_display:
             print("Mentor targets:", mentor_map_display)
+
         print("Outcome:", result)
+
+        print("Final state:")
+        for p in ["A", "B"]:
+            print_player_state(f"Player {p}", state.players[p], result.creatures_destroyed)
+        if result.players_lost:
+            print("Players lost:", ", ".join(result.players_lost))
+        print()
 
 
 if __name__ == "__main__":
