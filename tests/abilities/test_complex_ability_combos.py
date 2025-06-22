@@ -99,8 +99,7 @@ def test_provoke_and_menace_insufficient_blockers():
     attacker = CombatCreature("Taunting Brute", 2, 2, "A", menace=True)
     blocker = CombatCreature("Goblin", 2, 2, "B")
     link_block(attacker, blocker)
-    attacker.provoke_target = blocker
-    sim = CombatSimulator([attacker], [blocker])
+    sim = CombatSimulator([attacker], [blocker], provoke_map={attacker: blocker})
     with pytest.raises(ValueError):
         sim.validate_blocking()
 

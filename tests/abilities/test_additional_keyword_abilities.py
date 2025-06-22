@@ -65,8 +65,7 @@ def test_provoke_forces_block():
     """CR 702.36a: Provoke makes the targeted creature block if able."""
     atk = CombatCreature("Taunter", 2, 2, "A")
     blocker = CombatCreature("Giant", 3, 3, "B")
-    atk.provoke_target = blocker
-    sim = CombatSimulator([atk], [blocker])
+    sim = CombatSimulator([atk], [blocker], provoke_map={atk: blocker})
     # blocker not assigned to block -> should error
     with pytest.raises(ValueError):
         sim.validate_blocking()
