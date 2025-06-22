@@ -5,6 +5,12 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, Set
 
+from .keywords import (
+    BOOLEAN_KEYWORDS as _BOOLEAN_KEYWORDS,
+    VALUE_KEYWORDS as _VALUE_KEYWORDS,
+    STACKABLE_KEYWORDS as _STACKABLE_KEYWORDS,
+)
+
 from .creature import Color
 
 # Mapping from short mana cost letters to :class:`Color` enums
@@ -58,52 +64,7 @@ def parse_protection(text: str) -> Set[Color]:
     return colors
 
 
-# Mapping of Scryfall keyword text to :class:`CombatCreature` fields
-_BOOLEAN_KEYWORDS = {
-    "Flying": "flying",
-    "Reach": "reach",
-    "Menace": "menace",
-    "Fear": "fear",
-    "Shadow": "shadow",
-    "Horsemanship": "horsemanship",
-    "Skulk": "skulk",
-    "Vigilance": "vigilance",
-    "First strike": "first_strike",
-    "Double strike": "double_strike",
-    "Deathtouch": "deathtouch",
-    "Trample": "trample",
-    "Lifelink": "lifelink",
-    "Wither": "wither",
-    "Infect": "infect",
-    "Indestructible": "indestructible",
-    "Melee": "melee",
-    "Training": "training",
-    "Mentor": "mentor",
-    "Battalion": "battalion",
-    "Dethrone": "dethrone",
-    "Undying": "undying",
-    "Persist": "persist",
-    "Intimidate": "intimidate",
-    "Daunt": "daunt",
-    "Defender": "defender",
-    "Provoke": "provoke",
-}
-
-# Keywords that include an integer value in the rules text
-_VALUE_KEYWORDS = {
-    "Bushido": "bushido",
-    "Rampage": "rampage",
-    "Frenzy": "frenzy",
-    "Toxic": "toxic",
-    "Afflict": "afflict",
-}
-
-# Keywords that stack when repeated
-_STACKABLE_KEYWORDS = {
-    "Exalted": "exalted_count",
-    "Battle cry": "battle_cry_count",
-    "Flanking": "flanking",
-}
+# Keyword mappings are shared in :mod:`magic_combat.keywords`
 
 
 def apply_keyword_attributes(keywords: Set[str], oracle_text: str) -> Dict[str, Any]:
