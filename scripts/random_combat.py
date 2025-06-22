@@ -351,6 +351,7 @@ def main() -> None:
                 simple_assignment is not None
                 and simple_assignment == optimal_assignment
             ):
+                print(f'Skipping scenario {i+1}_{attempts}: too easy')
                 continue
 
             start_state = copy.deepcopy(state)
@@ -364,43 +365,43 @@ def main() -> None:
             result = sim.simulate()
             break
 
-    print(f"\n=== Scenario {i+1} ===")
-    print("Starting life totals:")
-    for p in ["A", "B"]:
-        ps = start_state.players[p]
-        print(f"  Player {p}: {ps.life} life, {ps.poison} poison")
+        print(f"\n=== Scenario {i+1} ===")
+        print("Starting life totals:")
+        for p in ["A", "B"]:
+            ps = start_state.players[p]
+            print(f"  Player {p}: {ps.life} life, {ps.poison} poison")
 
-    print("Attackers:")
-    for atk in start_state.players["A"].creatures:
-        print(f"  {summarize_creature(atk)}, {_blocker_value(atk)}")
-    print("Blockers:")
-    for blk in start_state.players["B"].creatures:
-        print(f"  {summarize_creature(blk)}, {_blocker_value(blk)}")
+        print("Attackers:")
+        for atk in start_state.players["A"].creatures:
+            print(f"  {summarize_creature(atk)}, {_blocker_value(atk)}")
+        print("Blockers:")
+        for blk in start_state.players["B"].creatures:
+            print(f"  {summarize_creature(blk)}, {_blocker_value(blk)}")
 
-    prov_map_display = {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None
-    mentor_map_display = {m.name: t.name for m, t in mentor_map.items()} if mentor_map else None
+        prov_map_display = {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None
+        mentor_map_display = {m.name: t.name for m, t in mentor_map.items()} if mentor_map else None
 
-    print("Block assignments:")
-    for atk in start_state.players["A"].creatures:
-        blocks = ", ".join(b.name for b in atk.blocked_by) or "unblocked"
-        print(f"  {atk.name} -> {blocks}")
-    for blk in start_state.players["B"].creatures:
-        target = blk.blocking.name if blk.blocking else "none"
-        print(f"  {blk.name} -> {target}")
-    if prov_map_display:
-        print("Provoke targets:", prov_map_display)
-    if mentor_map_display:
-        print("Mentor targets:", mentor_map_display)
+        print("Block assignments:")
+        for atk in start_state.players["A"].creatures:
+            blocks = ", ".join(b.name for b in atk.blocked_by) or "unblocked"
+            print(f"  {atk.name} -> {blocks}")
+        for blk in start_state.players["B"].creatures:
+            target = blk.blocking.name if blk.blocking else "none"
+            print(f"  {blk.name} -> {target}")
+        if prov_map_display:
+            print("Provoke targets:", prov_map_display)
+        if mentor_map_display:
+            print("Mentor targets:", mentor_map_display)
 
-    print("Outcome:")
-    print(result)
+        print("Outcome:")
+        print(result)
 
-    print("Final state:")
-    for p in ["A", "B"]:
-        print_player_state(f"Player {p}", state.players[p], result.creatures_destroyed)
-    if result.players_lost:
-        print("Players lost:", ", ".join(result.players_lost))
-    print()
+        print("Final state:")
+        for p in ["A", "B"]:
+            print_player_state(f"Player {p}", state.players[p], result.creatures_destroyed)
+        if result.players_lost:
+            print("Players lost:", ", ".join(result.players_lost))
+        print()
 
 
 if __name__ == "__main__":
