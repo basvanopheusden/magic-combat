@@ -1,0 +1,59 @@
+from pathlib import Path
+import random
+
+import pytest
+
+from magic_combat import (
+    load_cards,
+    card_to_creature,
+    GameState,
+    PlayerState,
+    decide_optimal_blocks,
+)
+from itertools import product
+
+from magic_combat.blocking_ai import _evaluate_assignment, _can_block
+from magic_combat.limits import IterationCounter
+
+DATA_PATH = Path(__file__).resolve().parent.parent / "example_test_cards.json"
+
+
+def _compute_best_assignment(atk, blk, state):
+    counter = IterationCounter(1000)
+    options = []
+    for b in blk:
+        opts = [None] + [i for i, a in enumerate(atk) if _can_block(a, b)]
+        options.append(opts)
+    best = None
+    best_score = None
+    for ass in product(*options):
+        score = _evaluate_assignment(atk, blk, ass, state, counter)
+        if best_score is None or score < best_score:
+            best_score = score
+            best = ass
+    return best
+
+
+@pytest.mark.parametrize("seed", [0, 1, 2, 3, 4])
+def test_random_card_blocks_optimal(seed):
+    """CR 509.1a: The defending player chooses how creatures block."""
+    rng = random.Random(seed)
+    cards = load_cards(str(DATA_PATH))
+    atk_pool = [c for c in cards if "Defender" not in c.get("keywords", [])]
+    atk_cards = rng.sample(atk_pool, 2)
+    blk_cards = rng.sample(cards, 2)
+    attackers = [card_to_creature(c, "A") for c in atk_cards]
+    blockers = [card_to_creature(c, "B") for c in blk_cards]
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=list(attackers)),
+            "B": PlayerState(life=20, creatures=list(blockers)),
+        }
+    )
+    expected = _compute_best_assignment(attackers, blockers, state)
+    decide_optimal_blocks(attackers, blockers, game_state=state)
+    chosen = tuple(
+        attackers.index(b.blocking) if b.blocking is not None else None
+        for b in blockers
+    )
+    assert chosen == expected
