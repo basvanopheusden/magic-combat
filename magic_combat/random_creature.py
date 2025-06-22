@@ -174,3 +174,21 @@ def assign_random_counters(creatures: Iterable[CombatCreature], *, rng: random.R
             max_minus = min(2, cr.toughness)
             if max_minus > 0:
                 cr.minus1_counters = rng.randint(1, max_minus)
+
+
+def assign_random_tapped(
+    creatures: Iterable[CombatCreature], *, rng: random.Random | None = None, prob: float = 0.3
+) -> None:
+    """Randomly tap creatures without vigilance.
+
+    CR 302.2 states that tapped creatures can't attack or block. Vigilance
+    (CR 702.21b) keeps a creature from tapping when it attacks, so vigilant
+    defenders remain untapped here.
+    """
+
+    rng = rng or random
+    for cr in creatures:
+        if cr.vigilance:
+            cr.tapped = False
+        elif rng.random() < prob:
+            cr.tapped = True
