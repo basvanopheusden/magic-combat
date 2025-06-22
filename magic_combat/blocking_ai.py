@@ -12,7 +12,7 @@ from .gamestate import GameState
 from .simulator import CombatSimulator
 from .limits import IterationCounter
 from . import DEFAULT_STARTING_LIFE
-from .utils import _can_bloc
+from .utils import _can_block
 
 
 def _creature_value(creature: CombatCreature) -> float:
