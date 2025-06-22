@@ -318,7 +318,12 @@ def main() -> None:
             simple_blk = copy.deepcopy(blockers)
             simple_state = copy.deepcopy(state)
             try:
-                decide_simple_blocks(simple_atk, simple_blk, game_state=simple_state)
+                decide_simple_blocks(
+                    simple_atk,
+                    simple_blk,
+                    game_state=simple_state,
+                    provoke_map=provoke_map,
+                )
                 sim_check = CombatSimulator(simple_atk, simple_blk, game_state=simple_state)
                 sim_check.validate_blocking()
                 atk_map = {id(a): i for i, a in enumerate(simple_atk)}

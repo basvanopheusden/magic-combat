@@ -189,6 +189,7 @@ def decide_simple_blocks(
     attackers: List[CombatCreature],
     blockers: List[CombatCreature],
     game_state: Optional[GameState] = None,
+    provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
 ) -> None:
     """Assign blocks using a simple non-searching heuristic."""
 
@@ -205,6 +206,12 @@ def decide_simple_blocks(
     poison = game_state.players[defender].poison if game_state else 0
 
     available = list(blockers)
+    if provoke_map:
+        for attacker, target in provoke_map.items():
+            if attacker in attackers and target in available and _can_block(attacker, target):
+                target.blocking = attacker
+                attacker.blocked_by.append(target)
+                available.remove(target)
     attackers_sorted = sorted(attackers, key=_creature_value, reverse=True)
 
     # First pass: take favorable 1:1 trades
