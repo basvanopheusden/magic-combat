@@ -11,7 +11,8 @@ from .damage import _blocker_value, OptimalDamageStrategy, score_combat_result
 from .gamestate import GameState
 from .simulator import CombatSimulator
 from .limits import IterationCounter
-from .utils import _can_block
+from . import DEFAULT_STARTING_LIFE
+from .utils import _can_bloc
 
 
 def _creature_value(creature: CombatCreature) -> float:
@@ -190,7 +191,11 @@ def decide_simple_blocks(
         return
 
     defender = blockers[0].controller
-    life = game_state.players[defender].life if game_state else 20
+    life = (
+        game_state.players[defender].life
+        if game_state
+        else DEFAULT_STARTING_LIFE
+    )
     poison = game_state.players[defender].poison if game_state else 0
 
     available = list(blockers)
