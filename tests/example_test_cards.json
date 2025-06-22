@@ -5,7 +5,9 @@
     "power": "2",
     "toughness": "2",
     "oracle_text": "Flying",
-    "keywords": ["Flying"]
+    "keywords": [
+      "Flying"
+    ]
   },
   {
     "name": "Goblin Menace",
@@ -13,7 +15,9 @@
     "power": "2",
     "toughness": "2",
     "oracle_text": "Menace",
-    "keywords": ["Menace"]
+    "keywords": [
+      "Menace"
+    ]
   },
   {
     "name": "White Knight",
@@ -21,7 +25,9 @@
     "power": "2",
     "toughness": "2",
     "oracle_text": "First strike\nProtection from black",
-    "keywords": ["First strike"]
+    "keywords": [
+      "First strike"
+    ]
   },
   {
     "name": "Oak Guardian",
@@ -29,7 +35,9 @@
     "power": "3",
     "toughness": "3",
     "oracle_text": "Reach",
-    "keywords": ["Reach"]
+    "keywords": [
+      "Reach"
+    ]
   },
   {
     "name": "Samurai Elite",
@@ -37,7 +45,9 @@
     "power": "2",
     "toughness": "2",
     "oracle_text": "Bushido 2",
-    "keywords": ["Bushido"]
+    "keywords": [
+      "Bushido"
+    ]
   },
   {
     "name": "Frenzied Goblin",
@@ -45,7 +55,9 @@
     "power": "1",
     "toughness": "1",
     "oracle_text": "Frenzy 1",
-    "keywords": ["Frenzy"]
+    "keywords": [
+      "Frenzy"
+    ]
   },
   {
     "name": "Toxic Lizard",
@@ -53,7 +65,9 @@
     "power": "2",
     "toughness": "1",
     "oracle_text": "Toxic 2",
-    "keywords": ["Toxic"]
+    "keywords": [
+      "Toxic"
+    ]
   },
   {
     "name": "Elemental Beast",
@@ -61,7 +75,9 @@
     "power": "3",
     "toughness": "3",
     "oracle_text": "Trample",
-    "keywords": ["Trample"]
+    "keywords": [
+      "Trample"
+    ]
   },
   {
     "name": "Undying Horror",
@@ -69,7 +85,9 @@
     "power": "3",
     "toughness": "2",
     "oracle_text": "Undying",
-    "keywords": ["Undying"]
+    "keywords": [
+      "Undying"
+    ]
   },
   {
     "name": "Spirit Guardian",
@@ -77,6 +95,418 @@
     "power": "2",
     "toughness": "2",
     "oracle_text": "Persist\nProtection from red and from green",
-    "keywords": ["Persist"]
+    "keywords": [
+      "Persist"
+    ]
+  },
+  {
+    "name": "Fearsome Stalker",
+    "mana_cost": "{2}{B}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Fear",
+    "keywords": [
+      "Fear"
+    ]
+  },
+  {
+    "name": "Shadow Assassin",
+    "mana_cost": "{B}{B}",
+    "power": "1",
+    "toughness": "1",
+    "oracle_text": "Shadow",
+    "keywords": [
+      "Shadow"
+    ]
+  },
+  {
+    "name": "Horse Warrior",
+    "mana_cost": "{3}{U}",
+    "power": "3",
+    "toughness": "3",
+    "oracle_text": "Horsemanship",
+    "keywords": [
+      "Horsemanship"
+    ]
+  },
+  {
+    "name": "Sneaky Rogue",
+    "mana_cost": "{2}{U}",
+    "power": "2",
+    "toughness": "1",
+    "oracle_text": "Skulk",
+    "keywords": [
+      "Skulk"
+    ]
+  },
+  {
+    "name": "Guardian Angel",
+    "mana_cost": "{4}{W}",
+    "power": "2",
+    "toughness": "4",
+    "oracle_text": "Vigilance",
+    "keywords": [
+      "Vigilance"
+    ]
+  },
+  {
+    "name": "Swift Duelist",
+    "mana_cost": "{2}{R}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Double strike",
+    "keywords": [
+      "Double strike"
+    ]
+  },
+  {
+    "name": "Poison Blade",
+    "mana_cost": "{1}{B}",
+    "power": "1",
+    "toughness": "1",
+    "oracle_text": "Deathtouch",
+    "keywords": [
+      "Deathtouch"
+    ]
+  },
+  {
+    "name": "Sacred Paladin",
+    "mana_cost": "{3}{W}",
+    "power": "3",
+    "toughness": "3",
+    "oracle_text": "Lifelink",
+    "keywords": [
+      "Lifelink"
+    ]
+  },
+  {
+    "name": "Cursed Archer",
+    "mana_cost": "{2}{B}",
+    "power": "2",
+    "toughness": "1",
+    "oracle_text": "Wither",
+    "keywords": [
+      "Wither"
+    ]
+  },
+  {
+    "name": "Plague Bearer",
+    "mana_cost": "{2}{B}{G}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Infect",
+    "keywords": [
+      "Infect"
+    ]
+  },
+  {
+    "name": "Immortal Knight",
+    "mana_cost": "{5}{W}",
+    "power": "3",
+    "toughness": "4",
+    "oracle_text": "Indestructible",
+    "keywords": [
+      "Indestructible"
+    ]
+  },
+  {
+    "name": "Charge Captain",
+    "mana_cost": "{3}{W}",
+    "power": "2",
+    "toughness": "3",
+    "oracle_text": "Melee",
+    "keywords": [
+      "Melee"
+    ]
+  },
+  {
+    "name": "Novice Trainee",
+    "mana_cost": "{1}{W}",
+    "power": "1",
+    "toughness": "2",
+    "oracle_text": "Training",
+    "keywords": [
+      "Training"
+    ]
+  },
+  {
+    "name": "Motivated Soldier",
+    "mana_cost": "{2}{R}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Mentor",
+    "keywords": [
+      "Mentor"
+    ]
+  },
+  {
+    "name": "Battle Brigade",
+    "mana_cost": "{3}{R}",
+    "power": "3",
+    "toughness": "3",
+    "oracle_text": "Battalion",
+    "keywords": [
+      "Battalion"
+    ]
+  },
+  {
+    "name": "Ambitious Prince",
+    "mana_cost": "{4}{B}",
+    "power": "4",
+    "toughness": "4",
+    "oracle_text": "Dethrone",
+    "keywords": [
+      "Dethrone"
+    ]
+  },
+  {
+    "name": "Deadfaith Zombie",
+    "mana_cost": "{3}{B}",
+    "power": "3",
+    "toughness": "2",
+    "oracle_text": "Undying",
+    "keywords": [
+      "Undying"
+    ]
+  },
+  {
+    "name": "Lasting Ghost",
+    "mana_cost": "{2}{W}",
+    "power": "2",
+    "toughness": "1",
+    "oracle_text": "Persist",
+    "keywords": [
+      "Persist"
+    ]
+  },
+  {
+    "name": "Frightening Brute",
+    "mana_cost": "{4}{R}",
+    "power": "3",
+    "toughness": "3",
+    "oracle_text": "Intimidate",
+    "keywords": [
+      "Intimidate"
+    ]
+  },
+  {
+    "name": "Wall of Frost",
+    "mana_cost": "{2}{U}",
+    "power": "0",
+    "toughness": "7",
+    "oracle_text": "Defender",
+    "keywords": [
+      "Defender"
+    ]
+  },
+  {
+    "name": "Provoking Ogre",
+    "mana_cost": "{3}{R}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Provoke",
+    "keywords": [
+      "Provoke"
+    ]
+  },
+  {
+    "name": "Toxic Hydra",
+    "mana_cost": "{3}{G}",
+    "power": "2",
+    "toughness": "3",
+    "oracle_text": "Toxic 3",
+    "keywords": [
+      "Toxic"
+    ]
+  },
+  {
+    "name": "Bushido Samurai",
+    "mana_cost": "{2}{R}{R}",
+    "power": "3",
+    "toughness": "2",
+    "oracle_text": "Bushido 3",
+    "keywords": [
+      "Bushido"
+    ]
+  },
+  {
+    "name": "Flanking Knight",
+    "mana_cost": "{2}{W}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Flanking",
+    "keywords": [
+      "Flanking"
+    ]
+  },
+  {
+    "name": "Rampaging Rhino",
+    "mana_cost": "{4}{G}",
+    "power": "4",
+    "toughness": "4",
+    "oracle_text": "Rampage 2",
+    "keywords": [
+      "Rampage"
+    ]
+  },
+  {
+    "name": "Exalted Monk",
+    "mana_cost": "{2}{W}",
+    "power": "1",
+    "toughness": "1",
+    "oracle_text": "Exalted",
+    "keywords": [
+      "Exalted"
+    ]
+  },
+  {
+    "name": "Battle Cry Goblin",
+    "mana_cost": "{1}{R}",
+    "power": "1",
+    "toughness": "1",
+    "oracle_text": "Battle cry",
+    "keywords": [
+      "Battle cry"
+    ]
+  },
+  {
+    "name": "Frenzied Berserker",
+    "mana_cost": "{3}{R}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Frenzy 2",
+    "keywords": [
+      "Frenzy"
+    ]
+  },
+  {
+    "name": "Afflicting Shade",
+    "mana_cost": "{2}{B}",
+    "power": "2",
+    "toughness": "1",
+    "oracle_text": "Afflict 2",
+    "keywords": [
+      "Afflict"
+    ]
+  },
+  {
+    "name": "Dauntless Giant",
+    "mana_cost": "{4}{G}",
+    "power": "4",
+    "toughness": "3",
+    "oracle_text": "Daunt",
+    "keywords": [
+      "Daunt"
+    ]
+  },
+  {
+    "name": "Dualist Angel",
+    "mana_cost": "{3}{W}{W}",
+    "power": "3",
+    "toughness": "3",
+    "oracle_text": "Flying\nDouble strike",
+    "keywords": [
+      "Flying",
+      "Double strike"
+    ]
+  },
+  {
+    "name": "Vigilant Paladin",
+    "mana_cost": "{2}{W}{W}",
+    "power": "4",
+    "toughness": "4",
+    "oracle_text": "Vigilance\nTrample",
+    "keywords": [
+      "Vigilance",
+      "Trample"
+    ]
+  },
+  {
+    "name": "Deathclaw Assassin",
+    "mana_cost": "{3}{B}",
+    "power": "3",
+    "toughness": "1",
+    "oracle_text": "Deathtouch\nShadow",
+    "keywords": [
+      "Deathtouch",
+      "Shadow"
+    ]
+  },
+  {
+    "name": "Lifelink Cleric",
+    "mana_cost": "{2}{W}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Lifelink\nMelee",
+    "keywords": [
+      "Lifelink",
+      "Melee"
+    ]
+  },
+  {
+    "name": "Rampaging Wurm",
+    "mana_cost": "{5}{G}",
+    "power": "6",
+    "toughness": "4",
+    "oracle_text": "Trample\nRampage 2",
+    "keywords": [
+      "Trample",
+      "Rampage"
+    ]
+  },
+  {
+    "name": "Sky Defender",
+    "mana_cost": "{3}{W}",
+    "power": "2",
+    "toughness": "4",
+    "oracle_text": "Flying\nDefender",
+    "keywords": [
+      "Flying",
+      "Defender"
+    ]
+  },
+  {
+    "name": "Shadowy Skulker",
+    "mana_cost": "{3}{U}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Shadow\nSkulk",
+    "keywords": [
+      "Shadow",
+      "Skulk"
+    ]
+  },
+  {
+    "name": "Mentor of Arms",
+    "mana_cost": "{3}{W}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Mentor\nVigilance",
+    "keywords": [
+      "Mentor",
+      "Vigilance"
+    ]
+  },
+  {
+    "name": "Toxic Mirage",
+    "mana_cost": "{2}{U/B}",
+    "power": "2",
+    "toughness": "2",
+    "oracle_text": "Flying\nToxic 1",
+    "keywords": [
+      "Flying",
+      "Toxic"
+    ]
+  },
+  {
+    "name": "Holy Warrior",
+    "mana_cost": "{2}{W}",
+    "power": "3",
+    "toughness": "2",
+    "oracle_text": "First strike\nLifelink",
+    "keywords": [
+      "First strike",
+      "Lifelink"
+    ]
   }
 ]

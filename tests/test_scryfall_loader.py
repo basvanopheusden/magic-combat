@@ -46,7 +46,7 @@ def test_cards_to_creatures_count():
     """CR 205.3d: Cards converted to creatures keep their colors from mana symbols."""
     cards = load_cards(str(DATA_PATH))
     creatures = cards_to_creatures(cards, "A")
-    assert len(creatures) == 10
+    assert len(creatures) == 50
     names = {c.name for c in creatures}
     assert "Elemental Beast" in names
 
