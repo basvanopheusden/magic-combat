@@ -395,3 +395,19 @@ def test_iteration_limit_allows_fast_run():
     duration = time.perf_counter() - start
     assert duration < 2
 
+
+def test_ai_optimal_count_ignores_tiebreaker():
+    """CR 509.1a: The defending player chooses how creatures block."""
+    a1 = CombatCreature("A1", 2, 2, "A")
+    a2 = CombatCreature("A2", 2, 2, "A")
+    b1 = CombatCreature("B1", 2, 2, "B")
+    b2 = CombatCreature("B2", 2, 2, "B")
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[a1, a2]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2]),
+        }
+    )
+    _, opt = decide_optimal_blocks([a1, a2], [b1, b2], game_state=state)
+    assert opt == 2
+
