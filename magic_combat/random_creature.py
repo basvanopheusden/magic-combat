@@ -156,3 +156,21 @@ def generate_random_creature(
         elif ability == "protection":
             kwargs["protection_colors"] = {random.choice(list(Color))}
     return CombatCreature(**kwargs)
+
+
+
+def assign_random_counters(creatures: Iterable[CombatCreature], *, rng: random.Random | None = None) -> None:
+    """Add random +1/+1 or -1/-1 counters to ``creatures``.
+
+    A creature receives at most one kind of counter and never enough -1/-1
+    counters to reduce its toughness below zero.
+    """
+    rng = rng or random
+    for cr in creatures:
+        roll = rng.random()
+        if roll < 0.1:
+            cr.plus1_counters = rng.randint(1, 2)
+        elif roll < 0.2:
+            max_minus = min(2, cr.toughness)
+            if max_minus > 0:
+                cr.minus1_counters = rng.randint(1, max_minus)
