@@ -18,6 +18,7 @@ from magic_combat import (
     compute_card_statistics,
     generate_random_creature,
     decide_optimal_blocks,
+    decide_simple_blocks,
     CombatSimulator,
     GameState,
     PlayerState,
