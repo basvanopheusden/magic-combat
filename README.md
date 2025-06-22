@@ -15,6 +15,7 @@ magic_combat/creature.py     ``CombatCreature`` data model
 magic_combat/damage.py       Damage assignment strategies
 magic_combat/simulator.py    ``CombatSimulator`` and ``CombatResult`` classes
 magic_combat/utils.py        Small utility helpers used internally
+magic_combat/random_creature.py Utilities for sampling creatures
 ```
 
 ## Development
@@ -69,4 +70,18 @@ from the repository root to perform the download:
 
 ```bash
 python scripts/download_cards.py data/cards.json
+```
+
+## Random creature generation
+
+Once you have downloaded card data, you can build statistics for the real
+creature distribution and sample new creatures from it:
+
+```python
+from magic_combat import load_cards, compute_card_statistics, generate_random_creature
+
+cards = load_cards("data/cards.json")
+stats = compute_card_statistics(cards)
+creature = generate_random_creature(stats)
+print(creature)
 ```
