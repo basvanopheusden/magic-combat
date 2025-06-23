@@ -17,6 +17,8 @@ magic_combat/simulator.py    ``CombatSimulator`` and ``CombatResult`` classes
 magic_combat/utils.py        Small utility helpers used internally
 magic_combat/parsing.py      Parsing helpers for card data
 magic_combat/random_creature.py Utilities for sampling creatures
+magic_combat/blocking_ai.py  Blocking heuristics and search
+magic_combat/block_utils.py  Utilities for evaluating block assignments
 ```
 
 ## Development
