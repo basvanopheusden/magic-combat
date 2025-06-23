@@ -10,21 +10,14 @@ def create_llm_prompt(
     attackers: Iterable[CombatCreature],
     blockers: Iterable[CombatCreature],
 ) -> str:
-    """
-    Create a prompt instructing a language model to choose blocks.
+    """Create a prompt instructing a language model to choose blocks.
 
-    Parameters
-    ----------
-    game_state:
-        The current game state.
-    attackers:
-        Creatures attacking this turn.
-    blockers:
-        Creatures available to block.
+    Args:
+        game_state: The current game state.
+        attackers: Creatures attacking this turn.
+        blockers: Creatures available to block.
 
-    Returns
-    -------
-    str
+    Returns:
         A formatted prompt for the model.
     """
     attacker_string = '\n'.join(summarize_creature(attacker) for attacker in attackers)
