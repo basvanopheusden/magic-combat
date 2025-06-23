@@ -3,6 +3,25 @@ from tests.conftest import link_block
 
 
 def test_battalion_requires_three_attackers():
+    """CR 702.101a: Battalion triggers only if it and at least two others attack."""
+    leader = CombatCreature("Sergeant", 2, 2, "A", battalion=True)
+    ally = CombatCreature("Ally", 2, 2, "A")
+    sim = CombatSimulator([leader, ally], [])
+    sim.simulate()
+    assert leader.temp_power == 0
+
+
+def test_dethrone_no_counter_if_defender_not_highest():
+    """CR 702.103a: Dethrone gives a counter only when attacking the player with the most life."""
+    atk = CombatCreature("Challenger", 2, 2, "A", dethrone=True)
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=15, creatures=[defender])})
+    sim = CombatSimulator([atk], [defender], game_state=state)
+    sim.simulate()
+    assert atk.plus1_counters == 0
+
+
+def test_battalion_requires_three_attackers():
     """CR 702.101a: Battalion triggers when it and at least two other creatures attack."""
     leader = CombatCreature("Leader", 2, 2, "A", battalion=True)
     ally1 = CombatCreature("Ally1", 2, 2, "A")

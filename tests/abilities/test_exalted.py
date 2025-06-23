@@ -3,6 +3,27 @@ from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
 from tests.conftest import link_block
 
 
+def test_exalted_single_attacker_multiple_instances():
+    """CR 702.90a: Each instance of exalted grants +1/+1 if a creature attacks alone."""
+    atk = CombatCreature("Lone", 2, 2, "A", exalted_count=2)
+    blk = CombatCreature("Grizzly", 2, 2, "B")
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+
+
+def test_exalted_not_triggered_with_multiple_attackers():
+    """CR 702.90a: Exalted triggers only if a creature attacks alone."""
+    exalter = CombatCreature("Exalter", 2, 2, "A", exalted_count=1)
+    ally = CombatCreature("Ally", 2, 2, "A")
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    sim = CombatSimulator([exalter, ally], [defender])
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 4
+
+
 def test_exalted_double_strike_kills_first():
     """CR 702.90a & 702.4b: Exalted boosts power so double strike can kill before regular damage."""
     atk = CombatCreature("Duelist", 2, 2, "A", exalted_count=1, double_strike=True)

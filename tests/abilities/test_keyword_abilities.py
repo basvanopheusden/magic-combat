@@ -24,17 +24,6 @@ def test_flanking_debuff_blocker():
     assert atk not in result.creatures_destroyed
 
 
-def test_exalted_single_attacker_multiple_instances():
-    """CR 702.90a: Each instance of exalted grants +1/+1 if a creature attacks alone."""
-    atk = CombatCreature("Lone", 2, 2, "A", exalted_count=2)
-    blk = CombatCreature("Grizzly", 2, 2, "B")
-    link_block(atk, blk)
-    sim = CombatSimulator([atk], [blk])
-    result = sim.simulate()
-    assert blk in result.creatures_destroyed
-    assert atk not in result.creatures_destroyed
-
-
 def test_rampage_with_multiple_blockers():
     """CR 702.23a: Rampage gives +N/+N for each blocker beyond the first."""
     atk = CombatCreature("Beast", 3, 3, "A", rampage=2)
@@ -86,15 +75,6 @@ def test_skulk_and_bushido_combo():
     result = sim.simulate()
     assert blocker in result.creatures_destroyed
     assert attacker not in result.creatures_destroyed
-
-def test_exalted_not_triggered_with_multiple_attackers():
-    """CR 702.90a: Exalted triggers only if a creature attacks alone."""
-    exalter = CombatCreature("Exalter", 2, 2, "A", exalted_count=1)
-    ally = CombatCreature("Ally", 2, 2, "A")
-    defender = CombatCreature("Dummy", 0, 1, "B")
-    sim = CombatSimulator([exalter, ally], [defender])
-    result = sim.simulate()
-    assert result.damage_to_players["B"] == 4
 
 
 def test_deathtouch_basic_lethal():

@@ -215,3 +215,76 @@ def test_infect_kills_undying_but_it_returns():
     assert blk not in result.creatures_destroyed
     assert blk.plus1_counters == 1
     assert blk.minus1_counters == 0
+
+
+def test_infect_kills_creature_with_counters():
+    """CR 702.90b: Infect damage to a creature is dealt as -1/-1 counters."""
+    atk = CombatCreature("Toxic Bear", 3, 3, "A", infect=True)
+    blk = CombatCreature("Wall", 2, 2, "B")
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk.minus1_counters == 2
+    assert blk in result.creatures_destroyed
+
+
+def test_infect_lifelink_vs_blocker():
+    """CR 702.90b & 702.15a: Infect gives counters and lifelink gains that much life."""
+    atk = CombatCreature("Toxic Cleric", 2, 2, "A", infect=True, lifelink=True)
+    blk = CombatCreature("Bear", 2, 2, "B")
+    link_block(atk, blk)
+    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
+    sim = CombatSimulator([atk], [blk], game_state=state)
+    result = sim.simulate()
+    assert blk.minus1_counters == 2
+    assert result.lifegain["A"] == 2
+    assert state.players["A"].life == 12
+
+
+def test_infect_first_strike_kills_before_damage():
+    """CR 702.7b & 702.90b: First strike infect kills the blocker before it can deal damage."""
+    atk = CombatCreature("Toxic Fencer", 2, 2, "A", infect=True, first_strike=True)
+    blk = CombatCreature("Bear", 2, 2, "B")
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk.minus1_counters == 2
+    assert blk in result.creatures_destroyed
+    assert atk not in result.creatures_destroyed
+
+
+def test_infect_prevents_persist_return():
+    """CR 702.90b & 702.77a: Infect counters stop a persist creature from returning."""
+    atk = CombatCreature("Infecting Knight", 2, 2, "A", infect=True)
+    blk = CombatCreature("Everlasting", 2, 2, "B", persist=True)
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+    assert blk.minus1_counters == 2
+
+
+def test_lifelink_infect_vs_creature():
+    """CR 702.15a & 702.90b: Lifelink gains life even when infect damages a creature."""
+    atk = CombatCreature("Toxic Healer", 3, 3, "A", infect=True, lifelink=True)
+    blk = CombatCreature("Bear", 3, 3, "B")
+    link_block(atk, blk)
+    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
+    sim = CombatSimulator([atk], [blk], game_state=state)
+    result = sim.simulate()
+    assert result.lifegain["A"] == 3
+    assert blk.minus1_counters == 3
+    assert state.players["A"].life == 13
+
+
+def test_infect_with_afflict_still_causes_life_loss():
+    """CR 702.131a & 702.90b: Afflict causes life loss even when an infect creature is blocked."""
+    atk = CombatCreature("Tormentor", 2, 2, "A", infect=True, afflict=1)
+    blk = CombatCreature("Guard", 2, 2, "B")
+    link_block(atk, blk)
+    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
+    sim = CombatSimulator([atk], [blk], game_state=state)
+    result = sim.simulate()
+    assert state.players["B"].life == 19
+    assert result.poison_counters.get("B", 0) == 0
+    assert blk.minus1_counters == 2
