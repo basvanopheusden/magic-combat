@@ -48,12 +48,24 @@ Skip defender in this calculation (it's worth 0), and count double strike twice 
 Each criterion should only be considered after the previous one resulted in a tie.
 
 Please provide your analysis and the recommended blocking assignments in a markdown format.
-Each line should start with a bullet point, the name of the blocking creature, an arrow ("->"), and the name of the attacker it blocks.
+Include a section called "Block Assignments", in which each line follows the following format:
+The name of the blocking creature, an arrow ("->"), and the name of the attacker it blocks.
+For example, this is a valid block assignment:
+#Block Assignments
+- Serra Angel -> Grizzly Bears
+- Wall of Omens -> Llanowar Elves
 
-Also include the outcome of the combat, using the bullet points:
-- Life total of both players after combat
-- Creatures destroyed by each player
-- Poison counters on each player"""
+Follow this format exactly, with no additional text or explanations in the block assignments section.
+Finally, add a markdown section called "Combat Outcome", which contains the life total of both players after combat, any creatures that were destroyed, and any poison counters gained.
+Do so in a format like this:
+#Combat Outcome
+Player 1 Life: 20
+Player 2 Life: 15
+Player 1 Poison Counters: 0
+Player 2 Poison Counters: 1
+Player 2 Creatures Destroyed: None
+Player 1 Creatures Destroyed: Grizzly Bears
+"""
     return prompt.strip()
 
 
