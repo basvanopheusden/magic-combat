@@ -140,7 +140,7 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
         from itertools import permutations
         from copy import deepcopy
         from .simulator import CombatSimulator
-        
+
         index_map = {id(b): i for i, b in enumerate(blockers)}
         best_order = list(blockers)
         best_score = None
@@ -152,7 +152,7 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
             atk.blocked_by = [clone_map[id(b)] for b in perm]
             for b in perm:
                 clone_map[id(b)].blocking = atk
-            
+
             class _Fixed(DamageAssignmentStrategy):
                 def __init__(self, order):
                     self._order = order
