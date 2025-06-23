@@ -6,11 +6,12 @@ from itertools import product
 from typing import List, Optional, Sequence, Tuple
 
 from .creature import CombatCreature
-from .damage import _blocker_value
+from .damage import _blocker_value, score_combat_result
 from .gamestate import GameState
 from .limits import IterationCounter
 from . import DEFAULT_STARTING_LIFE, POISON_LOSS_THRESHOLD
 from .utils import _can_block
+from .simulator import CombatSimulator
 from .block_utils import evaluate_block_assignment
 
 
@@ -50,25 +51,44 @@ def _apply_provoke_assignments(
             available.remove(target)
 
 
+def _pair_value_diff(attacker: CombatCreature, blocker: CombatCreature) -> float:
+    """Return attacker value minus blocker value for the combat pair."""
+
+    from copy import deepcopy
+
+    atk = deepcopy(attacker)
+    blk = deepcopy(blocker)
+    blk.blocking = atk
+    atk.blocked_by.append(blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    score = score_combat_result(result, attacker.controller, blocker.controller)
+    # ``score[1]`` is defender value minus attacker value; invert for our metric
+    return -score[1]
+
+
 def _assign_favorable_trades(
     attackers_sorted: Sequence[CombatCreature],
     available: List[CombatCreature],
 ) -> None:
     """Block with favorable 1:1 trades when possible."""
 
-    for atk in attackers_sorted:
-        choices = [b for b in available if _can_block(atk, b)]
-        choices.sort(key=_creature_value)
-        for blk in choices:
-            if (
-                blk.effective_power() >= atk.effective_toughness()
-                and atk.effective_power() >= blk.effective_toughness()
-                and _creature_value(blk) <= _creature_value(atk)
-            ):
-                blk.blocking = atk
-                atk.blocked_by.append(blk)
-                available.remove(blk)
-                break
+    chosen: set[CombatCreature] = set()
+    for blk in sorted(list(available), key=_creature_value, reverse=True):
+        best_atk: Optional[CombatCreature] = None
+        best_diff = float("-inf")
+        for atk in attackers_sorted:
+            if atk in chosen or not _can_block(atk, blk):
+                continue
+            diff = _pair_value_diff(atk, blk)
+            if diff > best_diff:
+                best_diff = diff
+                best_atk = atk
+        if best_atk is not None and best_diff >= 0:
+            blk.blocking = best_atk
+            best_atk.blocked_by.append(blk)
+            chosen.add(best_atk)
+            available.remove(blk)
 
 
 def _perform_chump_blocks(
