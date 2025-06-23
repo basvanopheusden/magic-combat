@@ -29,6 +29,13 @@ from .random_creature import (
     assign_random_counters,
     assign_random_tapped,
 )
+from .random_scenario import (
+    ensure_cards,
+    build_value_map,
+    sample_balanced,
+    generate_balanced_creatures,
+    generate_random_scenario,
+)
 from .create_llm_prompt import create_llm_prompt, parse_block_assignments
 
 __all__ = [
@@ -55,6 +62,11 @@ __all__ = [
     "generate_random_creature",
     "assign_random_counters",
     "assign_random_tapped",
+    "ensure_cards",
+    "build_value_map",
+    "sample_balanced",
+    "generate_balanced_creatures",
+    "generate_random_scenario",
     "apply_attacker_blocking_bonuses",
     "apply_blocker_bushido",
     "parse_block_assignments",

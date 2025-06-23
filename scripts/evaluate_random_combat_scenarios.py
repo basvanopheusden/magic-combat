@@ -38,30 +38,28 @@ async def evaluate_random_scenarios(n: int, cards_path: str) -> None:
     from magic_combat import (
         load_cards,
         compute_card_statistics,
-        generate_random_creature,
-        assign_random_counters,
-        assign_random_tapped,
         decide_optimal_blocks,
-        GameState,
-        PlayerState,
+        generate_random_scenario,
+        build_value_map,
     )
     from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
 
     cards = load_cards(cards_path)
     stats = compute_card_statistics(cards)
+    values = build_value_map(cards)
 
     for idx in range(n):
-        attackers = [generate_random_creature(stats, controller="A") for _ in range(2)]
-        blockers = [generate_random_creature(stats, controller="B") for _ in range(2)]
-
-        assign_random_counters(attackers + blockers)
-        assign_random_tapped(blockers)
-
-        state = GameState(
-            players={
-                "A": PlayerState(life=20, creatures=attackers),
-                "B": PlayerState(life=20, creatures=blockers),
-            }
+        (
+            state,
+            attackers,
+            blockers,
+            _,
+            _,
+        ) = generate_random_scenario(
+            cards,
+            values,
+            stats,
+            generated_cards=True,
         )
 
         # Determine optimal blocks for comparison
