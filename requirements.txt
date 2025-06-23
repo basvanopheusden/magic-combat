@@ -1,5 +1,4 @@
 pytest>=7.0
 requests
 numpy
-scipy
 openai
