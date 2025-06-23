@@ -35,7 +35,7 @@ class DummyChat:
 class DummyClient:
     def __init__(self):
         self.chat = DummyChat()
-    async def aclose(self):
+    async def close(self):
         pass
 
 
@@ -63,14 +63,14 @@ def test_parse_block_assignments():
 
 def test_call_openai_model(monkeypatch):
     """CR 509.1a: The defending player chooses how creatures block."""
-    monkeypatch.setattr("openai.AsyncClient", lambda: DummyClient())
+    monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient())
     res = asyncio.run(call_openai_model(["p1", "p2"]))
     assert res == "response to p1\n\nresponse to p2"
 
 
 def test_llm_cache_hit(monkeypatch):
     """CR 509.1a: The defending player chooses how creatures block."""
-    monkeypatch.setattr("openai.AsyncClient", lambda: DummyClient())
+    monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient())
     cache = MockLLMCache()
     res1 = asyncio.run(
         call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache)
@@ -86,7 +86,7 @@ def test_llm_cache_hit(monkeypatch):
 
 def test_llm_cache_miss(monkeypatch):
     """CR 509.1a: The defending player chooses how creatures block."""
-    monkeypatch.setattr("openai.AsyncClient", lambda: DummyClient())
+    monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient())
     cache = MockLLMCache()
     res1 = asyncio.run(
         call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache)
