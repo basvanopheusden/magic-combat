@@ -136,7 +136,7 @@ def test_dethrone_adds_counter():
 
 
 def test_toxic_damage_adds_poison():
-    """CR 702.??: Toxic gives poison counters in addition to damage."""
+    """CR 702.180a: Toxic gives poison counters in addition to damage."""
     atk = CombatCreature("Viper", 1, 1, "A", toxic=2)
     defender = CombatCreature("Dummy", 0, 1, "B")
     sim = CombatSimulator([atk], [defender])
