@@ -167,3 +167,33 @@ def _can_block(attacker: "CombatCreature", blocker: "CombatCreature") -> bool:
     if attacker.protection_colors & blocker.colors:
         return False
     return True
+
+
+def apply_attacker_blocking_bonuses(attacker: "CombatCreature") -> None:
+    """Apply bushido, rampage and flanking from ``attacker`` to blockers."""
+
+    if not attacker.blocked_by:
+        return
+
+    if attacker.bushido:
+        attacker.temp_power += attacker.bushido
+        attacker.temp_toughness += attacker.bushido
+
+    if attacker.rampage:
+        extra = max(0, len(attacker.blocked_by) - 1)
+        attacker.temp_power += attacker.rampage * extra
+        attacker.temp_toughness += attacker.rampage * extra
+
+    if attacker.flanking:
+        for blocker in attacker.blocked_by:
+            if blocker.flanking == 0:
+                blocker.temp_power -= attacker.flanking
+                blocker.temp_toughness -= attacker.flanking
+
+
+def apply_blocker_bushido(blocker: "CombatCreature") -> None:
+    """Grant bushido bonuses to ``blocker`` if it's blocking."""
+
+    if blocker.blocking is not None and blocker.bushido:
+        blocker.temp_power += blocker.bushido
+        blocker.temp_toughness += blocker.bushido

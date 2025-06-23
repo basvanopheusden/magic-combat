@@ -721,6 +721,29 @@ def test_flying_menace_flyer_and_reach_blockers():
     sim.validate_blocking()
 
 
+def test_flying_intimidate_blocking_restrictions():
+    """CR 702.9b & 702.13a: A flying intimidate creature can only be blocked by a same-colored or artifact creature with flying or reach."""
+    atk1 = CombatCreature("Specter", 2, 2, "A", flying=True, intimidate=True, colors={Color.BLUE})
+    wrong_color_flyer = CombatCreature("Bird", 1, 1, "B", flying=True, colors={Color.RED})
+    link_block(atk1, wrong_color_flyer)
+    sim = CombatSimulator([atk1], [wrong_color_flyer])
+    with pytest.raises(ValueError):
+        sim.validate_blocking()
+
+    atk2 = CombatCreature("Specter", 2, 2, "A", flying=True, intimidate=True, colors={Color.BLUE})
+    no_flying_same_color = CombatCreature("Merfolk", 1, 1, "B", colors={Color.BLUE})
+    link_block(atk2, no_flying_same_color)
+    sim = CombatSimulator([atk2], [no_flying_same_color])
+    with pytest.raises(ValueError):
+        sim.validate_blocking()
+
+    atk3 = CombatCreature("Specter", 2, 2, "A", flying=True, intimidate=True, colors={Color.BLUE})
+    legal_blocker = CombatCreature("Sprite", 1, 1, "B", flying=True, colors={Color.BLUE})
+    link_block(atk3, legal_blocker)
+    sim = CombatSimulator([atk3], [legal_blocker])
+    sim.validate_blocking()
+
+
 def test_skulk_menace_two_big_blockers_illegal():
     """CR 702.72a & 702.110b: Skulk prevents menace from being satisfied by larger blockers."""
     atk = CombatCreature("Sneak", 2, 2, "A", skulk=True, menace=True)

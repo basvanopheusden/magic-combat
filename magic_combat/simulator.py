@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from .creature import CombatCreature, Color
+from .creature import CombatCreature
 from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
 from .gamestate import GameState, has_player_lost
 from . import DEFAULT_STARTING_LIFE
@@ -130,43 +130,13 @@ class CombatSimulator:
 
     def _check_evasion(self) -> None:
         """Check evasion abilities like flying, shadow, and skulk."""
+        from .utils import _can_block
+
         for attacker in self.attackers:
             for blocker in attacker.blocked_by:
-                if attacker.flying and not (blocker.flying or blocker.reach):
-                    raise ValueError("Non-flying/reach blocker blocking flyer")
+                if not _can_block(attacker, blocker):
+                    raise ValueError("Illegal block according to keyword abilities")
 
-                if attacker.shadow and not blocker.shadow:
-                    raise ValueError("Non-shadow creature blocking shadow")
-
-                if attacker.horsemanship and not blocker.horsemanship:
-                    raise ValueError("Non-horsemanship creature blocking")
-
-                if attacker.skulk and blocker.effective_power() > attacker.effective_power():
-                    raise ValueError("Skulk prevents block by higher power")
-
-                if attacker.daunt and blocker.effective_power() <= 2:
-                    raise ValueError("Daunt prevents block by small creature")
-
-    def _check_fear_intimidate(self) -> None:
-        """Validate fear and intimidate blocking restrictions."""
-        for attacker in self.attackers:
-            for blocker in attacker.blocked_by:
-                if attacker.fear and not (
-                    blocker.artifact or Color.BLACK in blocker.colors
-                ):
-                    raise ValueError("Fear creature blocked illegally")
-
-                if attacker.intimidate and not (
-                    blocker.artifact or (attacker.colors & blocker.colors)
-                ):
-                    raise ValueError("Intimidate creature blocked illegally")
-
-    def _check_protection(self) -> None:
-        """Ensure protection abilities prevent illegal blockers."""
-        for attacker in self.attackers:
-            for blocker in attacker.blocked_by:
-                if attacker.protection_colors & blocker.colors:
-                    raise ValueError("Attacker has protection from blocker's color")
 
 
     def _check_provoke(self) -> None:
@@ -197,8 +167,6 @@ class CombatSimulator:
         self._check_unblockable()
         self._check_menace()
         self._check_evasion()
-        self._check_fear_intimidate()
-        self._check_protection()
         self._check_provoke()
 
     def apply_precombat_triggers(self):
@@ -311,26 +279,14 @@ class CombatSimulator:
                     ps.life -= atk.afflict
 
     def _handle_bushido_rampage_flanking(self) -> None:
-        """Apply bushido, rampage and flanking bonuses."""
+        """Apply bushido, rampage, and flanking bonuses."""
+        from .utils import apply_attacker_blocking_bonuses, apply_blocker_bushido
+
         for attacker in self.attackers:
-            if attacker.blocked_by:
-                if attacker.bushido:
-                    attacker.temp_power += attacker.bushido
-                    attacker.temp_toughness += attacker.bushido
-                if attacker.rampage:
-                    extra = max(0, len(attacker.blocked_by) - 1)
-                    attacker.temp_power += attacker.rampage * extra
-                    attacker.temp_toughness += attacker.rampage * extra
-                if attacker.flanking:
-                    for blocker in attacker.blocked_by:
-                        if blocker.flanking == 0:
-                            blocker.temp_power -= attacker.flanking
-                            blocker.temp_toughness -= attacker.flanking
+            apply_attacker_blocking_bonuses(attacker)
 
         for blocker in self.defenders:
-            if blocker.blocking is not None and blocker.bushido:
-                blocker.temp_power += blocker.bushido
-                blocker.temp_toughness += blocker.bushido
+            apply_blocker_bushido(blocker)
 
     def _apply_damage_to_creature(
         self, target: "CombatCreature | str", amount: int, source: CombatCreature

@@ -86,3 +86,10 @@ stats = compute_card_statistics(cards)
 creature = generate_random_creature(stats)
 print(creature)
 ```
+
+## Utility functions
+
+The :mod:`magic_combat.utils` module provides helpers for applying combat
+bonuses programmatically. ``apply_attacker_blocking_bonuses`` grants bushido,
+rampage and flanking bonuses to an attacker, while ``apply_blocker_bushido``
+handles bushido on a blocker.
