@@ -1,25 +1,36 @@
-import asyncio
-from typing import List
+"""Helpers for interacting with large language models."""
 
-from magic_combat import CombatResult, GameState, CombatCreature
+from typing import Iterable
+
+from magic_combat import GameState, CombatCreature
 from scripts.random_combat import summarize_creature
-import openai
 
-def create_llm_prompt(game_state: GameState, attackers: list[CombatCreature], blockers: list[CombatCreature]) -> str:
+def create_llm_prompt(
+    game_state: GameState,
+    attackers: Iterable[CombatCreature],
+    blockers: Iterable[CombatCreature],
+) -> str:
     """
-    Create a prompt for an LLM to analyze combat results and game state.
+    Create a prompt instructing a language model to choose blocks.
 
-    Args:
-        combat_result (CombatResult): The result of the combat.
-        game_state (GameState): The current state of the game.
+    Parameters
+    ----------
+    game_state:
+        The current game state.
+    attackers:
+        Creatures attacking this turn.
+    blockers:
+        Creatures available to block.
 
-    Returns:
-        str: A formatted prompt for the LLM.
+    Returns
+    -------
+    str
+        A formatted prompt for the model.
     """
     attacker_string = '\n'.join(summarize_creature(attacker) for attacker in attackers)
     blocker_string = '\n'.join(summarize_creature(blocker) for blocker in blockers)
 
-    prompt = f"""You are a component of a Magic: The Gathering playing AI. 
+    prompt = f"""You are a component of a Magic: The Gathering playing AI.
 Your task is to decide the best blocks for the defending player given a set of attackers, a set of candidate blockers, and the current game state.
 
 The current game state is as follows:
@@ -51,3 +62,40 @@ Also include the outcome of the combat, using the bullet points:
 - Creatures destroyed by each player
 - Poison counters on each player"""
     return prompt.strip()
+
+
+def parse_block_assignments(
+    text: str,
+    blockers: Iterable[CombatCreature] | Iterable[str],
+    attackers: Iterable[CombatCreature] | Iterable[str],
+) -> dict[str, str]:
+    """Parse a markdown list of ``blocker -> attacker`` pairs.
+
+    Parameters
+    ----------
+    text:
+        Response text from the language model.
+    blockers:
+        Blockers available for the defending player or just their names.
+    attackers:
+        Attackers declared this combat or just their names.
+
+    Returns
+    -------
+    dict[str, str]
+        Mapping of blocker name to attacker name.
+    """
+    blocker_names = {b.name if isinstance(b, CombatCreature) else b for b in blockers}
+    attacker_names = {a.name if isinstance(a, CombatCreature) else a for a in attackers}
+
+    pairs: dict[str, str] = {}
+    for line in text.splitlines():
+        if "->" not in line:
+            continue
+        line = line.lstrip("*-• ").strip()
+        before, _, after = line.partition("->")
+        b = before.strip()
+        a = after.strip()
+        if b in blocker_names and a in attacker_names:
+            pairs[b] = a
+    return pairs
