@@ -38,7 +38,7 @@ def test_afflict_and_trample_combined_lethal():
 
 
 def test_toxic_three_poison_counters_causes_loss():
-    """CR 702.??? & 104.3c: Toxic gives that many poison counters; a player with ten or more poison counters loses."""
+    """CR 702.180a & 104.3c: Toxic gives that many poison counters; a player with ten or more poison counters loses."""
     atk = CombatCreature("Stinger", 1, 1, "A", toxic=3)
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=8)})

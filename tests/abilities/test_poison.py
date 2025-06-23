@@ -86,7 +86,7 @@ def test_infect_kills_persist_creature_without_return():
 
 
 def test_infect_and_toxic_stack_poison():
-    """CR 702.90b & 702.??: Infect and toxic add poison counters together."""
+    """CR 702.90b & 702.180a: Infect and toxic add poison counters together."""
     atk = CombatCreature("Venomous", 2, 2, "A", infect=True, toxic=1)
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender])})
