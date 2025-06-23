@@ -2,3 +2,9 @@ __pycache__/
 .pytest_cache/
 .coverage
 data/cards.json
+
+# Ignore IDE and system files
+.DS_Store
+.idea/
+venv
+
