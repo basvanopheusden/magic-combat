@@ -5,6 +5,7 @@ from magic_combat import (
     GameState,
     PlayerState,
     DEFAULT_STARTING_LIFE,
+    POISON_LOSS_THRESHOLD,
     has_player_lost,
 )
 from tests.conftest import link_block
@@ -23,7 +24,7 @@ def test_infect_lifelink_poison_lethal():
     sim = CombatSimulator([atk], [defender], game_state=state)
     result = sim.simulate()
     assert state.players["B"].life == 20
-    assert state.players["B"].poison == 10
+    assert state.players["B"].poison == POISON_LOSS_THRESHOLD
     assert result.lifegain["A"] == 2
     assert has_player_lost(state, "B")
     assert "B" in sim.players_lost

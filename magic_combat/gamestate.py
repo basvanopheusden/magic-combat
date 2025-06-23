@@ -8,6 +8,7 @@ from typing import Dict, List
 from .utils import check_non_negative
 
 from .creature import CombatCreature
+from . import POISON_LOSS_THRESHOLD
 
 
 @dataclass
@@ -35,4 +36,4 @@ def has_player_lost(state: GameState, player: str) -> bool:
     ps = state.players.get(player)
     if ps is None:
         return False
-    return ps.life <= 0 or ps.poison >= 10
+    return ps.life <= 0 or ps.poison >= POISON_LOSS_THRESHOLD
