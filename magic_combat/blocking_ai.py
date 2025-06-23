@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
 from itertools import product
 from typing import List, Optional, Sequence, Tuple
 
 from .creature import CombatCreature
-from .damage import _blocker_value, OptimalDamageStrategy, score_combat_result
+from .damage import _blocker_value
 from .gamestate import GameState
-from .simulator import CombatSimulator
 from .limits import IterationCounter
 from . import DEFAULT_STARTING_LIFE
 from .utils import _can_block
+from .block_utils import evaluate_block_assignment
 
 
 def _creature_value(creature: CombatCreature) -> float:
@@ -32,65 +31,6 @@ def _reset_block_assignments(
         blk.blocking = None
 
 
-def _evaluate_assignment(
-    attackers: Sequence[CombatCreature],
-    blockers: Sequence[CombatCreature],
-    assignment: Sequence[Optional[int]],
-    state: Optional[GameState],
-    counter: "IterationCounter",
-    provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
-) -> Tuple[int, float, int, int, int, Tuple[Optional[int], ...]]:
-    """Simulate combat for a blocking assignment and score it."""
-    atks = deepcopy(list(attackers))
-    blks = deepcopy(list(blockers))
-    for idx, choice in enumerate(assignment):
-        if choice is not None:
-            blk = blks[idx]
-            atk = atks[choice]
-            blk.blocking = atk
-            atk.blocked_by.append(blk)
-
-    prov_copies: dict[CombatCreature, CombatCreature] = {}
-    if provoke_map:
-        for atk, blk in provoke_map.items():
-            if atk in attackers and blk in blockers:
-                prov_copies[atks[attackers.index(atk)]] = blks[blockers.index(blk)]
-
-    sim = CombatSimulator(
-        atks,
-        blks,
-        game_state=deepcopy(state),
-        strategy=OptimalDamageStrategy(counter),
-        provoke_map=prov_copies or None,
-    )
-    try:
-        counter.increment()
-        result = sim.simulate()
-    except ValueError:
-        # Illegal block configuration. Convert ``assignment`` to numbers to avoid
-        # ``TypeError`` during tuple comparisons.
-        ass_key = tuple(
-            len(attackers) if choice is None else choice for choice in assignment
-        )
-        return (
-            1,
-            float("inf"),
-            -len(atks) - len(blks),
-            -float("inf"),
-            float("inf"),
-            float("inf"),
-            ass_key,
-        )
-
-    defender = blks[0].controller if blks else "defender"
-    attacker_player = atks[0].controller if atks else "attacker"
-
-    # Lower tuple values are preferred. Convert ``assignment`` to a tuple of
-    # integers so Python can compare scores deterministically even when ``None``
-    # is present.
-    ass_key = tuple(len(attackers) if choice is None else choice for choice in assignment)
-    score = score_combat_result(result, attacker_player, defender) + (ass_key,)
-    return score
 
 
 def _apply_provoke_assignments(
@@ -217,7 +157,7 @@ def decide_optimal_blocks(
     optimal_count = 0
 
     for assignment in product(*options):
-        score = _evaluate_assignment(
+        score = evaluate_block_assignment(
             attackers,
             blockers,
             assignment,
