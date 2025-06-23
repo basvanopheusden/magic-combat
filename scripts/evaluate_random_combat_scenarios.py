@@ -4,7 +4,7 @@ from typing import List
 import openai
 
 
-async def call_openai_model_single_prompt(prompt: str, client: openai.Client) -> str:
+async def call_openai_model_single_prompt(prompt: str, client: openai.AsyncClient) -> str:
     """
     Call the OpenAI model with a single prompt and return the response.
 
@@ -25,7 +25,83 @@ async def call_openai_model_single_prompt(prompt: str, client: openai.Client) ->
 
 
 async def call_openai_model(prompts: List[str]) -> str:
-    client = openai.Client()
-    tasks = [call_openai_model_single_prompt(prompt, client) for prompt in prompts]
-    responses = await asyncio.gather(*tasks)
-    return "\n\n".join(responses)
+    client = openai.AsyncClient()
+    try:
+        tasks = [call_openai_model_single_prompt(prompt, client) for prompt in prompts]
+        responses = await asyncio.gather(*tasks)
+        return "\n\n".join(responses)
+    finally:
+        await client.aclose()
+
+
+async def evaluate_random_scenarios(n: int, cards_path: str) -> None:
+    from magic_combat import (
+        load_cards,
+        compute_card_statistics,
+        generate_random_creature,
+        assign_random_counters,
+        assign_random_tapped,
+        decide_optimal_blocks,
+        GameState,
+        PlayerState,
+    )
+    from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
+
+    cards = load_cards(cards_path)
+    stats = compute_card_statistics(cards)
+
+    for idx in range(n):
+        attackers = [generate_random_creature(stats, controller="A") for _ in range(2)]
+        blockers = [generate_random_creature(stats, controller="B") for _ in range(2)]
+
+        assign_random_counters(attackers + blockers)
+        assign_random_tapped(blockers)
+
+        state = GameState(
+            players={
+                "A": PlayerState(life=20, creatures=attackers),
+                "B": PlayerState(life=20, creatures=blockers),
+            }
+        )
+
+        # Determine optimal blocks for comparison
+        decide_optimal_blocks(attackers, blockers, game_state=state)
+        optimal = {b.name: b.blocking.name if b.blocking else None for b in blockers}
+
+        # Clear assignments for the LLM prompt
+        for atk in attackers:
+            atk.blocked_by.clear()
+        for blk in blockers:
+            blk.blocking = None
+
+        prompt = create_llm_prompt(state, attackers, blockers)
+        print(f"\n=== Scenario {idx+1} ===")
+        print(prompt)
+
+        try:
+            llm_response = await call_openai_model([prompt])
+        except Exception as exc:  # pragma: no cover - network failure
+            print(f"Failed to query model: {exc}")
+            continue
+
+        print("\nModel response:\n", llm_response)
+        parsed = parse_block_assignments(llm_response, blockers, attackers)
+        correct = sum(1 for b, a in parsed.items() if optimal.get(b) == a)
+        print(f"Correct assignments: {correct}/{len(blockers)}")
+
+
+def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Evaluate LLM blocking advice")
+    parser.add_argument("-n", type=int, default=1, help="Number of scenarios")
+    parser.add_argument(
+        "--cards", default="tests/example_test_cards.json", help="Card data JSON"
+    )
+    args = parser.parse_args()
+
+    asyncio.run(evaluate_random_scenarios(args.n, args.cards))
+
+
+if __name__ == "__main__":
+    main()

@@ -10,7 +10,8 @@ from magic_combat import (
     PlayerState,
     decide_optimal_blocks,
 )
-from magic_combat.blocking_ai import _evaluate_assignment, _can_block
+from magic_combat.block_utils import evaluate_block_assignment
+from magic_combat.blocking_ai import _can_block
 from magic_combat.limits import IterationCounter
 from tests.conftest import link_block
 
@@ -59,7 +60,7 @@ def _compute_best_assignment(atk, blk, state):
     best = None
     best_score = None
     for ass in product(*options):
-        score = _evaluate_assignment(atk, blk, ass, state, counter)
+        score = evaluate_block_assignment(atk, blk, ass, state, counter)
         if best_score is None or score < best_score:
             best_score = score
             best = ass
