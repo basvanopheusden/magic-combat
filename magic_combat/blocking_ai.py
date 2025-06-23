@@ -173,7 +173,7 @@ def decide_optimal_blocks(
     *,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
     max_iterations: int = int(1e6),
-) -> int:
+) -> Tuple[int, int]:
     """Assign blockers to attackers using a heuristic evaluation.
 
     This function enumerates all legal block configurations and chooses the one
