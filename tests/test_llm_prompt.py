@@ -3,6 +3,7 @@ import pytest
 from magic_combat import CombatCreature, GameState, PlayerState
 from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
 from scripts.evaluate_random_combat_scenarios import call_openai_model
+from magic_combat.llm_cache import MockLLMCache
 
 class DummyMessage:
     def __init__(self, content):
@@ -18,7 +19,11 @@ class DummyResponse:
 
 
 class DummyCompletions:
+    def __init__(self):
+        self.calls = 0
+
     async def create(self, model, messages, max_tokens=0, temperature=0):
+        self.calls += 1
         prompt = messages[0]["content"]
         return DummyResponse(f"response to {prompt}")
 
@@ -61,3 +66,43 @@ def test_call_openai_model(monkeypatch):
     monkeypatch.setattr("openai.AsyncClient", lambda: DummyClient())
     res = asyncio.run(call_openai_model(["p1", "p2"]))
     assert res == "response to p1\n\nresponse to p2"
+
+
+def test_llm_cache_hit(monkeypatch):
+    """CR 509.1a: The defending player chooses how creatures block."""
+    monkeypatch.setattr("openai.AsyncClient", lambda: DummyClient())
+    cache = MockLLMCache()
+    res1 = asyncio.run(
+        call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache)
+    )
+    res2 = asyncio.run(
+        call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache)
+    )
+    assert res1 == res2
+    # Only one API call should have been made
+    assert cache.entries[0]["response"] == res1
+    assert len(cache.entries) == 1
+
+
+def test_llm_cache_miss(monkeypatch):
+    """CR 509.1a: The defending player chooses how creatures block."""
+    monkeypatch.setattr("openai.AsyncClient", lambda: DummyClient())
+    cache = MockLLMCache()
+    res1 = asyncio.run(
+        call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache)
+    )
+    res2 = asyncio.run(
+        call_openai_model(["p1"], model="m2", temperature=0.3, seed=1, cache=cache)
+    )
+    res3 = asyncio.run(
+        call_openai_model(["p1"], model="m", temperature=0.4, seed=1, cache=cache)
+    )
+    res4 = asyncio.run(
+        call_openai_model(["p1"], model="m", temperature=0.3, seed=2, cache=cache)
+    )
+    assert res1 != ""
+    assert res2 != ""
+    assert res3 != ""
+    assert res4 != ""
+    # Four distinct entries due to parameter differences
+    assert len(cache.entries) == 4
