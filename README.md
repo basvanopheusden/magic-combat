@@ -64,15 +64,20 @@ loaded with :func:`load_cards`.
 ```python
 from magic_combat import fetch_french_vanilla_cards, save_cards
 
-cards = fetch_french_vanilla_cards()
+cards = fetch_french_vanilla_cards()  # optional ``timeout`` parameter
 save_cards(cards, "data/cards.json")
+
+# By default each request will wait up to 10 seconds; adjust ``timeout`` if
+# you need a different value.
 ```
 
 Alternatively, a small helper script ``scripts/download_cards.py`` can be run
-from the repository root to perform the download:
+from the repository root to perform the download.  It accepts an optional
+``--timeout`` argument matching :func:`fetch_french_vanilla_cards`:
 
 ```bash
 python scripts/download_cards.py data/cards.json
+# python scripts/download_cards.py --timeout 5 data/cards.json
 ```
 
 ## Random creature generation

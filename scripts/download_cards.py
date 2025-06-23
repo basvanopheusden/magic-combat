@@ -27,9 +27,15 @@ def main() -> None:
         default="data/cards.json",
         help="Location of the JSON file to write",
     )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=10.0,
+        help="Timeout for each HTTP request in seconds (default: 10)",
+    )
     args = parser.parse_args()
 
-    cards = fetch_french_vanilla_cards()
+    cards = fetch_french_vanilla_cards(timeout=args.timeout)
     os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
     save_cards(cards, args.output)
     print(f"Saved {len(cards)} cards to {args.output}")
