@@ -15,7 +15,7 @@ from magic_combat.llm_cache import LLMCache
 
 async def call_openai_model_single_prompt(
     prompt: str,
-    client: openai.AsyncClient,
+    client: openai.AsyncOpenAI,
     *,
     model: str = "gpt-4o",
     temperature: float = 0.2,
@@ -27,7 +27,7 @@ async def call_openai_model_single_prompt(
 
     Args:
         prompt (str): The prompt to send to the OpenAI model.
-        client (openai.Client): The OpenAI client instance.
+        client (openai.AsyncOpenAI): The OpenAI client instance.
 
     Returns:
         str: The response from the OpenAI model.
@@ -58,7 +58,7 @@ async def call_openai_model(
     seed: int = 0,
     cache: Optional[LLMCache] = None,
 ) -> str:
-    client = openai.AsyncClient()
+    client = openai.AsyncOpenAI()
     try:
         tasks = [
             call_openai_model_single_prompt(
