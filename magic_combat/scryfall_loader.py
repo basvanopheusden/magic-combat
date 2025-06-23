@@ -6,6 +6,7 @@ from .parsing import (
     parse_colors as _parse_colors,
     apply_keyword_attributes,
 )
+from .keywords import ALLOWED_KEYWORDS
 
 
 import requests
@@ -14,41 +15,7 @@ SCRYFALL_API = "https://api.scryfall.com/cards/search"
 QUERY = "is:frenchvanilla t:creature"
 
 # Keyword abilities supported by :class:`~magic_combat.creature.CombatCreature`.
-ALLOWED_KEYWORDS = {
-    "Flying",
-    "Reach",
-    "Menace",
-    "Fear",
-    "Shadow",
-    "Horsemanship",
-    "Skulk",
-    "Vigilance",
-    "First strike",
-    "Double strike",
-    "Deathtouch",
-    "Trample",
-    "Lifelink",
-    "Wither",
-    "Infect",
-    "Toxic",
-    "Indestructible",
-    "Bushido",
-    "Flanking",
-    "Rampage",
-    "Exalted",
-    "Battle cry",
-    "Melee",
-    "Training",
-    "Frenzy",
-    "Battalion",
-    "Dethrone",
-    "Undying",
-    "Persist",
-    "Intimidate",
-    "Defender",
-    "Afflict",
-    "Provoke",
-}
+# The names come from :mod:`magic_combat.keywords`.
 
 
 def fetch_french_vanilla_cards() -> List[Dict[str, Any]]:

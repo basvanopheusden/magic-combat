@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 def check_non_negative(value: int, name: str) -> None:
     """Validate that ``value`` is not negative.
 
@@ -39,6 +41,26 @@ def ensure_player_state(state, player: str):
     return state.players.setdefault(
         player, PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0)
     )
+
+
+def _evaluate_mana_symbol(symbol: str, x_value: int) -> int:
+    """Return the mana value contributed by a single symbol."""
+
+    color_letters = {"W", "U", "B", "R", "G"}
+
+    if symbol.isdigit():
+        return int(symbol)
+    if symbol in color_letters or symbol == "C":
+        return 1
+    if symbol == "X":
+        return x_value
+    if "/" in symbol and symbol.count("/") == 1:
+        left, right = symbol.split("/")
+        if left in color_letters and right in color_letters and left != right:
+            return 1
+        if left in color_letters and right == "P":
+            return 1
+    return 0
 
 
 def calculate_mana_value(mana_cost: str, x_value: int) -> int:
@@ -107,41 +129,13 @@ def calculate_mana_value(mana_cost: str, x_value: int) -> int:
     """
 
     total_value = 0
-    color_letters = {"W", "U", "B", "R", "G"}
-    processed_positions = set()
-    i = 0
-    while i < len(mana_cost):
-        if mana_cost[i] == "{":
-            j = i + 1
-            brace_count = 1
-            while j < len(mana_cost) and brace_count > 0:
-                if mana_cost[j] == "{":
-                    brace_count += 1
-                elif mana_cost[j] == "}":
-                    brace_count -= 1
-                j += 1
-
-            if brace_count == 0 and i not in processed_positions:
-                symbol_content = mana_cost[i + 1 : j - 1]
-                for pos in range(i, j):
-                    processed_positions.add(pos)
-                if "{" not in symbol_content and "}" not in symbol_content and symbol_content != "":
-                    if symbol_content.isdigit():
-                        total_value += int(symbol_content)
-                    elif symbol_content in color_letters:
-                        total_value += 1
-                    elif symbol_content == "C":
-                        total_value += 1
-                    elif symbol_content == "X":
-                        total_value += x_value
-                    elif "/" in symbol_content and symbol_content.count("/") == 1:
-                        parts = symbol_content.split("/")
-                        if len(parts) == 2:
-                            if parts[0] in color_letters and parts[1] in color_letters and parts[0] != parts[1]:
-                                total_value += 1
-                            elif parts[0] in color_letters and parts[1] == "P":
-                                total_value += 1
-        i += 1
+    pattern = r"\{[^{}]+\}"
+    for match in re.finditer(pattern, mana_cost):
+        start = match.start()
+        if mana_cost.rfind("{", 0, start) > mana_cost.rfind("}", 0, start):
+            continue  # inside nested braces
+        symbol = match.group()[1:-1]
+        total_value += _evaluate_mana_symbol(symbol, x_value)
 
     return total_value
 
