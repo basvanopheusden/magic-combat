@@ -8,7 +8,11 @@ DEFAULT_STARTING_LIFE = 20
 from .simulator import CombatResult, CombatSimulator
 from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
 from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
-from .utils import calculate_mana_value
+from .utils import (
+    calculate_mana_value,
+    apply_attacker_blocking_bonuses,
+    apply_blocker_bushido,
+)
 from .gamestate import GameState, PlayerState, has_player_lost
 from .scryfall_loader import (
     fetch_french_vanilla_cards,
@@ -48,6 +52,8 @@ __all__ = [
     "generate_random_creature",
     "assign_random_counters",
     "assign_random_tapped",
+    "apply_attacker_blocking_bonuses",
+    "apply_blocker_bushido",
     "parse_block_assignments",
     "create_llm_prompt",
 ]
