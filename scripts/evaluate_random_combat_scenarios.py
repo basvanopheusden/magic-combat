@@ -2,6 +2,14 @@ import asyncio
 from typing import List
 
 import openai
+from magic_combat import (
+    load_cards,
+    compute_card_statistics,
+    decide_optimal_blocks,
+    generate_random_scenario,
+    build_value_map,
+)
+from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
 
 
 async def call_openai_model_single_prompt(prompt: str, client: openai.AsyncClient) -> str:
@@ -31,18 +39,10 @@ async def call_openai_model(prompts: List[str]) -> str:
         responses = await asyncio.gather(*tasks)
         return "\n\n".join(responses)
     finally:
-        await client.aclose()
+        await client.close()
 
 
 async def evaluate_random_scenarios(n: int, cards_path: str) -> None:
-    from magic_combat import (
-        load_cards,
-        compute_card_statistics,
-        decide_optimal_blocks,
-        generate_random_scenario,
-        build_value_map,
-    )
-    from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
 
     cards = load_cards(cards_path)
     stats = compute_card_statistics(cards)
@@ -59,7 +59,7 @@ async def evaluate_random_scenarios(n: int, cards_path: str) -> None:
             cards,
             values,
             stats,
-            generated_cards=True,
+            generated_cards=False,
         )
 
         # Determine optimal blocks for comparison
