@@ -93,7 +93,7 @@ def test_infect_kills_undying_but_it_returns():
 
 
 def test_infect_and_toxic_stack_poison():
-    """CR 702.90b & 702.??: Infect and toxic both add poison counters."""
+    """CR 702.90b & 702.180a: Infect and toxic both add poison counters."""
     atk = CombatCreature("Super Toxic", 1, 1, "A", infect=True, toxic=2)
     defender = CombatCreature("Dummy", 0, 1, "B")
     sim = CombatSimulator([atk], [defender])

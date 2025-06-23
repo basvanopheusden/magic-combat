@@ -139,7 +139,7 @@ def test_deathtouch_lifelink_blocker():
 
 
 def test_toxic_lifelink_unblocked():
-    """CR 702.15a & 702.??: Toxic adds poison counters while lifelink gains life from the damage."""
+    """CR 702.15a & 702.180a: Toxic adds poison counters while lifelink gains life from the damage."""
     atk = CombatCreature("Viper", 1, 1, "A", toxic=2, lifelink=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
     sim = CombatSimulator([atk], [defender])

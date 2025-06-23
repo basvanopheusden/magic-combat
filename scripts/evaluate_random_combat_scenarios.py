@@ -1,5 +1,5 @@
 import asyncio
-from typing import List
+from typing import List, Optional
 
 import openai
 from magic_combat import (
@@ -10,9 +10,18 @@ from magic_combat import (
     build_value_map,
 )
 from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
+from magic_combat.llm_cache import LLMCache
 
 
-async def call_openai_model_single_prompt(prompt: str, client: openai.AsyncClient) -> str:
+async def call_openai_model_single_prompt(
+    prompt: str,
+    client: openai.AsyncClient,
+    *,
+    model: str = "gpt-4o",
+    temperature: float = 0.2,
+    seed: int = 0,
+    cache: Optional[LLMCache] = None,
+) -> str:
     """
     Call the OpenAI model with a single prompt and return the response.
 
@@ -23,19 +32,45 @@ async def call_openai_model_single_prompt(prompt: str, client: openai.AsyncClien
     Returns:
         str: The response from the OpenAI model.
     """
+    cached = None
+    if cache is not None:
+        cached = cache.get(prompt, model, seed, temperature)
+    if cached is not None:
+        return cached
+
     response = await client.chat.completions.create(
-        model="gpt-4o",
+        model=model,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=1500,
-        temperature=0.2,
+        temperature=temperature,
     )
-    return response.choices[0].message.content.strip()
+    text = response.choices[0].message.content.strip()
+    if cache is not None:
+        cache.add(prompt, model, seed, temperature, text)
+    return text
 
 
-async def call_openai_model(prompts: List[str]) -> str:
+async def call_openai_model(
+    prompts: List[str],
+    *,
+    model: str = "gpt-4o",
+    temperature: float = 0.2,
+    seed: int = 0,
+    cache: Optional[LLMCache] = None,
+) -> str:
     client = openai.AsyncClient()
     try:
-        tasks = [call_openai_model_single_prompt(prompt, client) for prompt in prompts]
+        tasks = [
+            call_openai_model_single_prompt(
+                prompt,
+                client,
+                model=model,
+                temperature=temperature,
+                seed=seed,
+                cache=cache,
+            )
+            for prompt in prompts
+        ]
         responses = await asyncio.gather(*tasks)
         return "\n\n".join(responses)
     finally:

@@ -277,7 +277,7 @@ def test_rampage_with_battle_cry_and_multiple_blockers():
 
 
 def test_toxic_trample_excess_poison():
-    """CR 702.19b & 702.??: Trample with toxic assigns excess damage and poison counters."""
+    """CR 702.19b & 702.180a: Trample with toxic assigns excess damage and poison counters."""
     atk = CombatCreature("Serpent", 3, 3, "A", trample=True, toxic=2)
     blk = CombatCreature("Wall", 1, 1, "B")
     link_block(atk, blk)
@@ -288,7 +288,7 @@ def test_toxic_trample_excess_poison():
 
 
 def test_multiple_toxic_attackers_stack_poison():
-    """CR 702.??: Each instance of toxic adds poison counters to the defending player."""
+    """CR 702.180a: Each instance of toxic adds poison counters to the defending player."""
     t1 = CombatCreature("Snake1", 1, 1, "A", toxic=1)
     t2 = CombatCreature("Snake2", 2, 2, "A", toxic=2)
     defender = CombatCreature("Dummy", 0, 1, "B")

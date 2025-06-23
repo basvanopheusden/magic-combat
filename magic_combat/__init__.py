@@ -37,6 +37,7 @@ from .random_scenario import (
     generate_random_scenario,
 )
 from .create_llm_prompt import create_llm_prompt, parse_block_assignments
+from .llm_cache import LLMCache, MockLLMCache
 
 __all__ = [
     "CombatCreature",
@@ -71,4 +72,6 @@ __all__ = [
     "apply_blocker_bushido",
     "parse_block_assignments",
     "create_llm_prompt",
+    "LLMCache",
+    "MockLLMCache",
 ]
