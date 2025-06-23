@@ -18,18 +18,24 @@ QUERY = "is:frenchvanilla t:creature"
 # The names come from :mod:`magic_combat.keywords`.
 
 
-def fetch_french_vanilla_cards() -> List[Dict[str, Any]]:
+def fetch_french_vanilla_cards(timeout: float = 10.0) -> List[Dict[str, Any]]:
     """Return a list of creature cards with only keyword abilities.
 
     Uses the Scryfall API's ``is:frenchvanilla`` query to find cards whose
     rules text contains only keyword abilities and no additional abilities.
+
+    Parameters
+    ----------
+    timeout:
+        Maximum number of seconds to wait for each HTTP request.  The default
+        of 10 seconds should be suitable for most use cases.
     """
     url = SCRYFALL_API
     params = {"q": QUERY}
     cards: List[Dict[str, Any]] = []
     with requests.Session() as session:
         while url:
-            resp = session.get(url, params=params)
+            resp = session.get(url, params=params, timeout=timeout)
             resp.raise_for_status()
             data = resp.json()
             for c in data.get("data", []):
