@@ -57,8 +57,25 @@ def test_create_prompt_contents():
 def test_parse_block_assignments():
     """CR 509.1a: The defending player chooses how creatures block."""
     text = "- Guard -> Goblin\n- Life total: 20"
-    result = parse_block_assignments(text, ["Guard"], ["Goblin"])
+    result, invalid = parse_block_assignments(text, ["Guard"], ["Goblin"])
+    assert not invalid
     assert result == {"Guard": "Goblin"}
+
+
+def test_parse_block_assignments_none():
+    """CR 509.1a: The defending player chooses how creatures block."""
+    text = "None"
+    result, invalid = parse_block_assignments(text, ["Guard"], ["Goblin"])
+    assert result == {}
+    assert not invalid
+
+
+def test_parse_block_assignments_invalid_name():
+    """CR 509.1a: The defending player chooses how creatures block."""
+    text = "- Foo -> Goblin"
+    result, invalid = parse_block_assignments(text, ["Guard"], ["Goblin"])
+    assert invalid
+    assert result == {}
 
 
 def test_call_openai_model(monkeypatch):
