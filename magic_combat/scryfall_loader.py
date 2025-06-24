@@ -95,6 +95,7 @@ def card_to_creature(card: Dict[str, Any], controller: str) -> CombatCreature:
         "toughness": toughness,
         "controller": controller,
         "mana_cost": mana_cost,
+        "oracle_text": oracle_text,
         "colors": _parse_colors(mana_cost),
     }
 
