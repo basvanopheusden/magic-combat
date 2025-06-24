@@ -38,6 +38,7 @@ from .random_scenario import (
 )
 from .create_llm_prompt import create_llm_prompt, parse_block_assignments
 from .llm_cache import LLMCache, MockLLMCache
+from .rules_text import RULES_TEXT, get_relevant_rules_text
 
 __all__ = [
     "CombatCreature",
@@ -74,4 +75,6 @@ __all__ = [
     "create_llm_prompt",
     "LLMCache",
     "MockLLMCache",
+    "RULES_TEXT",
+    "get_relevant_rules_text",
 ]

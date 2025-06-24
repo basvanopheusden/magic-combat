@@ -25,6 +25,7 @@ class CombatCreature:
     toughness: int
     controller: str
     mana_cost: str = ""
+    oracle_text: str = ""
     colors: Set[Color] = field(default_factory=set)
     artifact: bool = False
 
