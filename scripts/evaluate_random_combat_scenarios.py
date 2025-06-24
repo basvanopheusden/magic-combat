@@ -1,5 +1,8 @@
 import asyncio
+import random
 from typing import List, Optional
+
+import numpy as np
 
 import openai
 from magic_combat import (
@@ -80,7 +83,15 @@ async def call_openai_model(
         await client.close()
 
 
-async def evaluate_random_scenarios(n: int, cards_path: str) -> None:
+async def evaluate_random_scenarios(
+    n: int,
+    cards_path: str,
+    *,
+    seed: int = 0,
+) -> None:
+
+    random.seed(seed)
+    np.random.seed(seed)
 
     cards = load_cards(cards_path)
     stats = compute_card_statistics(cards)
@@ -98,6 +109,7 @@ async def evaluate_random_scenarios(n: int, cards_path: str) -> None:
             values,
             stats,
             generated_cards=False,
+            seed=seed + idx,
         )
 
         # Determine optimal blocks for comparison
@@ -117,11 +129,11 @@ async def evaluate_random_scenarios(n: int, cards_path: str) -> None:
         attempts = 0
         max_attempts = 3
         while True:
-            try:
-                llm_response = await call_openai_model([prompt])
-            except Exception as exc:  # pragma: no cover - network failure
-                print(f"Failed to query model: {exc}")
-                break
+          try:
+              llm_response = await call_openai_model([prompt], seed=seed + idx)
+          except Exception as exc:  # pragma: no cover - network failure
+              print(f"Failed to query model: {exc}")
+              continue
             try:
                 parsed, invalid = parse_block_assignments(
                     llm_response, blockers, attackers
@@ -150,9 +162,12 @@ def main() -> None:
     parser.add_argument(
         "--cards", default="tests/example_test_cards.json", help="Card data JSON"
     )
+    parser.add_argument(
+        "--seed", type=int, default=0, help="Random seed controlling sampling"
+    )
     args = parser.parse_args()
 
-    asyncio.run(evaluate_random_scenarios(args.n, args.cards))
+    asyncio.run(evaluate_random_scenarios(args.n, args.cards, seed=args.seed))
 
 
 if __name__ == "__main__":
