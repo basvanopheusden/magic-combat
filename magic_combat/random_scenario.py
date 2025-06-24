@@ -61,9 +61,15 @@ def build_value_map(cards: Iterable[dict]) -> Dict[int, float]:
 
 
 def sample_balanced(
-    cards: List[dict], values: Dict[int, float], n_att: int, n_blk: int
+    cards: List[dict],
+    values: Dict[int, float],
+    n_att: int,
+    n_blk: int,
+    *,
+    rng: random.Random | None = None,
 ) -> Tuple[List[int], List[int]]:
     """Select attackers and blockers with roughly equal value."""
+    rng = rng or random
     idxs = list(values.keys())
     if n_att + n_blk > len(idxs):
         raise ValueError("Not enough cards to sample from")
@@ -72,9 +78,9 @@ def sample_balanced(
     best_diff = float("inf")
 
     for _ in range(1000):
-        att_idx = random.sample(idxs, n_att)
+        att_idx = rng.sample(idxs, n_att)
         remaining = [i for i in idxs if i not in att_idx]
-        blk_idx = random.sample(remaining, n_blk)
+        blk_idx = rng.sample(remaining, n_blk)
 
         att_val = sum(values[i] for i in att_idx)
         blk_val = sum(values[i] for i in blk_idx)
@@ -129,6 +135,7 @@ def generate_random_scenario(
     generated_cards: bool = False,
     max_iterations: int = int(1e6),
     unique_optimal: bool = False,
+    seed: int | None = None,
 ) -> Tuple[GameState, List, List, dict, dict]:
     """Return a non-trivial random combat scenario.
 
@@ -138,6 +145,9 @@ def generate_random_scenario(
     attacker interactions and should be supplied when simulating combat.
     """
 
+    rng = random.Random(seed) if seed is not None else random
+    np_rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
+
     valid_len = len(values)
     attempts = 0
     while True:
@@ -145,8 +155,8 @@ def generate_random_scenario(
         if attempts > 100:
             raise RuntimeError("Unable to generate valid scenario")
 
-        n_atk = int(np.random.geometric(1 / 2.5))
-        n_blk = int(np.random.geometric(1 / 2.5))
+        n_atk = int(np_rng.geometric(1 / 2.5))
+        n_blk = int(np_rng.geometric(1 / 2.5))
         n_atk = max(1, min(n_atk, valid_len // 2))
         n_blk = max(1, min(n_blk, valid_len // 2))
 
@@ -154,34 +164,36 @@ def generate_random_scenario(
             if generated_cards:
                 attackers, blockers = generate_balanced_creatures(stats, n_atk, n_blk)
             else:
-                atk_idx, blk_idx = sample_balanced(cards, values, n_atk, n_blk)
+                atk_idx, blk_idx = sample_balanced(
+                    cards, values, n_atk, n_blk, rng=rng
+                )
                 attackers = cards_to_creatures((cards[j] for j in atk_idx), "A")
                 blockers = cards_to_creatures((cards[j] for j in blk_idx), "B")
         except ValueError:
             continue
 
-        assign_random_counters(attackers + blockers)
-        assign_random_tapped(blockers)
+        assign_random_counters(attackers + blockers, rng=rng)
+        assign_random_tapped(blockers, rng=rng)
 
         poison_relevant = any(c.infect or c.toxic for c in attackers + blockers)
 
         state = GameState(
             players={
                 "A": PlayerState(
-                    life=random.randint(1, 20),
+                    life=rng.randint(1, 20),
                     creatures=attackers,
-                    poison=random.randint(0, 9) if poison_relevant else 0,
+                    poison=rng.randint(0, 9) if poison_relevant else 0,
                 ),
                 "B": PlayerState(
-                    life=random.randint(1, 20),
+                    life=rng.randint(1, 20),
                     creatures=blockers,
-                    poison=random.randint(0, 9) if poison_relevant else 0,
+                    poison=rng.randint(0, 9) if poison_relevant else 0,
                 ),
             }
         )
 
         provoke_map = {
-            atk: random.choice(blockers)
+            atk: rng.choice(blockers)
             for atk in attackers
             if atk.provoke
         }
@@ -197,7 +209,7 @@ def generate_random_scenario(
                     if c is not mentor and c.effective_power() < mentor.effective_power()
                 ]
                 if targets:
-                    mentor_map[mentor] = random.choice(targets)
+                    mentor_map[mentor] = rng.choice(targets)
 
         simple_atk = copy.deepcopy(attackers)
         simple_blk = copy.deepcopy(blockers)
