@@ -47,15 +47,16 @@ Skip defender in this calculation (it's worth 0), and count double strike twice 
 6. Minimize poison counters gained.
 Each criterion should only be considered after the previous one resulted in a tie.
 
-Please provide your analysis and the recommended blocking assignments in a markdown format.
-Include a section called "Block Assignments", in which each line follows the following format:
-The name of the blocking creature, an arrow ("->"), and the name of the attacker it blocks.
-For example, this is a valid block assignment:
+Please provide your analysis followed by **exactly two** markdown sections.
+The first section must be called "Block Assignments". Each line in this section
+should contain the name of the blocking creature, an arrow ("->"), and the name
+of the attacker it blocks. If no blocks can be made, write ``None`` on a single
+line below the heading. For example:
 #Block Assignments
 - Serra Angel -> Grizzly Bears
 - Wall of Omens -> Llanowar Elves
-
-Follow this format exactly, with no additional text or explanations in the block assignments section.
+Follow this format exactly with no additional commentary or formatting inside
+the block assignments section.
 Finally, add a markdown section called "Combat Outcome", which contains the life total of both players after combat, any creatures that were destroyed, and any poison counters gained.
 Do so in a format like this:
 #Combat Outcome
@@ -73,7 +74,7 @@ def parse_block_assignments(
     text: str,
     blockers: Iterable[CombatCreature] | Iterable[str],
     attackers: Iterable[CombatCreature] | Iterable[str],
-) -> dict[str, str]:
+) -> tuple[dict[str, str], bool]:
     """Parse a markdown list of ``blocker -> attacker`` pairs.
 
     Parameters
@@ -87,20 +88,33 @@ def parse_block_assignments(
 
     Returns
     -------
-    dict[str, str]
-        Mapping of blocker name to attacker name.
+    tuple[dict[str, str], bool]
+        ``dict`` mapping blocker name to attacker name and a boolean flag
+        indicating whether any illegal names or duplicate assignments were
+        encountered in the text.
     """
     blocker_names = {b.name if isinstance(b, CombatCreature) else b for b in blockers}
     attacker_names = {a.name if isinstance(a, CombatCreature) else a for a in attackers}
 
     pairs: dict[str, str] = {}
+    seen_assignment = False
+    invalid = False
     for line in text.splitlines():
-        if "->" not in line:
+        clean = line.strip().lower()
+        if "->" not in line and clean not in {"none", "no blocks"}:
+            continue
+        if clean in {"none", "no blocks"}:
+            seen_assignment = True
             continue
         line = line.lstrip("*-• ").strip()
         before, _, after = line.partition("->")
         b = before.strip()
         a = after.strip()
-        if b in blocker_names and a in attacker_names:
+        seen_assignment = True
+        if b in blocker_names and a in attacker_names and b not in pairs:
             pairs[b] = a
-    return pairs
+        else:
+            invalid = True
+    if not seen_assignment:
+        raise ValueError("No block assignments found")
+    return pairs, invalid
