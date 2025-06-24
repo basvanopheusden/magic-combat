@@ -12,7 +12,10 @@ from magic_combat import (
     generate_random_scenario,
     build_value_map,
 )
-from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
+from magic_combat.create_llm_prompt import (
+    create_llm_prompt,
+    parse_block_assignments,
+)
 from magic_combat.llm_cache import LLMCache
 
 
@@ -123,16 +126,32 @@ async def evaluate_random_scenarios(
         print(f"\n=== Scenario {idx+1} ===")
         print(prompt)
 
-        try:
-            llm_response = await call_openai_model([prompt], seed=seed + idx)
-        except Exception as exc:  # pragma: no cover - network failure
-            print(f"Failed to query model: {exc}")
-            continue
+        attempts = 0
+        max_attempts = 3
+        while True:
+          try:
+              llm_response = await call_openai_model([prompt], seed=seed + idx)
+          except Exception as exc:  # pragma: no cover - network failure
+              print(f"Failed to query model: {exc}")
+              continue
+            try:
+                parsed, invalid = parse_block_assignments(
+                    llm_response, blockers, attackers
+                )
+            except ValueError:
+                attempts += 1
+                if attempts > max_attempts:
+                    print("Unparseable response; giving up")
+                    break
+                print("Unparseable response; retrying...")
+                continue
 
-        print("\nModel response:\n", llm_response)
-        parsed = parse_block_assignments(llm_response, blockers, attackers)
-        correct = sum(1 for b, a in parsed.items() if optimal.get(b) == a)
-        print(f"Correct assignments: {correct}/{len(blockers)}")
+            print("\nModel response:\n", llm_response)
+            if invalid:
+                print("Response contained illegal block assignments")
+            correct = sum(1 for b, a in parsed.items() if optimal.get(b) == a)
+            print(f"Correct assignments: {correct}/{len(blockers)}")
+            break
 
 
 def main() -> None:
