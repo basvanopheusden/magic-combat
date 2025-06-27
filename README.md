@@ -15,6 +15,7 @@ magic_combat/creature.py     ``CombatCreature`` data model
 magic_combat/damage.py       Damage assignment strategies
 magic_combat/simulator.py    ``CombatSimulator`` and ``CombatResult`` classes
 magic_combat/utils.py        Small utility helpers used internally
+magic_combat/combat_utils.py Damage helpers for creatures and players
 magic_combat/parsing.py      Parsing helpers for card data
 magic_combat/random_creature.py Utilities for sampling creatures
 magic_combat/blocking_ai.py  Blocking heuristics and search
@@ -99,4 +100,6 @@ print(creature)
 The :mod:`magic_combat.utils` module provides helpers for applying combat
 bonuses programmatically. ``apply_attacker_blocking_bonuses`` grants bushido,
 rampage and flanking bonuses to an attacker, while ``apply_blocker_bushido``
-handles bushido on a blocker.
+handles bushido on a blocker.  ``magic_combat.combat_utils`` exposes
+``damage_creature`` and ``damage_player`` for applying damage outside of the
+``CombatSimulator`` class.

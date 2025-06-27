@@ -15,6 +15,7 @@ from .utils import (
     apply_attacker_blocking_bonuses,
     apply_blocker_bushido,
 )
+from .combat_utils import damage_creature, damage_player
 from .gamestate import GameState, PlayerState, has_player_lost
 from .scryfall_loader import (
     fetch_french_vanilla_cards,
@@ -69,6 +70,8 @@ __all__ = [
     "sample_balanced",
     "generate_balanced_creatures",
     "generate_random_scenario",
+    "damage_creature",
+    "damage_player",
     "apply_attacker_blocking_bonuses",
     "apply_blocker_bushido",
     "parse_block_assignments",

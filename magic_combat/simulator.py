@@ -8,6 +8,7 @@ from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
 from .gamestate import GameState, has_player_lost
 from . import DEFAULT_STARTING_LIFE
 from .utils import ensure_player_state, _can_block
+from .combat_utils import damage_creature, damage_player
 
 @dataclass
 class CombatResult:
@@ -293,38 +294,20 @@ class CombatSimulator:
     ) -> None:
         """Apply ``amount`` of damage from ``source`` to ``target``."""
         if isinstance(target, CombatCreature):
-            self._damage_creature(target, amount, source)
+            damage_creature(target, amount, source)
         else:
-            self._damage_player(target, amount, source)
+            damage_player(
+                target,
+                amount,
+                source,
+                damage_to_players=self.player_damage,
+                poison_counters=self.poison_counters,
+                game_state=self.game_state,
+            )
         if source.lifelink:
             self.lifegain[source.controller] = (
                 self.lifegain.get(source.controller, 0) + amount
             )
-
-    def _damage_creature(self, creature: CombatCreature, amount: int, source: CombatCreature) -> None:
-        if source.wither or source.infect:
-            creature.minus1_counters += amount
-        else:
-            creature.damage_marked += amount
-        if source.deathtouch and amount > 0:
-            creature.damaged_by_deathtouch = True
-
-    def _damage_player(self, player: str, amount: int, source: CombatCreature) -> None:
-        if source.infect:
-            self.poison_counters[player] = self.poison_counters.get(player, 0) + amount
-            if self.game_state is not None:
-                ps = ensure_player_state(self.game_state, player)
-                ps.poison += amount
-        else:
-            self.player_damage[player] = self.player_damage.get(player, 0) + amount
-            if self.game_state is not None:
-                ps = ensure_player_state(self.game_state, player)
-                ps.life -= amount
-        if source.toxic:
-            self.poison_counters[player] = self.poison_counters.get(player, 0) + source.toxic
-            if self.game_state is not None:
-                ps = ensure_player_state(self.game_state, player)
-                ps.poison += source.toxic
 
     def resolve_first_strike_damage(self):
         """Handle the first strike combat damage step."""

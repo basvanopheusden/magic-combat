@@ -129,11 +129,11 @@ async def evaluate_random_scenarios(
         attempts = 0
         max_attempts = 3
         while True:
-          try:
-              llm_response = await call_openai_model([prompt], seed=seed + idx)
-          except Exception as exc:  # pragma: no cover - network failure
-              print(f"Failed to query model: {exc}")
-              continue
+            try:
+                llm_response = await call_openai_model([prompt], seed=seed + idx)
+            except Exception as exc:  # pragma: no cover - network failure
+                print(f"Failed to query model: {exc}")
+                continue
             try:
                 parsed, invalid = parse_block_assignments(
                     llm_response, blockers, attackers
