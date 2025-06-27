@@ -16,7 +16,7 @@ from magic_combat.block_utils import evaluate_block_assignment
 from magic_combat.blocking_ai import _can_block
 from magic_combat.limits import IterationCounter
 
-DATA_PATH = Path(__file__).resolve().parent.parent / "example_test_cards.json"
+DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "example_test_cards.json"
 
 
 def _compute_best_assignment(atk, blk, state):

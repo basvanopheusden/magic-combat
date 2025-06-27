@@ -9,7 +9,7 @@ from magic_combat.scryfall_loader import (
 from magic_combat.parsing import parse_protection as _parse_protection
 from magic_combat.creature import Color
 
-DATA_PATH = Path(__file__).with_name("example_test_cards.json")
+DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "example_test_cards.json"
 
 
 def test_parse_colors_hybrid():
