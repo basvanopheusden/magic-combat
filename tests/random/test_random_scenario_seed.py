@@ -1,8 +1,10 @@
 import random
 from magic_combat import load_cards
 from magic_combat.random_scenario import build_value_map, generate_random_scenario
+from pathlib import Path
 
-DATA_PATH = "tests/example_test_cards.json"
+# Path to the sample card data used for random scenario generation
+DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "example_test_cards.json"
 
 
 def test_generate_random_scenario_seed():
