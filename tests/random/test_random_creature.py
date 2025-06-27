@@ -6,7 +6,8 @@ from magic_combat import (
     CombatCreature,
 )
 
-DATA_PATH = Path(__file__).with_name("example_test_cards.json")
+# Sample creature card data for random creature generation
+DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "example_test_cards.json"
 
 
 def test_compute_statistics_means():
