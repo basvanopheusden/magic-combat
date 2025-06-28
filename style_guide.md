@@ -26,8 +26,13 @@ requirements to ensure consistency across the code base.
 - Avoid unused imports and duplicate imports.
 
 ## Linting and Formatting Tools
-- Run `black` to automatically format code.
-- Run `flake8` and `pylint` for linting.
+- Use `black` to automatically format code.
+- Use `isort --profile black` to sort imports.
+- Use `flake8` together with `flake8-import-order` and `pyflakes` to check
+  for style issues.
+- Run `pycodestyle` for additional PEP 8 checks.
+- Run `autoflake` to remove unused imports and variables.
+- Run `pylint` for more comprehensive linting.
 - Run `mypy` for static type checking.
 - These tools are executed in the test suite to enforce the style guide.
 
