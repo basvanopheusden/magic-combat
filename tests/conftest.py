@@ -10,4 +10,3 @@ def link_block(attacker, *blockers):
     attacker.blocked_by.extend(blockers)
     for b in blockers:
         b.blocking = attacker
-

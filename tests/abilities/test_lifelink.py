@@ -3,7 +3,6 @@ from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
 from tests.conftest import link_block
 
 
-
 def test_wither_lifelink_blocker_gains_life():
     """CR 702.90a & 702.15a: Wither damage is -1/-1 counters but still causes life gain from lifelink."""
     atk = CombatCreature("Aggressor", 2, 2, "A")
@@ -73,7 +72,9 @@ def test_afflict_lifelink_no_extra_life():
 
 def test_double_strike_trample_lifelink():
     """CR 702.4b, 702.19b & 702.15a: Double strike with trample deals damage twice and lifelink gains that much life."""
-    atk = CombatCreature("Champion", 2, 2, "A", double_strike=True, trample=True, lifelink=True)
+    atk = CombatCreature(
+        "Champion", 2, 2, "A", double_strike=True, trample=True, lifelink=True
+    )
     blk = CombatCreature("Chump", 1, 1, "B")
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
@@ -158,4 +159,3 @@ def test_lifelink_on_both_sides():
     result = sim.simulate()
     assert result.lifegain["A"] == 2
     assert result.lifegain["B"] == 2
-

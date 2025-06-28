@@ -47,7 +47,12 @@ def test_dethrone_counter_annihilates_existing_minus1():
     attacker = CombatCreature("Challenger", 2, 2, "A", dethrone=True)
     attacker.minus1_counters = 1
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[attacker]), "B": PlayerState(life=25, creatures=[defender])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[attacker]),
+            "B": PlayerState(life=25, creatures=[defender]),
+        }
+    )
     sim = CombatSimulator([attacker], [defender], game_state=state)
     sim.simulate()
     assert attacker.plus1_counters == 0

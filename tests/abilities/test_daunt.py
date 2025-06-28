@@ -6,6 +6,7 @@ from tests.conftest import link_block
 
 # 1
 
+
 def test_daunt_small_blocker_illegal():
     """CR 702.163a: Daunt means creatures with power 2 or less can't block."""
     atk = CombatCreature("Brute", 3, 3, "A", daunt=True)
@@ -18,6 +19,7 @@ def test_daunt_small_blocker_illegal():
 
 # 2
 
+
 def test_daunt_large_blocker_allowed():
     """CR 702.163a allows blocking with a creature of power 3 or more."""
     atk = CombatCreature("Brute", 3, 3, "A", daunt=True)
@@ -28,6 +30,7 @@ def test_daunt_large_blocker_allowed():
 
 
 # 3
+
 
 def test_daunt_plus1_counter_allows_block():
     """CR 702.163a: A +1/+1 counter raising power above 2 enables blocking."""
@@ -40,6 +43,7 @@ def test_daunt_plus1_counter_allows_block():
 
 
 # 4
+
 
 def test_daunt_minus1_counter_prevents_block():
     """CR 702.163a: A -1/-1 counter dropping power to 2 forbids blocking."""
@@ -54,6 +58,7 @@ def test_daunt_minus1_counter_prevents_block():
 
 # 5
 
+
 def test_daunt_menace_two_big_blockers_required():
     """CR 702.163a & 702.110b: Daunt menace attackers need two blockers with power over 2."""
     atk = CombatCreature("Terror", 4, 4, "A", daunt=True, menace=True)
@@ -65,6 +70,7 @@ def test_daunt_menace_two_big_blockers_required():
 
 
 # 6
+
 
 def test_daunt_menace_small_blocker_illegal():
     """CR 702.163a & 702.110b: A small creature can't satisfy menace with daunt."""
@@ -79,6 +85,7 @@ def test_daunt_menace_small_blocker_illegal():
 
 # 7
 
+
 def test_daunt_flying_small_flyer_illegal():
     """CR 702.163a & 702.9b: A small flyer can't block a daunt flyer."""
     atk = CombatCreature("Dragon", 4, 4, "A", daunt=True, flying=True)
@@ -91,6 +98,7 @@ def test_daunt_flying_small_flyer_illegal():
 
 # 8
 
+
 def test_daunt_flying_reach_large_allowed():
     """CR 702.163a & 702.9c: A reach creature with power 3 can block a daunt flyer."""
     atk = CombatCreature("Dragon", 4, 4, "A", daunt=True, flying=True)
@@ -101,6 +109,7 @@ def test_daunt_flying_reach_large_allowed():
 
 
 # 9
+
 
 def test_daunt_skulk_large_blocker_illegal():
     """CR 702.163a & 702.72a: Skulk also prevents blocks by larger creatures."""
@@ -114,6 +123,7 @@ def test_daunt_skulk_large_blocker_illegal():
 
 # 10
 
+
 def test_daunt_skulk_small_blocker_illegal():
     """CR 702.163a: Even if skulk allows it, daunt stops small blockers."""
     atk = CombatCreature("Sneak", 2, 2, "A", daunt=True, skulk=True)
@@ -126,6 +136,7 @@ def test_daunt_skulk_small_blocker_illegal():
 
 # 11
 
+
 def test_daunt_provoke_small_blocker_fails():
     """CR 702.163a & 702.40a: Provoke can't force a small creature to block."""
     atk = CombatCreature("Taunter", 3, 3, "A", daunt=True)
@@ -135,6 +146,7 @@ def test_daunt_provoke_small_blocker_fails():
 
 
 # 12
+
 
 def test_daunt_provoke_large_blocker_forced():
     """CR 702.163a & 702.40a: Provoke can force a large creature to block."""
@@ -148,6 +160,7 @@ def test_daunt_provoke_large_blocker_forced():
 
 # 13
 
+
 def test_daunt_trample_unblocked_hits_player():
     """CR 702.163a & 702.19b: A small blocker can't stop a daunt trampler."""
     atk = CombatCreature("Rhino", 4, 4, "A", daunt=True, trample=True)
@@ -160,6 +173,7 @@ def test_daunt_trample_unblocked_hits_player():
 
 # 14
 
+
 def test_daunt_bushido_small_blocker_illegal():
     """CR 702.163a & 702.46a: Bushido bonuses don't allow small creatures to block."""
     atk = CombatCreature("Samurai", 3, 3, "A", daunt=True)
@@ -171,6 +185,7 @@ def test_daunt_bushido_small_blocker_illegal():
 
 
 # 15
+
 
 def test_daunt_bushido_big_blocker_allowed():
     """CR 702.163a & 702.46a: A big bushido blocker can block and gets the bonus."""
@@ -186,6 +201,7 @@ def test_daunt_bushido_big_blocker_allowed():
 
 # 16
 
+
 def test_daunt_defender_small_cant_block():
     """CR 702.163a: Power 0 defender creatures can't block a daunt attacker."""
     atk = CombatCreature("Brute", 3, 3, "A", daunt=True)
@@ -197,6 +213,7 @@ def test_daunt_defender_small_cant_block():
 
 
 # 17
+
 
 def test_daunt_first_strike_big_blocker_kills_attacker():
     """CR 702.163a & 702.7b: A large first-strike blocker can kill before damage."""
@@ -210,6 +227,7 @@ def test_daunt_first_strike_big_blocker_kills_attacker():
 
 
 # 18
+
 
 def test_daunt_trample_large_blocker_absorbs_damage():
     """CR 702.163a & 702.19b: A big blocker soaks damage from a daunt trampler."""
@@ -225,9 +243,12 @@ def test_daunt_trample_large_blocker_absorbs_damage():
 
 # 19
 
+
 def test_daunt_intimidate_big_artifact_blocker_ok():
     """CR 702.163a & 702.13a: A big artifact can block an intimidate daunt creature."""
-    atk = CombatCreature("Rogue", 3, 3, "A", daunt=True, intimidate=True, colors={Color.BLUE})
+    atk = CombatCreature(
+        "Rogue", 3, 3, "A", daunt=True, intimidate=True, colors={Color.BLUE}
+    )
     blk = CombatCreature("Golem", 3, 3, "B", artifact=True)
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
@@ -236,9 +257,12 @@ def test_daunt_intimidate_big_artifact_blocker_ok():
 
 # 20
 
+
 def test_daunt_intimidate_small_artifact_illegal():
     """CR 702.163a & 702.13a: An artifact with power 2 can't block an intimidate daunt creature."""
-    atk = CombatCreature("Rogue", 3, 3, "A", daunt=True, intimidate=True, colors={Color.BLUE})
+    atk = CombatCreature(
+        "Rogue", 3, 3, "A", daunt=True, intimidate=True, colors={Color.BLUE}
+    )
     blk = CombatCreature("Golem", 2, 2, "B", artifact=True)
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])

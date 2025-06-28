@@ -50,4 +50,3 @@ def test_cards_to_creatures_count():
     assert len(creatures) == 50
     names = {c.name for c in creatures}
     assert "Elemental Beast" in names
-

@@ -17,7 +17,13 @@ def test_damage_player_infect():
     source = CombatCreature("Infecter", 2, 2, "A", infect=True)
     damage = {}
     poison = {}
-    damage_player("B", 2, source, damage_to_players=damage, poison_counters=poison, game_state=None)
+    damage_player(
+        "B",
+        2,
+        source,
+        damage_to_players=damage,
+        poison_counters=poison,
+        game_state=None,
+    )
     assert damage.get("B", 0) == 0
     assert poison.get("B", 0) == 2
-

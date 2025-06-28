@@ -17,7 +17,9 @@ def test_trample_multiple_blockers_ordering():
 
 def test_trample_first_strike_hits_player():
     """CR 702.19b & 702.7b: A first strike attacker assigns trample damage during the first-strike step."""
-    attacker = CombatCreature("Charging Knight", 3, 3, "A", trample=True, first_strike=True)
+    attacker = CombatCreature(
+        "Charging Knight", 3, 3, "A", trample=True, first_strike=True
+    )
     blocker = CombatCreature("Bear", 2, 2, "B")
     link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
@@ -39,7 +41,9 @@ def test_trample_attacker_killed_by_first_strike():
 
 def test_double_strike_trample_deals_damage_twice():
     """CR 702.4b & 702.19b: Double strike with trample deals damage in both steps, assigning excess to the player each time."""
-    attacker = CombatCreature("Ferocious Duelist", 3, 3, "A", trample=True, double_strike=True)
+    attacker = CombatCreature(
+        "Ferocious Duelist", 3, 3, "A", trample=True, double_strike=True
+    )
     blocker = CombatCreature("Peasant", 1, 1, "B")
     link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
@@ -61,6 +65,7 @@ def test_trample_excess_damage_to_player():
 
 import pytest
 
+
 @pytest.mark.parametrize("unused", range(15))
 def test_trample_simple(unused):
     """CR 702.19b: Trample lets excess damage hit the defending player."""
@@ -70,4 +75,3 @@ def test_trample_simple(unused):
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert result.damage_to_players["B"] == 1
-

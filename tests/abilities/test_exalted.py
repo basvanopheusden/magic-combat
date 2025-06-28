@@ -108,7 +108,12 @@ def test_exalted_with_dethrone():
     """CR 702.90a & 702.103a: Exalted boosts damage and dethrone adds a +1/+1 counter."""
     atk = CombatCreature("Upstart", 2, 2, "A", exalted_count=1, dethrone=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=25, creatures=[defender])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=25, creatures=[defender]),
+        }
+    )
     sim = CombatSimulator([atk], [defender], game_state=state)
     result = sim.simulate()
     assert atk.plus1_counters == 1

@@ -6,7 +6,12 @@ from tests.conftest import link_block
 
 
 def random_creature(name, controller):
-    return CombatCreature(name=name, power=random.randint(1, 5), toughness=random.randint(1, 5), controller=controller)
+    return CombatCreature(
+        name=name,
+        power=random.randint(1, 5),
+        toughness=random.randint(1, 5),
+        controller=controller,
+    )
 
 
 def simulate_pair(a, b):
@@ -30,11 +35,14 @@ def test_combat_independence():
         combined = CombatSimulator([a1, a2], [b1, b2])
         comb_res = combined.simulate()
 
-        res1 = simulate_pair(CombatCreature("a1", a1.power, a1.toughness, "A"),
-                             CombatCreature("b1", b1.power, b1.toughness, "B"))
-        res2 = simulate_pair(CombatCreature("a2", a2.power, a2.toughness, "A"),
-                             CombatCreature("b2", b2.power, b2.toughness, "B"))
+        res1 = simulate_pair(
+            CombatCreature("a1", a1.power, a1.toughness, "A"),
+            CombatCreature("b1", b1.power, b1.toughness, "B"),
+        )
+        res2 = simulate_pair(
+            CombatCreature("a2", a2.power, a2.toughness, "A"),
+            CombatCreature("b2", b2.power, b2.toughness, "B"),
+        )
 
         expected = {c.name for c in res1.creatures_destroyed + res2.creatures_destroyed}
         assert {c.name for c in comb_res.creatures_destroyed} == expected
-

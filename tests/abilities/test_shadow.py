@@ -101,4 +101,3 @@ def test_shadow_vs_deathtouch_blocker_destroyed():
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert attacker in result.creatures_destroyed
-

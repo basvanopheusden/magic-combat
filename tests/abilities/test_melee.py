@@ -32,4 +32,3 @@ def test_melee_single_attacker(unused):
     sim = CombatSimulator([atk], [defender])
     result = sim.simulate()
     assert result.damage_to_players["B"] == 3
-

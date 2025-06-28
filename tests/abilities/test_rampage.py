@@ -48,6 +48,7 @@ def test_rampage_single_blocker_no_bonus():
 
 import pytest
 
+
 @pytest.mark.parametrize("unused", range(16))
 def test_rampage_basic(unused):
     """CR 702.23a: Rampage adds power for each blocker beyond the first."""
@@ -58,4 +59,3 @@ def test_rampage_basic(unused):
     sim = CombatSimulator([atk], [b1, b2])
     result = sim.simulate()
     assert atk not in result.creatures_destroyed
-

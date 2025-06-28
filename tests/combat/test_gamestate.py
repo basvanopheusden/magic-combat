@@ -35,7 +35,9 @@ def test_player_loses_from_poison():
     state = GameState(
         players={
             "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
-            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=9),
+            "B": PlayerState(
+                life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=9
+            ),
         }
     )
     sim = CombatSimulator([atk], [defender], game_state=state)
@@ -144,7 +146,9 @@ def test_double_strike_infect_can_cause_loss():
     state = GameState(
         players={
             "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
-            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=8),
+            "B": PlayerState(
+                life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=8
+            ),
         }
     )
     sim = CombatSimulator([atk], [defender], game_state=state)

@@ -30,7 +30,9 @@ def test_provoke_allows_frenzy_attacker_unblocked():
     blk = CombatCreature("Guard", 2, 2, "B")
     provoker.blocked_by.append(blk)
     blk.blocking = provoker
-    sim = CombatSimulator([provoker, frenzy_attacker], [blk], provoke_map={provoker: blk})
+    sim = CombatSimulator(
+        [provoker, frenzy_attacker], [blk], provoke_map={provoker: blk}
+    )
     result = sim.simulate()
     assert result.damage_to_players["B"] == 4
 
@@ -95,6 +97,7 @@ def test_frenzy_trample_unblocked():
     sim = CombatSimulator([atk], [defender])
     result = sim.simulate()
     assert result.damage_to_players["B"] == 5
+
 
 def test_frenzy_lifelink_unblocked():
     """CR 702.35a & 702.15a: Frenzy increases damage dealt with lifelink."""

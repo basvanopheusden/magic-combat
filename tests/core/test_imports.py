@@ -9,6 +9,7 @@ def test_imports():
 
 
 def test_combat_result_dataclass():
-    result = CombatResult(damage_to_players={"player": 0}, creatures_destroyed=[], lifegain={})
+    result = CombatResult(
+        damage_to_players={"player": 0}, creatures_destroyed=[], lifegain={}
+    )
     assert result.damage_to_players["player"] == 0
-

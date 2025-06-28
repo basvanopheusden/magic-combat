@@ -29,4 +29,3 @@ def test_intimidate_blocking(unused):
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     sim.validate_blocking()
-

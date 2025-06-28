@@ -57,4 +57,3 @@ def test_training_basics(unused):
     sim = CombatSimulator([trainee, mentor], [])
     sim.simulate()
     assert trainee.plus1_counters == 1
-

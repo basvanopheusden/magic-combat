@@ -36,4 +36,3 @@ def test_flanking_basic(unused):
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
-

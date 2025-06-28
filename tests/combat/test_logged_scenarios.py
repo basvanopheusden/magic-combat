@@ -9,7 +9,6 @@ from magic_combat import (
 from magic_combat.creature import Color
 
 
-
 def test_logged_scenario_17():
     """CR 702.108a: A creature with horsemanship can't be blocked except by creatures with horsemanship."""
     A, B = "A", "B"
@@ -17,8 +16,12 @@ def test_logged_scenario_17():
     recluse = CombatCreature("Kessig Recluse", 2, 3, A, reach=True, deathtouch=True)
     spider = CombatCreature("Sentinel Spider", 4, 4, B, reach=True, vigilance=True)
     wall = CombatCreature("Glacial Wall", 0, 7, B, defender=True)
-    state = GameState(players={A: PlayerState(life=8, creatures=[lu_meng, recluse]),
-                                B: PlayerState(life=1, creatures=[spider, wall])})
+    state = GameState(
+        players={
+            A: PlayerState(life=8, creatures=[lu_meng, recluse]),
+            B: PlayerState(life=1, creatures=[spider, wall]),
+        }
+    )
     decide_optimal_blocks([lu_meng, recluse], [spider, wall], game_state=state)
     assert spider.blocking is None
     assert wall.blocking is None
@@ -45,8 +48,12 @@ def test_logged_scenario_18():
         trample=True,
         indestructible=True,
     )
-    state = GameState(players={A: PlayerState(life=16, creatures=[runner, creeper, sentinel]),
-                                B: PlayerState(life=12, creatures=[zetalpa])})
+    state = GameState(
+        players={
+            A: PlayerState(life=16, creatures=[runner, creeper, sentinel]),
+            B: PlayerState(life=12, creatures=[zetalpa]),
+        }
+    )
     decide_optimal_blocks([runner, creeper, sentinel], [zetalpa], game_state=state)
     assert zetalpa.blocking is sentinel
     sim = CombatSimulator([runner, creeper, sentinel], [zetalpa], game_state=state)
@@ -63,8 +70,12 @@ def test_logged_scenario_19():
     griffin = CombatCreature("Griffin Sentinel", 1, 3, A, flying=True, vigilance=True)
     sea = CombatCreature("Sea Eagle", 1, 1, B, flying=True)
     airship = CombatCreature("Talas Air Ship", 3, 2, B, flying=True)
-    state = GameState(players={A: PlayerState(life=1, creatures=[aven, boggart, griffin]),
-                                B: PlayerState(life=11, creatures=[sea, airship])})
+    state = GameState(
+        players={
+            A: PlayerState(life=1, creatures=[aven, boggart, griffin]),
+            B: PlayerState(life=11, creatures=[sea, airship]),
+        }
+    )
     decide_optimal_blocks([aven, boggart, griffin], [sea, airship], game_state=state)
     assert sea.blocking is aven
     assert airship.blocking is griffin
@@ -83,8 +94,14 @@ def test_logged_scenario_20():
     disciple = CombatCreature("Golden-Tail Disciple", 2, 3, A, lifelink=True)
     nim = CombatCreature("Contagious Nim", 2, 2, A, infect=True)
     sphinx = CombatCreature("Goliath Sphinx", 8, 7, B, flying=True)
-    state = GameState(players={A: PlayerState(life=19, poison=8, creatures=[billy, archers, disciple, nim]),
-                                B: PlayerState(life=8, poison=8, creatures=[sphinx])})
+    state = GameState(
+        players={
+            A: PlayerState(
+                life=19, poison=8, creatures=[billy, archers, disciple, nim]
+            ),
+            B: PlayerState(life=8, poison=8, creatures=[sphinx]),
+        }
+    )
     decide_optimal_blocks([billy, archers, disciple, nim], [sphinx], game_state=state)
     assert sphinx.blocking is nim
     sim = CombatSimulator([billy, archers, disciple, nim], [sphinx], game_state=state)
@@ -101,8 +118,12 @@ def test_logged_scenario_21():
     sprite = CombatCreature("Moon Sprite", 1, 1, A, flying=True)
     sticker = CombatCreature("Nimble Birdsticker", 2, 3, A, reach=True)
     crew = CombatCreature("Wrecking Crew", 4, 5, B, reach=True, trample=True)
-    state = GameState(players={A: PlayerState(life=3, creatures=[sprite, sticker]),
-                                B: PlayerState(life=4, creatures=[crew])})
+    state = GameState(
+        players={
+            A: PlayerState(life=3, creatures=[sprite, sticker]),
+            B: PlayerState(life=4, creatures=[crew]),
+        }
+    )
     decide_optimal_blocks([sprite, sticker], [crew], game_state=state)
     assert crew.blocking is sticker
     sim = CombatSimulator([sprite, sticker], [crew], game_state=state)
@@ -119,12 +140,20 @@ def test_logged_scenario_22():
     scimitar = CombatCreature("Dancing Scimitar", 1, 5, A, flying=True)
     lammasu = CombatCreature("Venerable Lammasu", 5, 4, B, flying=True)
     sloth = CombatCreature("Relic Sloth", 4, 4, B, menace=True, vigilance=True)
-    state = GameState(players={A: PlayerState(life=10, creatures=[goblin, mantis, scimitar]),
-                                B: PlayerState(life=13, creatures=[lammasu, sloth])})
-    decide_optimal_blocks([goblin, mantis, scimitar], [lammasu, sloth], game_state=state)
+    state = GameState(
+        players={
+            A: PlayerState(life=10, creatures=[goblin, mantis, scimitar]),
+            B: PlayerState(life=13, creatures=[lammasu, sloth]),
+        }
+    )
+    decide_optimal_blocks(
+        [goblin, mantis, scimitar], [lammasu, sloth], game_state=state
+    )
     assert lammasu.blocking is mantis
     assert sloth.blocking is goblin
-    sim = CombatSimulator([goblin, mantis, scimitar], [lammasu, sloth], game_state=state)
+    sim = CombatSimulator(
+        [goblin, mantis, scimitar], [lammasu, sloth], game_state=state
+    )
     result = sim.simulate()
     assert mantis in result.creatures_destroyed
     assert goblin not in result.creatures_destroyed
@@ -138,9 +167,15 @@ def test_logged_scenario_23():
     observer = CombatCreature("Silent Observer", 1, 5, A, flying=True)
     butcher = CombatCreature("Smoldering Butcher", 4, 2, A, wither=True)
     knights = CombatCreature("Plover Knights", 3, 3, B, flying=True, first_strike=True)
-    raptor = CombatCreature("Anvilwrought Raptor", 2, 1, B, flying=True, first_strike=True)
-    state = GameState(players={A: PlayerState(life=16, creatures=[observer, butcher]),
-                                B: PlayerState(life=16, creatures=[knights, raptor])})
+    raptor = CombatCreature(
+        "Anvilwrought Raptor", 2, 1, B, flying=True, first_strike=True
+    )
+    state = GameState(
+        players={
+            A: PlayerState(life=16, creatures=[observer, butcher]),
+            B: PlayerState(life=16, creatures=[knights, raptor]),
+        }
+    )
     decide_optimal_blocks([observer, butcher], [knights, raptor], game_state=state)
     assert knights.blocking is observer
     assert raptor.blocking is butcher
@@ -158,12 +193,20 @@ def test_logged_scenario_24():
     skygate = CombatCreature("Consulate Skygate", 0, 4, B, reach=True, defender=True)
     abomination = CombatCreature("Feral Abomination", 5, 5, B, deathtouch=True)
     patrol = CombatCreature("Skyhunter Patrol", 2, 3, B, flying=True, first_strike=True)
-    state = GameState(players={A: PlayerState(life=18, creatures=[devastator]),
-                                B: PlayerState(life=5, creatures=[skygate, abomination, patrol])})
-    decide_optimal_blocks([devastator], [skygate, abomination, patrol], game_state=state)
+    state = GameState(
+        players={
+            A: PlayerState(life=18, creatures=[devastator]),
+            B: PlayerState(life=5, creatures=[skygate, abomination, patrol]),
+        }
+    )
+    decide_optimal_blocks(
+        [devastator], [skygate, abomination, patrol], game_state=state
+    )
     assert skygate.blocking is devastator
     assert abomination.blocking is devastator
-    sim = CombatSimulator([devastator], [skygate, abomination, patrol], game_state=state)
+    sim = CombatSimulator(
+        [devastator], [skygate, abomination, patrol], game_state=state
+    )
     result = sim.simulate()
     assert devastator in result.creatures_destroyed
     assert abomination in result.creatures_destroyed
@@ -177,8 +220,12 @@ def test_logged_scenario_25():
     wall = CombatCreature("Wall of Wood", 0, 3, B, defender=True)
     crusader = CombatCreature("Cloud Crusader", 2, 3, B, flying=True, first_strike=True)
     recluse = CombatCreature("Deadly Recluse", 1, 2, B, reach=True, deathtouch=True)
-    state = GameState(players={A: PlayerState(life=16, creatures=[earth]),
-                                B: PlayerState(life=17, creatures=[wall, crusader, recluse])})
+    state = GameState(
+        players={
+            A: PlayerState(life=16, creatures=[earth]),
+            B: PlayerState(life=17, creatures=[wall, crusader, recluse]),
+        }
+    )
     decide_optimal_blocks([earth], [wall, crusader, recluse], game_state=state)
     assert recluse.blocking is earth
     sim = CombatSimulator([earth], [wall, crusader, recluse], game_state=state)
@@ -194,8 +241,12 @@ def test_logged_scenario_26():
     eagle = CombatCreature("Sea Eagle", 1, 1, A, flying=True)
     homunculus = CombatCreature("Furtive Homunculus", 2, 1, A, skulk=True)
     barrier = CombatCreature("Hover Barrier", 0, 6, B, flying=True, defender=True)
-    state = GameState(players={A: PlayerState(life=7, creatures=[eagle, homunculus]),
-                                B: PlayerState(life=19, creatures=[barrier])})
+    state = GameState(
+        players={
+            A: PlayerState(life=7, creatures=[eagle, homunculus]),
+            B: PlayerState(life=19, creatures=[barrier]),
+        }
+    )
     decide_optimal_blocks([eagle, homunculus], [barrier], game_state=state)
     assert barrier.blocking is homunculus
     sim = CombatSimulator([eagle, homunculus], [barrier], game_state=state)
@@ -212,8 +263,12 @@ def test_logged_scenario_27():
     rats = CombatCreature("Razortooth Rats", 2, 1, A, fear=True)
     dog = CombatCreature("Alpine Watchdog", 2, 2, A, vigilance=True)
     sanctuary = CombatCreature("Risen Sanctuary", 8, 8, B, vigilance=True)
-    state = GameState(players={A: PlayerState(life=14, creatures=[boar, mantis, rats, dog]),
-                                B: PlayerState(life=11, creatures=[sanctuary])})
+    state = GameState(
+        players={
+            A: PlayerState(life=14, creatures=[boar, mantis, rats, dog]),
+            B: PlayerState(life=11, creatures=[sanctuary]),
+        }
+    )
     decide_optimal_blocks([boar, mantis, rats, dog], [sanctuary], game_state=state)
     assert sanctuary.blocking is dog
     sim = CombatSimulator([boar, mantis, rats, dog], [sanctuary], game_state=state)
@@ -221,5 +276,3 @@ def test_logged_scenario_27():
     assert result.damage_to_players["B"] == 8
     assert dog in result.creatures_destroyed
     assert sanctuary.damage_marked == 2
-
-

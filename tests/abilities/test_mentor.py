@@ -29,7 +29,9 @@ def test_mentor_target_equal_power_illegal():
     mentor = CombatCreature("Mentor", 3, 3, "A", mentor=True)
     target = CombatCreature("Peer", 3, 3, "A")
     with pytest.raises(ValueError):
-        CombatSimulator([mentor, target], [], mentor_map={mentor: target}).apply_precombat_triggers()
+        CombatSimulator(
+            [mentor, target], [], mentor_map={mentor: target}
+        ).apply_precombat_triggers()
 
 
 def test_mentor_target_stronger_illegal():
@@ -221,5 +223,3 @@ def test_mentor_illegal_mapping_key_without_attackers():
     with pytest.raises(ValueError):
         sim = CombatSimulator([], [], mentor_map={mentor: other})
         sim.apply_precombat_triggers()
-
-

@@ -50,7 +50,12 @@ def test_deathtouch_lifelink_gain_life():
     atk = CombatCreature("Vampire", 1, 1, "A", deathtouch=True, lifelink=True)
     blk = CombatCreature("Bear", 2, 2, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
+        }
+    )
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -124,6 +129,7 @@ def test_first_strike_deathtouch_both_sides():
     assert atk in result.creatures_destroyed
     assert blk in result.creatures_destroyed
 
+
 def test_deathtouch_basic_lethal():
     """CR 702.2b: Any nonzero damage from a creature with deathtouch is lethal."""
     atk = CombatCreature("Assassin", 1, 1, "A", deathtouch=True)
@@ -157,4 +163,3 @@ def test_deathtouch_vs_indestructible():
     result = sim.simulate()
     assert atk in result.creatures_destroyed
     assert blk not in result.creatures_destroyed
-

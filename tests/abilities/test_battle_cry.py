@@ -15,7 +15,9 @@ def test_battle_cry_multiple_instances_single_creature():
 
 def test_double_strike_battle_cry_damage():
     """CR 702.4b & 702.92a: Double strike with battle cry still pumps allies once."""
-    leader = CombatCreature("Champion", 2, 2, "A", double_strike=True, battle_cry_count=1)
+    leader = CombatCreature(
+        "Champion", 2, 2, "A", double_strike=True, battle_cry_count=1
+    )
     ally = CombatCreature("Ally", 2, 2, "A")
     sim = CombatSimulator([leader, ally], [])
     result = sim.simulate()
@@ -107,6 +109,7 @@ def test_battle_cry_counts_stack_across_creatures():
     result = sim.simulate()
     assert result.damage_to_players["defender"] == 12
 
+
 def test_battle_cry_boosts_allies():
     """CR 702.92a: Battle cry gives each other attacking creature +1/+0."""
     leader = CombatCreature("Leader", 2, 2, "A", battle_cry_count=1)
@@ -125,4 +128,3 @@ def test_battle_cry_from_multiple_sources():
     sim = CombatSimulator([leader1, leader2, ally], [defender])
     result = sim.simulate()
     assert result.damage_to_players["B"] == 10
-

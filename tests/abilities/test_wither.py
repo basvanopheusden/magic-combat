@@ -23,4 +23,3 @@ def test_wither_basic(unused):
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk.minus1_counters == 2
-

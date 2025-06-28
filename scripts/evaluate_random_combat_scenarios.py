@@ -119,7 +119,6 @@ async def _evaluate_single_scenario(
     seed: int = 0,
     semaphore: asyncio.Semaphore,
 ) -> None:
-
     (
         state,
         attackers,
@@ -228,7 +227,6 @@ async def evaluate_random_scenarios(
     *,
     seed: int = 0,
 ) -> None:
-
     random.seed(seed)
     np.random.seed(seed)
 

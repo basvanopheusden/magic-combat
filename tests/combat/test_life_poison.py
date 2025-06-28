@@ -18,7 +18,9 @@ def test_infect_lifelink_poison_lethal():
     state = GameState(
         players={
             "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
-            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=8),
+            "B": PlayerState(
+                life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=8
+            ),
         }
     )
     sim = CombatSimulator([atk], [defender], game_state=state)
@@ -50,12 +52,16 @@ def test_double_strike_lifelink_player_lethal():
 
 def test_infect_double_strike_lifelink_poison_lethal():
     """CR 702.4b, 702.15a & 702.90b: Double strike with infect deals damage twice as poison counters and lifelink gains that much life."""
-    atk = CombatCreature("Toxic Duelist", 1, 1, "A", infect=True, lifelink=True, double_strike=True)
+    atk = CombatCreature(
+        "Toxic Duelist", 1, 1, "A", infect=True, lifelink=True, double_strike=True
+    )
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(
         players={
             "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
-            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=9),
+            "B": PlayerState(
+                life=DEFAULT_STARTING_LIFE, creatures=[defender], poison=9
+            ),
         }
     )
     sim = CombatSimulator([atk], [defender], game_state=state)
@@ -80,7 +86,9 @@ def test_lifelink_killed_before_dealing_damage():
 
 def test_trample_deathtouch_lifelink_lethal():
     """CR 702.2b, 702.19b & 702.15a: With trample and deathtouch only 1 damage must be assigned to the blocker; the rest hits the player and lifelink gains total damage."""
-    atk = CombatCreature("Charging Snake", 3, 3, "A", trample=True, deathtouch=True, lifelink=True)
+    atk = CombatCreature(
+        "Charging Snake", 3, 3, "A", trample=True, deathtouch=True, lifelink=True
+    )
     blk = CombatCreature("Bear", 2, 2, "B")
     link_block(atk, blk)
     state = GameState(

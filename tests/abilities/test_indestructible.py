@@ -21,7 +21,9 @@ def test_indestructible_attacker_survives_block():
 
 def test_double_strike_indestructible_attacker_survives():
     """CR 702.4b & 702.12b: Double strike doesn't destroy an indestructible creature even after lethal damage."""
-    attacker = CombatCreature("Champion", 2, 2, "A", indestructible=True, double_strike=True)
+    attacker = CombatCreature(
+        "Champion", 2, 2, "A", indestructible=True, double_strike=True
+    )
     blocker = CombatCreature("Guard", 3, 3, "B")
     link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
@@ -54,7 +56,9 @@ def test_wither_damage_kills_indestructible():
 
 def test_double_strike_wither_kills_indestructible():
     """CR 702.4b & 702.90a & 702.12b: Double strike with wither can destroy an indestructible creature in the first-strike step."""
-    attacker = CombatCreature("Acid Duelist", 1, 1, "A", double_strike=True, wither=True)
+    attacker = CombatCreature(
+        "Acid Duelist", 1, 1, "A", double_strike=True, wither=True
+    )
     blocker = CombatCreature("Iron Guardian", 1, 1, "B", indestructible=True)
     link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
@@ -67,7 +71,9 @@ def test_double_strike_wither_kills_indestructible():
 def test_persist_indestructible_dies_no_return_with_counters():
     """CR 702.12b & 702.77a: Persist doesn't return a creature that dies with a -1/-1 counter."""
     attacker = CombatCreature("Corrosive", 2, 2, "A", wither=True)
-    blocker = CombatCreature("Everlasting", 2, 2, "B", indestructible=True, persist=True)
+    blocker = CombatCreature(
+        "Everlasting", 2, 2, "B", indestructible=True, persist=True
+    )
     link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
@@ -92,7 +98,12 @@ def test_indestructible_lifelink_gains_life():
     attacker = CombatCreature("Angel", 2, 2, "A", indestructible=True, lifelink=True)
     blocker = CombatCreature("Bear", 2, 2, "B")
     link_block(attacker, blocker)
-    state = GameState(players={"A": PlayerState(life=10, creatures=[attacker]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blocker])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=10, creatures=[attacker]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blocker]),
+        }
+    )
     sim = CombatSimulator([attacker], [blocker], game_state=state)
     result = sim.simulate()
     assert result.lifegain["A"] == 2

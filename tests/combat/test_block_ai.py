@@ -410,4 +410,3 @@ def test_ai_optimal_count_ignores_tiebreaker():
     )
     _, opt = decide_optimal_blocks([a1, a2], [b1, b2], game_state=state)
     assert opt == 2
-

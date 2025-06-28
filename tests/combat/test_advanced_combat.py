@@ -33,4 +33,3 @@ def test_lifelink_unblocked_attacker_gain_life_from_player_damage():
     result = sim.simulate()
     assert result.damage_to_players["B"] == 3
     assert result.lifegain["A"] == 3
-

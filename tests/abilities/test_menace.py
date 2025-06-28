@@ -12,4 +12,3 @@ def test_menace_requires_two_blockers(i):
     link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
     sim.validate_blocking()
-

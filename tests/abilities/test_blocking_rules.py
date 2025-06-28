@@ -71,9 +71,6 @@ def test_protection_prevents_blocking():
         sim.validate_blocking()
 
 
-
-
-
 def test_shadow_requires_shadow_blocker():
     """CR 702.27b: A creature with shadow can be blocked only by creatures with shadow."""
     attacker = CombatCreature("Shade", 1, 1, "A", shadow=True)

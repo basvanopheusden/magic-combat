@@ -1,7 +1,14 @@
 import pytest
 
 
-from magic_combat import CombatCreature, CombatSimulator, Color, GameState, PlayerState, DEFAULT_STARTING_LIFE
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    Color,
+    GameState,
+    PlayerState,
+    DEFAULT_STARTING_LIFE,
+)
 from tests.conftest import link_block
 
 
@@ -52,7 +59,6 @@ def test_training_with_battle_cry():
     result = sim.simulate()
     assert trainee.plus1_counters == 1
     assert result.damage_to_players["defender"] == 8
-
 
 
 def test_defender_cannot_attack():
@@ -129,7 +135,12 @@ def test_dethrone_adds_counter():
     """CR 702.103a: Dethrone grants a +1/+1 counter when attacking the player with the most life."""
     atk = CombatCreature("Challenger", 2, 2, "A", dethrone=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=25, creatures=[defender])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=25, creatures=[defender]),
+        }
+    )
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert atk.plus1_counters == 1
@@ -143,6 +154,7 @@ def test_toxic_damage_adds_poison():
     result = sim.simulate()
     assert result.damage_to_players["B"] == 1
     assert result.poison_counters["B"] == 2
+
 
 from magic_combat import CombatCreature, CombatSimulator
 from tests.conftest import link_block
@@ -331,14 +343,25 @@ def test_normal_attacker_taps_on_attack():
     sim = CombatSimulator([atk], [defender])
     result = sim.simulate()
     assert atk.tapped
+
+
 import pytest
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState, Color, DEFAULT_STARTING_LIFE
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    Color,
+    DEFAULT_STARTING_LIFE,
+)
 from tests.conftest import link_block
 
 
 def test_intimidate_menace_single_blocker_fails():
     """CR 702.13a & 702.110b: Intimidate with menace needs two appropriate blockers."""
-    atk = CombatCreature("Ruffian", 2, 2, "A", intimidate=True, menace=True, colors={Color.RED})
+    atk = CombatCreature(
+        "Ruffian", 2, 2, "A", intimidate=True, menace=True, colors={Color.RED}
+    )
     blk = CombatCreature("Guard", 2, 2, "B", artifact=True)
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
@@ -348,7 +371,9 @@ def test_intimidate_menace_single_blocker_fails():
 
 def test_intimidate_menace_two_allowed():
     """CR 702.13a & 702.110b: Two legal blockers satisfy intimidate and menace."""
-    atk = CombatCreature("Ruffian", 2, 2, "A", intimidate=True, menace=True, colors={Color.RED})
+    atk = CombatCreature(
+        "Ruffian", 2, 2, "A", intimidate=True, menace=True, colors={Color.RED}
+    )
     b1 = CombatCreature("Artifact", 1, 1, "B", artifact=True)
     b2 = CombatCreature("Red Ally", 1, 1, "B", colors={Color.RED})
     link_block(atk, b1, b2)
@@ -371,7 +396,12 @@ def test_afflict_wither_blocked():
     atk = CombatCreature("Tormentor", 2, 2, "A", afflict=2, wither=True)
     blk = CombatCreature("Soldier", 2, 2, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[blk]),
+        }
+    )
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -644,6 +674,7 @@ def test_rampage_single_blocker_no_bonus():
 
 # 4
 
+
 def test_training_no_stronger_ally():
     """CR 702.138a: Training triggers only with a stronger attacker."""
     trainee = CombatCreature("Student", 2, 2, "A", training=True)
@@ -654,6 +685,7 @@ def test_training_no_stronger_ally():
 
 
 # 5
+
 
 def test_training_multiple_stronger_allies_single_counter():
     """CR 702.138a: Multiple stronger allies still give only one training counter."""
@@ -667,14 +699,17 @@ def test_training_multiple_stronger_allies_single_counter():
 
 # 6
 
+
 def test_dethrone_no_counter_if_not_highest():
     """CR 702.103a: Dethrone doesn't trigger if the defender isn't at the highest life total."""
     attacker = CombatCreature("Challenger", 2, 2, "A", dethrone=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={
-        "A": PlayerState(life=20, creatures=[attacker]),
-        "B": PlayerState(life=15, creatures=[defender]),
-    })
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[attacker]),
+            "B": PlayerState(life=15, creatures=[defender]),
+        }
+    )
     sim = CombatSimulator([attacker], [defender], game_state=state)
     sim.simulate()
     assert attacker.plus1_counters == 0
@@ -682,20 +717,24 @@ def test_dethrone_no_counter_if_not_highest():
 
 # 7
 
+
 def test_dethrone_triggers_when_tied_for_highest():
     """CR 702.103a: Tied for the most life still satisfies dethrone."""
     attacker = CombatCreature("Challenger", 2, 2, "A", dethrone=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={
-        "A": PlayerState(life=20, creatures=[attacker]),
-        "B": PlayerState(life=20, creatures=[defender]),
-    })
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[attacker]),
+            "B": PlayerState(life=20, creatures=[defender]),
+        }
+    )
     sim = CombatSimulator([attacker], [defender], game_state=state)
     sim.simulate()
     assert attacker.plus1_counters == 1
 
 
 # 8
+
 
 def test_bushido_first_strike_bonus_considered():
     """CR 702.46a & 702.7b: Bushido applies before first-strike damage."""
@@ -709,6 +748,7 @@ def test_bushido_first_strike_bonus_considered():
 
 
 # 9
+
 
 def test_flanking_only_nonflanking_debuffed():
     """CR 702.25a: Flanking affects only blockers without flanking."""
@@ -725,6 +765,7 @@ def test_flanking_only_nonflanking_debuffed():
 
 # 10
 
+
 def test_blocker_bushido_grants_bonus():
     """CR 702.46a: Bushido triggers for a creature when it blocks."""
     atk = CombatCreature("Warrior", 2, 2, "A")
@@ -738,6 +779,7 @@ def test_blocker_bushido_grants_bonus():
 
 # 11
 
+
 def test_afflict_unblocked_no_life_loss():
     """CR 702.131a: Afflict only triggers when the creature becomes blocked."""
     atk = CombatCreature("Tormentor", 3, 3, "A", afflict=2)
@@ -748,6 +790,7 @@ def test_afflict_unblocked_no_life_loss():
 
 
 # 12
+
 
 def test_intimidate_same_color_blocker_allowed():
     """CR 702.13a: A creature that shares a color may block an intimidate attacker."""
@@ -760,6 +803,7 @@ def test_intimidate_same_color_blocker_allowed():
 
 # 13
 
+
 def test_defender_can_block():
     """CR 702.3b: Defender prevents attacking but not blocking."""
     atk = CombatCreature("Aggressor", 2, 2, "A")
@@ -770,6 +814,7 @@ def test_defender_can_block():
 
 
 # 14
+
 
 def test_infect_wither_stack_counters_on_blocker():
     """CR 702.90a & 702.90b: Infect with wither still deals only one set of counters."""
@@ -783,6 +828,7 @@ def test_infect_wither_stack_counters_on_blocker():
 
 # 15
 
+
 def test_infect_wither_player_poison_only():
     """CR 702.90b & 702.90a: Wither doesn't affect players, so only poison counters are given."""
     atk = CombatCreature("Agent", 2, 2, "A", infect=True, wither=True)
@@ -795,11 +841,17 @@ def test_infect_wither_player_poison_only():
 
 # 16
 
+
 def test_lifelink_vigilance_unblocked_gains_life():
     """CR 702.15a & 702.21b: Lifelink gains life while vigilance leaves the creature untapped."""
     atk = CombatCreature("Angel", 2, 2, "A", lifelink=True, vigilance=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[defender])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[defender]),
+        }
+    )
     sim = CombatSimulator([atk], [defender], game_state=state)
     result = sim.simulate()
     assert not atk.tapped
@@ -808,6 +860,7 @@ def test_lifelink_vigilance_unblocked_gains_life():
 
 
 # 17
+
 
 def test_shadow_and_fear_requires_shadow():
     """CR 702.27b & 702.36b: A creature with shadow can be blocked only by creatures with shadow."""
@@ -821,6 +874,7 @@ def test_shadow_and_fear_requires_shadow():
 
 # 18
 
+
 def test_unblockable_with_menace_still_unblockable():
     """CR 509.1b & 702.110b: Unblockable creatures can't be blocked even with menace."""
     atk = CombatCreature("Sneak", 2, 2, "A", unblockable=True, menace=True)
@@ -833,6 +887,7 @@ def test_unblockable_with_menace_still_unblockable():
 
 
 # 19
+
 
 def test_trample_vs_indestructible_blocker_excess_to_player():
     """CR 702.19b & 702.12b: Trample assigns lethal damage to an indestructible blocker before hitting the player."""
@@ -873,7 +928,12 @@ def test_wither_lifelink_indestructible():
     atk = CombatCreature("Corrosive", 2, 2, "A", wither=True, lifelink=True)
     blk = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[blk])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[blk]),
+        }
+    )
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert blk in result.creatures_destroyed
@@ -949,7 +1009,14 @@ def test_deathtouch_infect_trample_assigns_poison():
 def test_double_strike_infect_toxic_lifelink():
     """CR 702.4b, 702.15a & 702.90b: Double strike with infect and toxic deals poison twice and grants lifelink."""
     attacker = CombatCreature(
-        "Toxic Angel", 1, 1, "A", double_strike=True, infect=True, toxic=1, lifelink=True
+        "Toxic Angel",
+        1,
+        1,
+        "A",
+        double_strike=True,
+        infect=True,
+        toxic=1,
+        lifelink=True,
     )
     defender = CombatCreature("Dummy", 0, 1, "B")
     state = GameState(
@@ -968,7 +1035,9 @@ def test_double_strike_infect_toxic_lifelink():
 def test_rampage_battle_cry_melee_combo():
     """CR 702.23a, 702.92a & 702.111a: Rampage, battle cry, and melee bonuses stack before combat damage."""
     warleader = CombatCreature("Warleader", 3, 3, "A", rampage=1, melee=True)
-    commander = CombatCreature("Commander", 2, 2, "A", battle_cry_count=1, lifelink=True)
+    commander = CombatCreature(
+        "Commander", 2, 2, "A", battle_cry_count=1, lifelink=True
+    )
     b1 = CombatCreature("B1", 2, 2, "B")
     b2 = CombatCreature("B2", 2, 2, "B")
     link_block(warleader, b1, b2)
@@ -984,7 +1053,9 @@ def test_rampage_battle_cry_melee_combo():
 
 def test_skulk_flanking_bushido_precombat_death():
     """CR 702.72a, 702.25a & 702.46a: Flanking and bushido bonuses apply before damage when a skulk attacker is blocked."""
-    attacker = CombatCreature("Sneaky Knight", 2, 2, "A", skulk=True, flanking=1, bushido=1)
+    attacker = CombatCreature(
+        "Sneaky Knight", 2, 2, "A", skulk=True, flanking=1, bushido=1
+    )
     blocker = CombatCreature("Guard", 1, 1, "B")
     link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
@@ -1029,7 +1100,9 @@ def test_exalted_melee_no_training_when_alone():
 
 def test_fear_and_intimidate_require_artifact_and_color():
     """CR 702.36b & 702.13a: A creature with fear and intimidate can be blocked only by an artifact that also shares its color."""
-    attacker = CombatCreature("Shadow Rogue", 2, 2, "A", fear=True, intimidate=True, colors={Color.RED})
+    attacker = CombatCreature(
+        "Shadow Rogue", 2, 2, "A", fear=True, intimidate=True, colors={Color.RED}
+    )
     blk = CombatCreature("Shade", 2, 2, "B", colors={Color.BLACK})
     link_block(attacker, blk)
     sim = CombatSimulator([attacker], [blk])
@@ -1041,7 +1114,6 @@ def test_fear_and_intimidate_require_artifact_and_color():
     artifact.blocking = attacker
     sim = CombatSimulator([attacker], [artifact])
     sim.validate_blocking()
-
 
 
 def test_flying_menace_flyer_and_reach_blockers():
@@ -1056,22 +1128,32 @@ def test_flying_menace_flyer_and_reach_blockers():
 
 def test_flying_intimidate_blocking_restrictions():
     """CR 702.9b & 702.13a: A flying intimidate creature can only be blocked by a same-colored or artifact creature with flying or reach."""
-    atk1 = CombatCreature("Specter", 2, 2, "A", flying=True, intimidate=True, colors={Color.BLUE})
-    wrong_color_flyer = CombatCreature("Bird", 1, 1, "B", flying=True, colors={Color.RED})
+    atk1 = CombatCreature(
+        "Specter", 2, 2, "A", flying=True, intimidate=True, colors={Color.BLUE}
+    )
+    wrong_color_flyer = CombatCreature(
+        "Bird", 1, 1, "B", flying=True, colors={Color.RED}
+    )
     link_block(atk1, wrong_color_flyer)
     sim = CombatSimulator([atk1], [wrong_color_flyer])
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
-    atk2 = CombatCreature("Specter", 2, 2, "A", flying=True, intimidate=True, colors={Color.BLUE})
+    atk2 = CombatCreature(
+        "Specter", 2, 2, "A", flying=True, intimidate=True, colors={Color.BLUE}
+    )
     no_flying_same_color = CombatCreature("Merfolk", 1, 1, "B", colors={Color.BLUE})
     link_block(atk2, no_flying_same_color)
     sim = CombatSimulator([atk2], [no_flying_same_color])
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
-    atk3 = CombatCreature("Specter", 2, 2, "A", flying=True, intimidate=True, colors={Color.BLUE})
-    legal_blocker = CombatCreature("Sprite", 1, 1, "B", flying=True, colors={Color.BLUE})
+    atk3 = CombatCreature(
+        "Specter", 2, 2, "A", flying=True, intimidate=True, colors={Color.BLUE}
+    )
+    legal_blocker = CombatCreature(
+        "Sprite", 1, 1, "B", flying=True, colors={Color.BLUE}
+    )
     link_block(atk3, legal_blocker)
     sim = CombatSimulator([atk3], [legal_blocker])
     sim.validate_blocking()
@@ -1124,7 +1206,12 @@ def test_dethrone_no_counter_when_life_tied():
     """CR 702.103a: Dethrone doesn't trigger if life totals are tied."""
     atk = CombatCreature("Challenger", 2, 2, "A", dethrone=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
-    state = GameState(players={"A": PlayerState(life=20, creatures=[atk]), "B": PlayerState(life=20, creatures=[defender])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[defender]),
+        }
+    )
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert atk.plus1_counters == 1
@@ -1132,7 +1219,9 @@ def test_dethrone_no_counter_when_life_tied():
 
 def test_intimidate_menace_two_artifact_blockers_required():
     """CR 702.13a & 702.110b: An intimidate menace attacker needs two artifact blockers if none share its color."""
-    atk = CombatCreature("Rogue", 2, 2, "A", intimidate=True, menace=True, colors={Color.BLUE})
+    atk = CombatCreature(
+        "Rogue", 2, 2, "A", intimidate=True, menace=True, colors={Color.BLUE}
+    )
     a1 = CombatCreature("Golem1", 2, 2, "B", artifact=True)
     a2 = CombatCreature("Golem2", 2, 2, "B", artifact=True)
     link_block(atk, a1, a2)
@@ -1142,7 +1231,9 @@ def test_intimidate_menace_two_artifact_blockers_required():
 
 def test_intimidate_menace_single_artifact_illegal():
     """CR 702.13a & 702.110b: A single artifact can't block an intimidate menace creature."""
-    atk = CombatCreature("Rogue", 2, 2, "A", intimidate=True, menace=True, colors={Color.BLUE})
+    atk = CombatCreature(
+        "Rogue", 2, 2, "A", intimidate=True, menace=True, colors={Color.BLUE}
+    )
     a1 = CombatCreature("Golem", 2, 2, "B", artifact=True)
     link_block(atk, a1)
     sim = CombatSimulator([atk], [a1])
@@ -1268,6 +1359,7 @@ def test_shadow_skulk_blocker_without_shadow_illegal():
     with pytest.raises(ValueError):
         sim.validate_blocking()
 
+
 def test_rampage_menace_two_blockers_bonus_applies():
     """CR 702.23a & 702.110b: Rampage adds power when two blockers satisfy menace."""
     atk = CombatCreature("Warrior", 2, 2, "A", rampage=1, menace=True)
@@ -1279,6 +1371,8 @@ def test_rampage_menace_two_blockers_bonus_applies():
     dead = {c.name for c in result.creatures_destroyed}
     assert atk.name in dead
     assert (b1.name in dead) != (b2.name in dead)
+
+
 import pytest
 from magic_combat import (
     CombatCreature,
@@ -1306,7 +1400,12 @@ def test_infect_lifelink_vs_blocker():
     atk = CombatCreature("Toxic Cleric", 2, 2, "A", infect=True, lifelink=True)
     blk = CombatCreature("Bear", 2, 2, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=10, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
+        }
+    )
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert blk.minus1_counters == 2
@@ -1387,7 +1486,12 @@ def test_lifelink_infect_vs_creature():
     atk = CombatCreature("Toxic Healer", 3, 3, "A", infect=True, lifelink=True)
     blk = CombatCreature("Bear", 3, 3, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=10, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=10, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
+        }
+    )
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert result.lifegain["A"] == 3
@@ -1400,7 +1504,12 @@ def test_infect_with_afflict_still_causes_life_loss():
     atk = CombatCreature("Tormentor", 2, 2, "A", infect=True, afflict=1)
     blk = CombatCreature("Guard", 2, 2, "B")
     link_block(atk, blk)
-    state = GameState(players={"A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]), "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk])})
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
+        }
+    )
     sim = CombatSimulator([atk], [blk], game_state=state)
     result = sim.simulate()
     assert state.players["B"].life == 19

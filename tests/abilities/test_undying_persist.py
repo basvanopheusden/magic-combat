@@ -57,4 +57,3 @@ def test_undying_returns_once(unused):
     result = sim.simulate()
     assert blk not in result.creatures_destroyed
     assert blk.plus1_counters == 1
-

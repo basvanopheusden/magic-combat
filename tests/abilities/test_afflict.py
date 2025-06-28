@@ -30,4 +30,3 @@ def test_afflict_triggers_when_blocked(unused):
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert result.damage_to_players["B"] == 1
-

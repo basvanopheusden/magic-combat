@@ -36,7 +36,6 @@ def test_blocker_bushido_grants_bonus():
     assert blk not in result.creatures_destroyed
 
 
-
 @pytest.mark.parametrize("boost", range(1, 18))
 def test_bushido_various(boost):
     """CR 702.46a: Bushido gives the creature +N/+N when blocked."""
@@ -46,5 +45,3 @@ def test_bushido_various(boost):
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert blk in result.creatures_destroyed
-
-

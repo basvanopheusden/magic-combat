@@ -28,9 +28,7 @@ def test_protection_multiple_colors_blocker_illegal():
     attacker = CombatCreature(
         "Champion", 3, 3, "A", protection_colors={Color.RED, Color.GREEN}
     )
-    blocker = CombatCreature(
-        "Hybrid", 2, 2, "B", colors={Color.RED, Color.BLUE}
-    )
+    blocker = CombatCreature("Hybrid", 2, 2, "B", colors={Color.RED, Color.BLUE})
     link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
     with pytest.raises(ValueError):
@@ -74,7 +72,13 @@ def test_menace_with_protection_two_legal_blockers():
 def test_intimidate_same_color_blocker_illegal_due_to_protection():
     """CR 702.13a & 702.16b: Intimidate allows same-color blockers, but protection from that color still prevents them."""
     attacker = CombatCreature(
-        "Sneak", 2, 2, "A", intimidate=True, colors={Color.RED}, protection_colors={Color.RED}
+        "Sneak",
+        2,
+        2,
+        "A",
+        intimidate=True,
+        colors={Color.RED},
+        protection_colors={Color.RED},
     )
     blocker = CombatCreature("Berserker", 2, 2, "B", colors={Color.RED})
     link_block(attacker, blocker)
@@ -86,7 +90,13 @@ def test_intimidate_same_color_blocker_illegal_due_to_protection():
 def test_intimidate_artifact_blocker_still_legal():
     """CR 702.13a: Artifact creatures may block an intimidate attacker even with protection from its color."""
     attacker = CombatCreature(
-        "Sneak", 2, 2, "A", intimidate=True, colors={Color.BLACK}, protection_colors={Color.BLACK}
+        "Sneak",
+        2,
+        2,
+        "A",
+        intimidate=True,
+        colors={Color.BLACK},
+        protection_colors={Color.BLACK},
     )
     blocker = CombatCreature("Golem", 2, 2, "B", artifact=True)
     link_block(attacker, blocker)

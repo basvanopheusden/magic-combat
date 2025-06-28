@@ -22,4 +22,3 @@ def test_vigilance_basic(unused):
     result = sim.simulate()
     assert not atk.tapped
     assert result.damage_to_players["B"] == 2
-

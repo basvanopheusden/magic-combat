@@ -267,7 +267,9 @@ def test_simple_ai_blocks_provoke_target_favorably():
             "B": PlayerState(life=20, creatures=[blk1, blk2]),
         }
     )
-    decide_simple_blocks([atk1, atk2], [blk1, blk2], game_state=state, provoke_map={atk1: blk1})
+    decide_simple_blocks(
+        [atk1, atk2], [blk1, blk2], game_state=state, provoke_map={atk1: blk1}
+    )
     assert blk1.blocking is atk1
     assert blk2.blocking is atk1
 

@@ -16,7 +16,9 @@ class LLMCache:
                     if line:
                         self.entries.append(json.loads(line))
 
-    def get(self, prompt: str, model: str, seed: int, temperature: float) -> Optional[str]:
+    def get(
+        self, prompt: str, model: str, seed: int, temperature: float
+    ) -> Optional[str]:
         for entry in self.entries:
             if (
                 entry.get("prompt") == prompt
