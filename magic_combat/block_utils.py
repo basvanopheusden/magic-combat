@@ -3,12 +3,12 @@ from __future__ import annotations
 """Utility helpers for evaluating blocking assignments."""
 
 from copy import deepcopy
-from typing import Sequence, Optional, Tuple, Dict
+from typing import Dict, Optional, Sequence, Tuple
 
 from .creature import CombatCreature
+from .damage import OptimalDamageStrategy, score_combat_result
 from .gamestate import GameState
 from .limits import IterationCounter
-from .damage import OptimalDamageStrategy, score_combat_result
 from .simulator import CombatSimulator
 
 
@@ -19,7 +19,7 @@ def evaluate_block_assignment(
     state: Optional[GameState],
     counter: IterationCounter,
     provoke_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
-) -> Tuple[int, float, int, int, int, Tuple[Optional[int], ...]]:
+) -> Tuple[int, float, int, int, int, int, Tuple[Optional[int], ...]]:
     """Simulate combat for ``assignment`` and return a scoring tuple."""
     atks = deepcopy(list(attackers))
     blks = deepcopy(list(blockers))
@@ -47,19 +47,23 @@ def evaluate_block_assignment(
         counter.increment()
         result = sim.simulate()
     except ValueError:
-        ass_key = tuple(len(attackers) if choice is None else choice for choice in assignment)
+        ass_key = tuple(
+            len(attackers) if choice is None else choice for choice in assignment
+        )
         return (
             1,
             float("inf"),
             -len(atks) - len(blks),
-            -float("inf"),
-            float("inf"),
-            float("inf"),
+            -(10**9),
+            10**9,
+            10**9,
             ass_key,
         )
 
     defender = blks[0].controller if blks else "defender"
     attacker_player = atks[0].controller if atks else "attacker"
-    ass_key = tuple(len(attackers) if choice is None else choice for choice in assignment)
+    ass_key = tuple(
+        len(attackers) if choice is None else choice for choice in assignment
+    )
     score = score_combat_result(result, attacker_player, defender) + (ass_key,)
     return score

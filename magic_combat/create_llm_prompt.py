@@ -2,8 +2,26 @@
 
 from typing import Iterable
 
-from magic_combat import GameState, CombatCreature
-from scripts.random_combat import summarize_creature
+from .creature import CombatCreature
+from .gamestate import GameState
+from .rules_text import _describe_abilities
+
+
+def summarize_creature(creature: CombatCreature) -> str:
+    """Return a readable one-line summary of ``creature``."""
+
+    extra = []
+    if creature.plus1_counters:
+        extra.append(f"+1/+1 x{creature.plus1_counters}")
+    if creature.minus1_counters:
+        extra.append(f"-1/-1 x{creature.minus1_counters}")
+    if creature.damage_marked:
+        extra.append(f"{creature.damage_marked} dmg")
+    if creature.tapped:
+        extra.append("tapped")
+    extras = f" [{' ,'.join(extra)}]" if extra else ""
+    return f"{creature}{extras} -- {_describe_abilities(creature)}"
+
 
 def create_llm_prompt(
     game_state: GameState,
@@ -20,8 +38,8 @@ def create_llm_prompt(
     Returns:
         A formatted prompt for the model.
     """
-    attacker_string = '\n'.join(summarize_creature(attacker) for attacker in attackers)
-    blocker_string = '\n'.join(summarize_creature(blocker) for blocker in blockers)
+    attacker_string = "\n".join(summarize_creature(attacker) for attacker in attackers)
+    blocker_string = "\n".join(summarize_creature(blocker) for blocker in blockers)
 
     prompt = f"""You are a component of a Magic: The Gathering playing AI.
 Your task is to decide the best blocks for the defending player given a set of attackers, a set of candidate blockers, and the current game state.

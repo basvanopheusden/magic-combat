@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import random
 from collections import Counter, defaultdict
-from typing import Iterable, Dict, Tuple
+from typing import Any, Dict, Iterable, Tuple, cast
 
 import numpy as np
 
-from .creature import CombatCreature, Color
+from .abilities import BOOL_ATTRIBUTES as _BOOL_ABILITIES
+from .abilities import INT_ATTRIBUTES as _INT_ABILITIES
+from .creature import Color, CombatCreature
 from .scryfall_loader import cards_to_creatures
-from .abilities import BOOL_ATTRIBUTES as _BOOL_ABILITIES, INT_ATTRIBUTES as _INT_ABILITIES
 
 # Probability thresholds for assigning +1/+1 or -1/-1 counters
 PLUS1_PROB = 0.1
@@ -29,7 +30,8 @@ __all__ = [
     "assign_random_tapped",
 ]
 
-def compute_card_statistics(cards: Iterable[dict]) -> Dict[str, object]:
+
+def compute_card_statistics(cards: Iterable[dict]) -> Dict[str, Any]:
     """Return first and second order statistics for ``cards``.
 
     The returned mapping contains the mean and standard deviation of power and
@@ -80,7 +82,7 @@ def compute_card_statistics(cards: Iterable[dict]) -> Dict[str, object]:
     return stats
 
 
-def _conditional_probability(a: str, b: str, stats: Dict[str, object]) -> float:
+def _conditional_probability(a: str, b: str, stats: Dict[str, Any]) -> float:
     pair_prob = stats["pair_prob"].get((min(a, b), max(a, b)), 0.0)
     base = stats["ability_prob"].get(a, 0.0)
     if base <= 0:
@@ -89,7 +91,7 @@ def _conditional_probability(a: str, b: str, stats: Dict[str, object]) -> float:
 
 
 def generate_random_creature(
-    stats: Dict[str, object], controller: str = "A", name: str | None = None
+    stats: Dict[str, Any], controller: str = "A", name: str | None = None
 ) -> CombatCreature:
     """Generate a random creature matching the provided statistics."""
 
@@ -129,17 +131,18 @@ def generate_random_creature(
             kwargs[ability] = 1
         elif ability == "protection":
             kwargs["protection_colors"] = {random.choice(list(Color))}
-    return CombatCreature(**kwargs)
+    return CombatCreature(**cast(Any, kwargs))
 
 
-
-def assign_random_counters(creatures: Iterable[CombatCreature], *, rng: random.Random | None = None) -> None:
+def assign_random_counters(
+    creatures: Iterable[CombatCreature], *, rng: random.Random | None = None
+) -> None:
     """Add random +1/+1 or -1/-1 counters to ``creatures``.
 
     A creature receives at most one kind of counter and never enough -1/-1
     counters to reduce its toughness below zero.
     """
-    rng = rng or random
+    rng = rng if rng is not None else random.Random()
     for cr in creatures:
         roll = rng.random()
         if roll < PLUS1_PROB:
@@ -151,7 +154,10 @@ def assign_random_counters(creatures: Iterable[CombatCreature], *, rng: random.R
 
 
 def assign_random_tapped(
-    creatures: Iterable[CombatCreature], *, rng: random.Random | None = None, prob: float = DEFAULT_TAP_PROB
+    creatures: Iterable[CombatCreature],
+    *,
+    rng: random.Random | None = None,
+    prob: float = DEFAULT_TAP_PROB,
 ) -> None:
     """Randomly tap creatures without vigilance.
 
@@ -160,7 +166,7 @@ def assign_random_tapped(
     defenders remain untapped here.
     """
 
-    rng = rng or random
+    rng = rng if rng is not None else random.Random()
     for cr in creatures:
         if cr.vigilance:
             cr.tapped = False

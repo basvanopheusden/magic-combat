@@ -5,14 +5,14 @@ from __future__ import annotations
 from itertools import product
 from typing import List, Optional, Sequence, Tuple
 
+from . import DEFAULT_STARTING_LIFE, POISON_LOSS_THRESHOLD
+from .block_utils import evaluate_block_assignment
 from .creature import CombatCreature
 from .damage import _blocker_value, score_combat_result
 from .gamestate import GameState
 from .limits import IterationCounter
-from . import DEFAULT_STARTING_LIFE, POISON_LOSS_THRESHOLD
-from .utils import _can_block
 from .simulator import CombatSimulator
-from .block_utils import evaluate_block_assignment
+from .utils import _can_block
 
 
 def _creature_value(creature: CombatCreature) -> float:
@@ -32,8 +32,6 @@ def _reset_block_assignments(
         blk.blocking = None
 
 
-
-
 def _apply_provoke_assignments(
     attackers: Sequence[CombatCreature],
     available: List[CombatCreature],
@@ -45,7 +43,11 @@ def _apply_provoke_assignments(
         return
 
     for attacker, target in provoke_map.items():
-        if attacker in attackers and target in available and _can_block(attacker, target):
+        if (
+            attacker in attackers
+            and target in available
+            and _can_block(attacker, target)
+        ):
             target.blocking = attacker
             attacker.blocked_by.append(target)
             available.remove(target)
@@ -164,7 +166,7 @@ def decide_optimal_blocks(
             if atk in attackers and blk in blockers:
                 provoked[blk] = atk
 
-    options = []
+    options: List[List[int | None]] = []
     for blk in blockers:
         forced = provoked.get(blk)
         if forced is not None and _can_block(forced, blk):
@@ -214,8 +216,6 @@ def decide_optimal_blocks(
     return counter.count, optimal_count
 
 
-
-
 def decide_simple_blocks(
     attackers: List[CombatCreature],
     blockers: List[CombatCreature],
@@ -230,11 +230,7 @@ def decide_simple_blocks(
         return
 
     defender = blockers[0].controller
-    life = (
-        game_state.players[defender].life
-        if game_state
-        else DEFAULT_STARTING_LIFE
-    )
+    life = game_state.players[defender].life if game_state else DEFAULT_STARTING_LIFE
     poison = game_state.players[defender].poison if game_state else 0
 
     available = list(blockers)
@@ -244,4 +240,3 @@ def decide_simple_blocks(
     _assign_favorable_trades(attackers_sorted, available)
 
     _perform_chump_blocks(attackers, available, life, poison)
-
