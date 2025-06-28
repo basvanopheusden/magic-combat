@@ -317,15 +317,9 @@ def get_relevant_rules_text(creatures: Iterable[CombatCreature]) -> str:
     """Return card text and rules for all keywords on ``creatures``."""
 
     keywords: Set[str] = set()
-    lines: List[str] = ["# Card Text"]
+    lines: List[str] = []
 
     for creature in creatures:
-        text = (
-            creature.oracle_text.strip()
-            if creature.oracle_text
-            else _describe_abilities(creature)
-        )
-        lines.append(f"{creature.name}: {text}")
         for attr, name in BOOL_NAMES.items():
             if getattr(creature, attr, False):
                 keywords.add(name)
@@ -335,7 +329,6 @@ def get_relevant_rules_text(creatures: Iterable[CombatCreature]) -> str:
         if creature.protection_colors:
             keywords.add("Protection")
 
-    lines.append("")
     lines.append("# Relevant Rules")
     for name in sorted(keywords):
         rule = RULES_TEXT.get(name)

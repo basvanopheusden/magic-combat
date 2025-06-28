@@ -124,7 +124,7 @@ async def evaluate_random_scenarios(
 
         prompt = create_llm_prompt(state, attackers, blockers)
         print(f"\n=== Scenario {idx+1} ===")
-        print(prompt)
+        # print(prompt)
 
         attempts = 0
         max_attempts = 3
