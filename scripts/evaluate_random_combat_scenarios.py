@@ -160,7 +160,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate LLM blocking advice")
     parser.add_argument("-n", type=int, default=1, help="Number of scenarios")
     parser.add_argument(
-        "--cards", default="tests/example_test_cards.json", help="Card data JSON"
+        "--cards",
+        default="tests/data/example_test_cards.json",
+        help="Card data JSON",
     )
     parser.add_argument(
         "--seed", type=int, default=0, help="Random seed controlling sampling"
