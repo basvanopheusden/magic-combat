@@ -1,11 +1,10 @@
 from magic_combat import CombatCreature
-from magic_combat.gamestate import GameState, PlayerState
 from magic_combat.block_utils import evaluate_block_assignment
+from magic_combat.gamestate import GameState, PlayerState
 from magic_combat.limits import IterationCounter
 
 
 def test_evaluate_block_assignment_simple():
-    """CR 510.2: Combat damage is dealt simultaneously."""
     atk = CombatCreature("A", 2, 2, "A")
     blk = CombatCreature("B", 2, 2, "B")
     state = GameState(

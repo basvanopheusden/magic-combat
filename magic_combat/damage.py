@@ -87,7 +87,7 @@ def _select_kill_indices(
 
 
 def score_combat_result(
-    result,
+    result: "CombatResult",
     attacker_player: str,
     defender: str,
 ) -> Tuple[int, float, int, int, int, int]:
@@ -160,10 +160,12 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
                 clone_map[id(b)].blocking = atk
 
             class _Fixed(DamageAssignmentStrategy):
-                def __init__(self, order):
+                def __init__(self, order: List[CombatCreature]) -> None:
                     self._order = order
 
-                def order_blockers(self, a, bs):
+                def order_blockers(
+                    self, a: CombatCreature, bs: List[CombatCreature]
+                ) -> List[CombatCreature]:
                     return self._order
 
             strat = _Fixed([clone_map[id(b)] for b in perm])
