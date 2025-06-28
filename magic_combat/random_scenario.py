@@ -133,6 +133,216 @@ def generate_balanced_creatures(
     raise ValueError("Unable to generate balanced creature sets")
 
 
+def _sample_creatures(
+    cards: List[dict],
+    values: Dict[int, float],
+    stats: Dict[str, object] | None,
+    *,
+    generated_cards: bool,
+    rng: random.Random,
+    np_rng: np.random.Generator,
+) -> Tuple[List, List]:
+    """Select or generate attackers and blockers with similar value."""
+
+    n_atk = int(np_rng.geometric(1 / 2.5))
+    n_blk = int(np_rng.geometric(1 / 2.5))
+    n_atk = max(1, min(n_atk, len(values) // 2))
+    n_blk = max(1, min(n_blk, len(values) // 2))
+
+    if generated_cards:
+        if stats is None:
+            raise ValueError("stats must be provided when generated_cards is True")
+        return generate_balanced_creatures(stats, n_atk, n_blk)
+
+    atk_idx, blk_idx_list = sample_balanced(cards, values, n_atk, n_blk, rng=rng)
+    attackers = cards_to_creatures((cards[j] for j in atk_idx), "A")
+    blockers = cards_to_creatures((cards[j] for j in blk_idx_list), "B")
+    return attackers, blockers
+
+
+def _build_gamestate(
+    attackers: List,
+    blockers: List,
+    rng: random.Random,
+) -> GameState:
+    """Return a randomized ``GameState`` for the provided creatures."""
+
+    assign_random_counters(attackers + blockers, rng=rng)
+    assign_random_tapped(blockers, rng=rng)
+
+    poison_relevant = any(c.infect or c.toxic for c in attackers + blockers)
+
+    return GameState(
+        players={
+            "A": PlayerState(
+                life=rng.randint(1, 20),
+                creatures=attackers,
+                poison=rng.randint(0, 9) if poison_relevant else 0,
+            ),
+            "B": PlayerState(
+                life=rng.randint(1, 20),
+                creatures=blockers,
+                poison=rng.randint(0, 9) if poison_relevant else 0,
+            ),
+        }
+    )
+
+
+def _generate_interactions(
+    attackers: List,
+    blockers: List,
+    rng: random.Random,
+) -> Tuple[dict, dict]:
+    """Create provoke and mentor interaction mappings."""
+
+    provoke_map = {atk: rng.choice(blockers) for atk in attackers if atk.provoke}
+    for blk in provoke_map.values():
+        blk.tapped = False
+
+    mentor_map: dict[CombatCreature, CombatCreature] = {}
+    for mentor in attackers:
+        if mentor.mentor:
+            targets = [
+                c
+                for c in attackers
+                if c is not mentor and c.effective_power() < mentor.effective_power()
+            ]
+            if targets:
+                mentor_map[mentor] = rng.choice(targets)
+
+    return provoke_map, mentor_map
+
+
+def _determine_block_assignments(
+    attackers: List,
+    blockers: List,
+    state: GameState,
+    provoke_map: dict,
+    *,
+    max_iterations: int,
+    unique_optimal: bool,
+) -> Tuple[Tuple[Optional[int], ...] | None, Tuple[Optional[int], ...]]:
+    """Return simple and optimal block assignments."""
+
+    simple_atk = copy.deepcopy(attackers)
+    simple_blk = copy.deepcopy(blockers)
+    simple_state = copy.deepcopy(state)
+    try:
+        decide_simple_blocks(
+            simple_atk,
+            simple_blk,
+            game_state=simple_state,
+            provoke_map=provoke_map,
+        )
+        sim_check = CombatSimulator(simple_atk, simple_blk, game_state=simple_state)
+        sim_check.validate_blocking()
+        atk_map = {id(a): i for i, a in enumerate(simple_atk)}
+        simple_assignment = tuple(atk_map.get(id(b.blocking), None) for b in simple_blk)
+    except ValueError:
+        simple_assignment = None
+
+    _, opt_count = decide_optimal_blocks(
+        attackers,
+        blockers,
+        game_state=state,
+        provoke_map=provoke_map,
+        max_iterations=max_iterations,
+    )
+    if unique_optimal and opt_count != 1:
+        raise RuntimeError("non unique optimal blocks")
+
+    opt_map = {id(a): i for i, a in enumerate(attackers)}
+    optimal_assignment = tuple(opt_map.get(id(b.blocking), None) for b in blockers)
+
+    if simple_assignment is not None and simple_assignment == optimal_assignment:
+        raise RuntimeError("simple blocks equal optimal")
+
+    return simple_assignment, optimal_assignment
+
+
+def _score_optimal_result(
+    attackers: List,
+    blockers: List,
+    state: GameState,
+    optimal_assignment: Tuple[Optional[int], ...],
+    provoke_map: dict,
+    mentor_map: dict,
+) -> Tuple[int, int, int, float]:
+    """Simulate combat using ``optimal_assignment`` and return its value."""
+
+    atk_copy = copy.deepcopy(attackers)
+    blk_copy = copy.deepcopy(blockers)
+    state_copy = copy.deepcopy(state)
+    prov_copies: dict[CombatCreature, CombatCreature] = {}
+    if provoke_map:
+        atk_map_idx = {id(a): i for i, a in enumerate(attackers)}
+        blk_map_idx = {id(b): i for i, b in enumerate(blockers)}
+        for atk, blk in provoke_map.items():
+            if atk in attackers and blk in blockers:
+                a_copy = atk_copy[atk_map_idx[id(atk)]]
+                b_copy = blk_copy[blk_map_idx[id(blk)]]
+                prov_copies[a_copy] = b_copy
+    mentor_copies: dict[CombatCreature, CombatCreature] = {}
+    if mentor_map:
+        atk_map_idx = {id(a): i for i, a in enumerate(attackers)}
+        for mentor, target in mentor_map.items():
+            if mentor in attackers and target in attackers:
+                mentor_copies[atk_copy[atk_map_idx[id(mentor)]]] = atk_copy[
+                    atk_map_idx[id(target)]
+                ]
+    for blk_idx, choice in enumerate(optimal_assignment):
+        if choice is not None:
+            idx = int(choice)
+            blk_copy[blk_idx].blocking = atk_copy[idx]
+            atk_copy[idx].blocked_by.append(blk_copy[blk_idx])
+    sim = CombatSimulator(
+        atk_copy,
+        blk_copy,
+        game_state=state_copy,
+        provoke_map=prov_copies or None,
+        mentor_map=mentor_copies or None,
+    )
+    result = sim.simulate()
+    score = score_combat_result(result, "A", "B")
+    return (score[4], score[5], score[2], score[1])
+
+
+def _compute_combat_results(
+    attackers: List,
+    blockers: List,
+    state: GameState,
+    provoke_map: dict,
+    mentor_map: dict,
+    *,
+    max_iterations: int,
+    unique_optimal: bool,
+) -> Tuple[
+    Tuple[Optional[int], ...] | None,
+    Tuple[Optional[int], ...],
+    Tuple[int, int, int, float],
+]:
+    """Return block assignments and combat outcome for ``attackers`` and ``blockers``."""
+
+    simple_assignment, optimal_assignment = _determine_block_assignments(
+        attackers,
+        blockers,
+        state,
+        provoke_map,
+        max_iterations=max_iterations,
+        unique_optimal=unique_optimal,
+    )
+    combat_value = _score_optimal_result(
+        attackers,
+        blockers,
+        state,
+        optimal_assignment,
+        provoke_map,
+        mentor_map,
+    )
+
+    return simple_assignment, optimal_assignment, combat_value
+
+
 def generate_random_scenario(
     cards: List[dict],
     values: Dict[int, float],
@@ -168,145 +378,42 @@ def generate_random_scenario(
         np.random.default_rng(seed) if seed is not None else np.random.default_rng()
     )
 
-    valid_len = len(values)
     attempts = 0
     while True:
         attempts += 1
         if attempts > 100:
             raise RuntimeError("Unable to generate valid scenario")
-
-        n_atk = int(np_rng.geometric(1 / 2.5))
-        n_blk = int(np_rng.geometric(1 / 2.5))
-        n_atk = max(1, min(n_atk, valid_len // 2))
-        n_blk = max(1, min(n_blk, valid_len // 2))
-
         try:
-            if generated_cards:
-                if stats is None:
-                    raise ValueError(
-                        "stats must be provided when generated_cards is True"
-                    )
-                attackers, blockers = generate_balanced_creatures(stats, n_atk, n_blk)
-            else:
-                atk_idx, blk_idx_list = sample_balanced(
-                    cards, values, n_atk, n_blk, rng=rng
-                )
-                attackers = cards_to_creatures((cards[j] for j in atk_idx), "A")
-                blockers = cards_to_creatures((cards[j] for j in blk_idx_list), "B")
+            attackers, blockers = _sample_creatures(
+                cards,
+                values,
+                stats,
+                generated_cards=generated_cards,
+                rng=rng,
+                np_rng=np_rng,
+            )
         except ValueError:
             continue
 
-        assign_random_counters(attackers + blockers, rng=rng)
-        assign_random_tapped(blockers, rng=rng)
-
-        poison_relevant = any(c.infect or c.toxic for c in attackers + blockers)
-
-        state = GameState(
-            players={
-                "A": PlayerState(
-                    life=rng.randint(1, 20),
-                    creatures=attackers,
-                    poison=rng.randint(0, 9) if poison_relevant else 0,
-                ),
-                "B": PlayerState(
-                    life=rng.randint(1, 20),
-                    creatures=blockers,
-                    poison=rng.randint(0, 9) if poison_relevant else 0,
-                ),
-            }
-        )
-
-        provoke_map = {atk: rng.choice(blockers) for atk in attackers if atk.provoke}
-        for blk in provoke_map.values():
-            blk.tapped = False
-
-        mentor_map = {}
-        for mentor in attackers:
-            if mentor.mentor:
-                targets = [
-                    c
-                    for c in attackers
-                    if c is not mentor
-                    and c.effective_power() < mentor.effective_power()
-                ]
-                if targets:
-                    mentor_map[mentor] = rng.choice(targets)
-
-        simple_atk = copy.deepcopy(attackers)
-        simple_blk = copy.deepcopy(blockers)
-        simple_state = copy.deepcopy(state)
-        try:
-            decide_simple_blocks(
-                simple_atk,
-                simple_blk,
-                game_state=simple_state,
-                provoke_map=provoke_map,
-            )
-            sim_check = CombatSimulator(simple_atk, simple_blk, game_state=simple_state)
-            sim_check.validate_blocking()
-            atk_map = {id(a): i for i, a in enumerate(simple_atk)}
-            simple_assignment = tuple(
-                atk_map.get(id(b.blocking), None) for b in simple_blk
-            )
-        except ValueError:
-            simple_assignment = None
+        state = _build_gamestate(attackers, blockers, rng)
+        provoke_map, mentor_map = _generate_interactions(attackers, blockers, rng)
 
         try:
-            _, opt_count = decide_optimal_blocks(
+            (
+                simple_assignment,
+                optimal_assignment,
+                combat_value,
+            ) = _compute_combat_results(
                 attackers,
                 blockers,
-                game_state=state,
-                provoke_map=provoke_map,
+                state,
+                provoke_map,
+                mentor_map,
                 max_iterations=max_iterations,
+                unique_optimal=unique_optimal,
             )
-            if unique_optimal and opt_count != 1:
-                continue
         except (ValueError, RuntimeError):
             continue
-
-        opt_map = {id(a): i for i, a in enumerate(attackers)}
-        optimal_assignment: Tuple[Optional[int], ...] = tuple(
-            opt_map.get(id(b.blocking), None) for b in blockers
-        )
-
-        if simple_assignment is not None and simple_assignment == optimal_assignment:
-            continue
-
-        atk_copy = copy.deepcopy(attackers)
-        blk_copy = copy.deepcopy(blockers)
-        state_copy = copy.deepcopy(state)
-        prov_copies: dict[CombatCreature, CombatCreature] = {}
-        if provoke_map:
-            atk_map_idx = {id(a): i for i, a in enumerate(attackers)}
-            blk_map_idx = {id(b): i for i, b in enumerate(blockers)}
-            for atk, blk in provoke_map.items():
-                if atk in attackers and blk in blockers:
-                    a_copy = atk_copy[atk_map_idx[id(atk)]]
-                    b_copy = blk_copy[blk_map_idx[id(blk)]]
-                    prov_copies[a_copy] = b_copy
-        mentor_copies: dict[CombatCreature, CombatCreature] = {}
-        if mentor_map:
-            atk_map_idx = {id(a): i for i, a in enumerate(attackers)}
-            for mentor, target in mentor_map.items():
-                if mentor in attackers and target in attackers:
-                    mentor_copies[atk_copy[atk_map_idx[id(mentor)]]] = atk_copy[
-                        atk_map_idx[id(target)]
-                    ]
-        for blk_idx, choice in enumerate(optimal_assignment):
-            if choice is not None:
-                idx = int(choice)
-                blk_copy[blk_idx].blocking = atk_copy[idx]
-                atk_copy[idx].blocked_by.append(blk_copy[blk_idx])
-        sim = CombatSimulator(
-            atk_copy,
-            blk_copy,
-            game_state=state_copy,
-            provoke_map=prov_copies or None,
-            mentor_map=mentor_copies or None,
-        )
-        result = sim.simulate()
-        score = score_combat_result(result, "A", "B")
-        combat_value = (score[4], score[5], score[2], score[1])
 
         start_state = copy.deepcopy(state)
         for atk in attackers:
