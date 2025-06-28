@@ -46,3 +46,28 @@ def test_double_strike_trample_deals_damage_twice():
     result = sim.simulate()
     assert result.damage_to_players["B"] == 5
     assert blocker in result.creatures_destroyed
+
+
+def test_trample_excess_damage_to_player():
+    """CR 702.19b: Damage beyond lethal can be assigned to the defending player."""
+    atk = CombatCreature("Rhino", 4, 4, "A", trample=True)
+    blk = CombatCreature("Wall", 0, 3, "B")
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk in result.creatures_destroyed
+    assert result.damage_to_players["B"] == 1
+
+
+import pytest
+
+@pytest.mark.parametrize("unused", range(15))
+def test_trample_simple(unused):
+    """CR 702.19b: Trample lets excess damage hit the defending player."""
+    atk = CombatCreature("Beast", 3, 3, "A", trample=True)
+    blk = CombatCreature("Wall", 0, 2, "B")
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 1
+

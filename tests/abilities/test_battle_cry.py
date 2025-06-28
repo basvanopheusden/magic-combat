@@ -106,3 +106,23 @@ def test_battle_cry_counts_stack_across_creatures():
     sim = CombatSimulator([c1, c2, ally], [])
     result = sim.simulate()
     assert result.damage_to_players["defender"] == 12
+
+def test_battle_cry_boosts_allies():
+    """CR 702.92a: Battle cry gives each other attacking creature +1/+0."""
+    leader = CombatCreature("Leader", 2, 2, "A", battle_cry_count=1)
+    ally = CombatCreature("Ally", 2, 2, "A")
+    sim = CombatSimulator([leader, ally], [])
+    result = sim.simulate()
+    assert result.damage_to_players["defender"] == 5
+
+
+def test_battle_cry_from_multiple_sources():
+    """CR 702.92a: Each battle cry ability boosts other attackers."""
+    leader1 = CombatCreature("Leader1", 2, 2, "A", battle_cry_count=1)
+    leader2 = CombatCreature("Leader2", 2, 2, "A", battle_cry_count=1)
+    ally = CombatCreature("Ally", 2, 2, "A")
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    sim = CombatSimulator([leader1, leader2, ally], [defender])
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 10
+
