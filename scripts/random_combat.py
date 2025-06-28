@@ -119,6 +119,7 @@ def main() -> None:
             blockers,
             provoke_map,
             mentor_map,
+            *_,
         ) = generate_random_scenario(
             cards,
             values,

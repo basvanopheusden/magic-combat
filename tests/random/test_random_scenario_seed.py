@@ -23,3 +23,5 @@ def test_generate_random_scenario_seed():
     assert blk1 == blk2
     assert res1[0].players["A"].life == res2[0].players["A"].life
     assert res1[0].players["B"].life == res2[0].players["B"].life
+    assert res1[5] == res2[5]
+    assert res1[7] == res2[7]
