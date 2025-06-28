@@ -11,7 +11,7 @@ from .rules_text import get_relevant_rules_text
 def summarize_creature(creature: CombatCreature) -> str:
     """Return a readable one-line summary of ``creature``."""
 
-    extra = []
+    extra: list[str] = []
     if creature.plus1_counters:
         extra.append(f"+1/+1 x{creature.plus1_counters}")
     if creature.minus1_counters:

@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Optional
+from typing import cast
 
 
 class LLMCache:
@@ -8,7 +9,7 @@ class LLMCache:
 
     def __init__(self, path: str) -> None:
         self.path = Path(path)
-        self.entries = []
+        self.entries: list[dict[str, object]] = []
         if self.path.exists():
             with self.path.open() as f:
                 for line in f:
@@ -26,7 +27,7 @@ class LLMCache:
                 and entry.get("seed") == seed
                 and entry.get("temperature") == temperature
             ):
-                return entry.get("response")
+                return cast(Optional[str], entry.get("response"))
         return None
 
     def add(
@@ -37,7 +38,7 @@ class LLMCache:
         temperature: float,
         response: str,
     ) -> None:
-        entry = {
+        entry: dict[str, object] = {
             "prompt": prompt,
             "model": model,
             "seed": seed,
@@ -53,7 +54,7 @@ class MockLLMCache(LLMCache):
     """In-memory cache for testing purposes."""
 
     def __init__(self) -> None:
-        self.entries = []
+        self.entries: list[dict[str, object]] = []
         self.path = None  # type: ignore[assignment]
 
     def add(
@@ -64,7 +65,7 @@ class MockLLMCache(LLMCache):
         temperature: float,
         response: str,
     ) -> None:
-        entry = {
+        entry: dict[str, object] = {
             "prompt": prompt,
             "model": model,
             "seed": seed,
