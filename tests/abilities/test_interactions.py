@@ -155,10 +155,6 @@ def test_toxic_damage_adds_poison():
     assert result.poison_counters["B"] == 2
 
 
-from magic_combat import CombatCreature, CombatSimulator
-from tests.conftest import link_block
-
-
 def test_bushido_bonus():
     """CR 702.46a: Bushido gives the creature +N/+N when it blocks or becomes blocked."""
     atk = CombatCreature("Samurai", 2, 2, "A", bushido=1)
@@ -342,19 +338,6 @@ def test_normal_attacker_taps_on_attack():
     sim = CombatSimulator([atk], [defender])
     result = sim.simulate()
     assert atk.tapped
-
-
-import pytest
-
-from magic_combat import (
-    DEFAULT_STARTING_LIFE,
-    Color,
-    CombatCreature,
-    CombatSimulator,
-    GameState,
-    PlayerState,
-)
-from tests.conftest import link_block
 
 
 def test_intimidate_menace_single_blocker_fails():
@@ -1371,18 +1354,6 @@ def test_rampage_menace_two_blockers_bonus_applies():
     dead = {c.name for c in result.creatures_destroyed}
     assert atk.name in dead
     assert (b1.name in dead) != (b2.name in dead)
-
-
-import pytest
-
-from magic_combat import (
-    DEFAULT_STARTING_LIFE,
-    CombatCreature,
-    CombatSimulator,
-    GameState,
-    PlayerState,
-)
-from tests.conftest import link_block
 
 
 def test_infect_kills_creature_with_counters():
