@@ -5,7 +5,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 STYLE_FILE = ROOT / "style guide.md"
-THIS_FILE = Path(__file__)
 
 
 def run(cmd: str) -> None:
@@ -22,9 +21,9 @@ def test_style_guide_exists() -> None:
 
 
 def test_style_check() -> None:
-    """Run formatters and linters on this file to enforce the style guide."""
-    run(f"black --check {THIS_FILE}")
-    run(f"isort --check-only {THIS_FILE}")
-    run(f"flake8 {THIS_FILE}")
-    run(f"pylint -E {THIS_FILE}")
-    run(f"mypy {THIS_FILE}")
+    """Run formatters and linters across the project to enforce the style guide."""
+    run(f"black --check {ROOT}")
+    run(f"isort --check-only --profile black {ROOT}")
+    run(f"flake8 {ROOT}")
+    run(f"pylint {ROOT}")
+    run(f"mypy {ROOT}")
