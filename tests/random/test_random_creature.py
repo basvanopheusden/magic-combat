@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring, missing-module-docstring
 from pathlib import Path
 
 from magic_combat import (

@@ -1,10 +1,8 @@
-import pytest
-
+# pylint: disable=missing-function-docstring, missing-module-docstring
 from magic_combat import CombatCreature, CombatResult
 
 
 def test_combat_result_repr_readable():
-    """CR 104.3a: A player with 0 or less life loses the game."""
     creature = CombatCreature("Goblin", 2, 2, "A")
     result = CombatResult(
         damage_to_players={"B": 3},

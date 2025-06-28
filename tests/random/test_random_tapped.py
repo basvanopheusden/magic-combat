@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring, missing-module-docstring
 import random
 
 from magic_combat import CombatCreature
