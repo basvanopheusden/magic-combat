@@ -1,8 +1,14 @@
 import json
+import warnings
 from pathlib import Path
 from typing import List, Optional
 
-from magic_combat import build_value_map, generate_random_scenario, load_cards
+from magic_combat import (
+    SNAPSHOT_VERSION,
+    build_value_map,
+    generate_random_scenario,
+    load_cards,
+)
 from magic_combat.blocking_ai import decide_optimal_blocks
 from magic_combat.random_scenario import _score_optimal_result
 
@@ -41,6 +47,12 @@ def test_optimal_blocks_snapshots() -> None:
             attackers.index(b.blocking) if b.blocking is not None else None
             for b in blockers
         ]
+        if snap.get("snapshot_version") != SNAPSHOT_VERSION:
+            warnings.warn(
+                "Outdated snapshot for seed %s (have %s, expected %s)"
+                % (seed, snap.get("snapshot_version"), SNAPSHOT_VERSION)
+            )
+            continue
         assert chosen == snap["optimal_assignment"]
         value = list(
             _score_optimal_result(

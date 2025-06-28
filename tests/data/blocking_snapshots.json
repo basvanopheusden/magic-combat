@@ -10,7 +10,8 @@
       2,
       -1,
       -2.5
-    ]
+    ],
+    "snapshot_version": "1"
   },
   {
     "seed": 1,
@@ -24,7 +25,8 @@
       0,
       -2,
       -6.5
-    ]
+    ],
+    "snapshot_version": "1"
   },
   {
     "seed": 2,
@@ -37,7 +39,8 @@
       0,
       0,
       0
-    ]
+    ],
+    "snapshot_version": "1"
   },
   {
     "seed": 3,
@@ -54,7 +57,8 @@
       2,
       0,
       2.0
-    ]
+    ],
+    "snapshot_version": "1"
   },
   {
     "seed": 4,
@@ -70,6 +74,7 @@
       0,
       -1,
       -7.0
-    ]
+    ],
+    "snapshot_version": "1"
   }
 ]
