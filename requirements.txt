@@ -2,3 +2,8 @@ pytest>=7.0
 requests
 numpy
 openai==1.79.0
+flake8
+black
+isort
+pylint
+mypy
