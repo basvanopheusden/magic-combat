@@ -1,7 +1,4 @@
-import pytest
-
 from magic_combat import (
-    Color,
     CombatCreature,
     GameState,
     PlayerState,

@@ -1,7 +1,6 @@
 import pytest
 
 from magic_combat import CombatCreature, CombatSimulator
-from tests.conftest import link_block
 
 
 def test_vigilance_attacker_stays_untapped():
