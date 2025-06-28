@@ -1,6 +1,4 @@
-import pytest
-
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from magic_combat import CombatCreature, CombatSimulator
 from tests.conftest import link_block
 
 

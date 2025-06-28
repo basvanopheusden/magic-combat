@@ -1,5 +1,3 @@
-import pytest
-
 from magic_combat import (
     DEFAULT_STARTING_LIFE,
     POISON_LOSS_THRESHOLD,
