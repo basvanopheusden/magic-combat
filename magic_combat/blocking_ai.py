@@ -175,7 +175,8 @@ def decide_optimal_blocks(
             options.append(list(range(len(attackers))) + [None])
 
     best: Optional[Tuple[Optional[int], ...]] = None
-    best_score: Optional[Tuple] = None
+    best_score: Optional[tuple] = None
+    best_score_numeric: Optional[tuple] = None
     optimal_count = 0
 
     for assignment in product(*options):
@@ -187,21 +188,28 @@ def decide_optimal_blocks(
             counter,
             provoke_map,
         )
+        numeric = score[:-1]
         if best_score is None or score < best_score:
             # Update the chosen assignment whenever we find a strictly better
             # score. Only reset ``optimal_count`` if the numeric portion of the
             # score actually improved; otherwise we simply update the stored
             # best score so the deterministic tiebreaker picks this assignment.
-            if best_score is None or score[:-1] < best_score[:-1]:
+            if best_score is None:
+                optimal_count = 1
+            elif best_score_numeric is not None and numeric < best_score_numeric:
                 optimal_count = 1
             best_score = score
+            best_score_numeric = numeric
             best = tuple(assignment)
-        else:
+        elif (
+            best_score is not None
+            and best_score_numeric is not None
+            and numeric == best_score_numeric
+        ):
             # ``optimal_count`` should include all assignments that are tied on
             # the numeric criteria. Ignore the deterministic tiebreaker when
             # counting optimal results.
-            if best_score is not None and score[:-1] == best_score[:-1]:
-                optimal_count += 1
+            optimal_count += 1
 
     # Apply the chosen assignment to the real objects
     _reset_block_assignments(attackers, blockers)
