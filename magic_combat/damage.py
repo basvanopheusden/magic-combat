@@ -1,6 +1,8 @@
 """Damage assignment ordering strategies."""
 
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING
+from typing import List
+from typing import Tuple
 
 from .creature import CombatCreature
 from .limits import IterationCounter

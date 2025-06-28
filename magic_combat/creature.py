@@ -1,10 +1,14 @@
 """Data model for creatures used during combat simulation."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from enum import Enum
-from typing import List, Optional, Set
+from typing import List
+from typing import Optional
+from typing import Set
 
-from .utils import check_non_negative, check_positive
+from .utils import check_non_negative
+from .utils import check_positive
 
 
 class Color(Enum):

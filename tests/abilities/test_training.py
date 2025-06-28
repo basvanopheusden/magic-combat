@@ -1,6 +1,7 @@
 import pytest
 
-from magic_combat import CombatCreature, CombatSimulator
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
 
 
 def test_training_adds_counter():

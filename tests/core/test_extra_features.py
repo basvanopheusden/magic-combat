@@ -1,13 +1,11 @@
 # pylint: disable=missing-function-docstring, missing-module-docstring
 import pytest
 
-from magic_combat import (
-    Color,
-    CombatCreature,
-    CombatSimulator,
-    DamageAssignmentStrategy,
-    OptimalDamageStrategy,
-)
+from magic_combat import Color
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
+from magic_combat import DamageAssignmentStrategy
+from magic_combat import OptimalDamageStrategy
 
 
 def test_string_representation():

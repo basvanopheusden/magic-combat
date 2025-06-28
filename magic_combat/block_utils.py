@@ -1,15 +1,19 @@
 from __future__ import annotations
 
-"""Utility helpers for evaluating blocking assignments."""
-
 from copy import deepcopy
-from typing import Dict, Optional, Sequence, Tuple
+from typing import Dict
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
 
 from .creature import CombatCreature
-from .damage import OptimalDamageStrategy, score_combat_result
+from .damage import OptimalDamageStrategy
+from .damage import score_combat_result
 from .gamestate import GameState
 from .limits import IterationCounter
 from .simulator import CombatSimulator
+
+"""Utility helpers for evaluating blocking assignments."""
 
 
 def evaluate_block_assignment(

@@ -1,48 +1,47 @@
 """Core package for the Magic Combat simulator."""
 
-from .creature import Color, CombatCreature
+from .blocking_ai import decide_optimal_blocks
+from .blocking_ai import decide_simple_blocks
+from .combat_utils import damage_creature
+from .combat_utils import damage_player
+from .create_llm_prompt import create_llm_prompt
+from .create_llm_prompt import parse_block_assignments
+from .creature import Color
+from .creature import CombatCreature
+from .damage import DamageAssignmentStrategy
+from .damage import OptimalDamageStrategy
+from .gamestate import GameState
+from .gamestate import PlayerState
+from .gamestate import has_player_lost
+from .llm_cache import LLMCache
+from .llm_cache import MockLLMCache
+from .random_creature import assign_random_counters
+from .random_creature import assign_random_tapped
+from .random_creature import compute_card_statistics
+from .random_creature import generate_random_creature
+from .random_scenario import build_value_map
+from .random_scenario import ensure_cards
+from .random_scenario import generate_balanced_creatures
+from .random_scenario import generate_random_scenario
+from .random_scenario import sample_balanced
+from .rules_text import RULES_TEXT
+from .rules_text import get_relevant_rules_text
+from .scryfall_loader import card_to_creature
+from .scryfall_loader import cards_to_creatures
+from .scryfall_loader import fetch_french_vanilla_cards
+from .scryfall_loader import load_cards
+from .scryfall_loader import save_cards
+from .simulator import CombatResult
+from .simulator import CombatSimulator
+from .utils import apply_attacker_blocking_bonuses
+from .utils import apply_blocker_bushido
+from .utils import calculate_mana_value
 
 # Default life total used when initializing ``PlayerState`` instances
-DEFAULT_STARTING_LIFE = 20
 # Poison counter threshold at which a player loses the game
-POISON_LOSS_THRESHOLD = 10
 
 # Version string used to tag snapshot data for tests
-SNAPSHOT_VERSION = "1"
 
-from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
-from .combat_utils import damage_creature, damage_player
-from .create_llm_prompt import create_llm_prompt, parse_block_assignments
-from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
-from .gamestate import GameState, PlayerState, has_player_lost
-from .llm_cache import LLMCache, MockLLMCache
-from .random_creature import (
-    assign_random_counters,
-    assign_random_tapped,
-    compute_card_statistics,
-    generate_random_creature,
-)
-from .random_scenario import (
-    build_value_map,
-    ensure_cards,
-    generate_balanced_creatures,
-    generate_random_scenario,
-    sample_balanced,
-)
-from .rules_text import RULES_TEXT, get_relevant_rules_text
-from .scryfall_loader import (
-    card_to_creature,
-    cards_to_creatures,
-    fetch_french_vanilla_cards,
-    load_cards,
-    save_cards,
-)
-from .simulator import CombatResult, CombatSimulator
-from .utils import (
-    apply_attacker_blocking_bonuses,
-    apply_blocker_bushido,
-    calculate_mana_value,
-)
 
 __all__ = [
     "CombatCreature",
@@ -57,9 +56,6 @@ __all__ = [
     "PlayerState",
     "has_player_lost",
     "calculate_mana_value",
-    "DEFAULT_STARTING_LIFE",
-    "POISON_LOSS_THRESHOLD",
-    "SNAPSHOT_VERSION",
     "fetch_french_vanilla_cards",
     "load_cards",
     "save_cards",

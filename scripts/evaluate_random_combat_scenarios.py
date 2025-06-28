@@ -1,19 +1,19 @@
 import asyncio
 import copy
 import random
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 import numpy as np
 import openai
 
-from magic_combat import (
-    CombatSimulator,
-    build_value_map,
-    compute_card_statistics,
-    generate_random_scenario,
-    load_cards,
-)
-from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
+from magic_combat import CombatSimulator
+from magic_combat import build_value_map
+from magic_combat import compute_card_statistics
+from magic_combat import generate_random_scenario
+from magic_combat import load_cards
+from magic_combat.create_llm_prompt import create_llm_prompt
+from magic_combat.create_llm_prompt import parse_block_assignments
 from magic_combat.damage import score_combat_result
 from magic_combat.llm_cache import LLMCache
 

@@ -4,7 +4,8 @@ from typing import Iterable
 
 from .creature import CombatCreature
 from .gamestate import GameState
-from .rules_text import _describe_abilities, get_relevant_rules_text
+from .rules_text import _describe_abilities
+from .rules_text import get_relevant_rules_text
 
 
 def summarize_creature(creature: CombatCreature) -> str:

@@ -1,5 +1,6 @@
 # pylint: disable=missing-function-docstring, missing-module-docstring
-from magic_combat import CombatCreature, CombatResult
+from magic_combat import CombatCreature
+from magic_combat import CombatResult
 
 
 def test_combat_result_repr_readable():

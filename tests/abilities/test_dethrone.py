@@ -1,4 +1,7 @@
-from magic_combat import CombatCreature, CombatSimulator, GameState, PlayerState
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
+from magic_combat import GameState
+from magic_combat import PlayerState
 from tests.conftest import link_block
 
 

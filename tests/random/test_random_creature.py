@@ -1,12 +1,10 @@
 # pylint: disable=missing-function-docstring, missing-module-docstring
 from pathlib import Path
 
-from magic_combat import (
-    CombatCreature,
-    compute_card_statistics,
-    generate_random_creature,
-    load_cards,
-)
+from magic_combat import CombatCreature
+from magic_combat import compute_card_statistics
+from magic_combat import generate_random_creature
+from magic_combat import load_cards
 
 # Sample creature card data for random creature generation
 DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "example_test_cards.json"

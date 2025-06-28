@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-STYLE_FILE = ROOT / "style guide.md"
+STYLE_FILE = ROOT / "style_guide.md"
 
 
 def run(cmd: str) -> None:
@@ -17,13 +17,13 @@ def run(cmd: str) -> None:
 
 def test_style_guide_exists() -> None:
     """Ensure the style guide document is present."""
-    assert STYLE_FILE.exists(), "style guide.md is missing"
+    assert STYLE_FILE.exists(), "style_guide.md is missing"
 
 
 def test_style_check() -> None:
     """Run formatters and linters across the project to enforce the style guide."""
     run(f"black --check {ROOT}")
-    run(f"isort --check-only --profile black {ROOT}")
+    run(f"isort --check-only {ROOT}")
     run(f"flake8 {ROOT}")
     run(f"pylint {ROOT}")
     run(f"mypy {ROOT}")

@@ -1,5 +1,6 @@
 from magic_combat import CombatCreature
-from magic_combat.combat_utils import damage_creature, damage_player
+from magic_combat.combat_utils import damage_creature
+from magic_combat.combat_utils import damage_player
 
 
 def test_damage_creature_wither_and_deathtouch():

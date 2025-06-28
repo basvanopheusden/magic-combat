@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Set
+from typing import Any
+from typing import Dict
+from typing import Set
 
 from .creature import Color
 from .keywords import BOOLEAN_KEYWORDS as _BOOLEAN_KEYWORDS

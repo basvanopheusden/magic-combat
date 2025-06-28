@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Dict, List
+from dataclasses import dataclass
+from dataclasses import field
+from typing import Dict
+from typing import List
 
-from . import POISON_LOSS_THRESHOLD
+from magic_combat.constants import POISON_LOSS_THRESHOLD
+
 from .creature import CombatCreature
 from .rules_text import _describe_abilities
 from .utils import check_non_negative

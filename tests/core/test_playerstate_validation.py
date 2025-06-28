@@ -1,7 +1,8 @@
 # pylint: disable=missing-function-docstring, missing-module-docstring
 import pytest
 
-from magic_combat import DEFAULT_STARTING_LIFE, PlayerState
+from magic_combat import PlayerState
+from magic_combat.constants import DEFAULT_STARTING_LIFE
 
 
 def test_negative_life_init():

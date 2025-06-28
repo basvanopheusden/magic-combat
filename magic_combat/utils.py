@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .creature import CombatCreature
-    from .gamestate import GameState, PlayerState
+    from .gamestate import GameState
+    from .gamestate import PlayerState
 
 
 def check_non_negative(value: int, name: str) -> None:
@@ -41,7 +42,8 @@ def ensure_player_state(state: "GameState", player: str) -> "PlayerState":
         raise ValueError("state cannot be None")
 
     # Import inside the function to avoid circular imports at module load time.
-    from . import DEFAULT_STARTING_LIFE
+    from magic_combat.constants import DEFAULT_STARTING_LIFE
+
     from .gamestate import PlayerState
 
     return state.players.setdefault(

@@ -5,26 +5,29 @@ from __future__ import annotations
 import copy
 import os
 import random
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 import numpy as np
 
-from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
+from .blocking_ai import decide_optimal_blocks
+from .blocking_ai import decide_simple_blocks
 from .creature import CombatCreature
-from .damage import _blocker_value, score_combat_result
-from .gamestate import GameState, PlayerState
-from .random_creature import (
-    assign_random_counters,
-    assign_random_tapped,
-    generate_random_creature,
-)
-from .scryfall_loader import (
-    card_to_creature,
-    cards_to_creatures,
-    fetch_french_vanilla_cards,
-    load_cards,
-    save_cards,
-)
+from .damage import _blocker_value
+from .damage import score_combat_result
+from .gamestate import GameState
+from .gamestate import PlayerState
+from .random_creature import assign_random_counters
+from .random_creature import assign_random_tapped
+from .random_creature import generate_random_creature
+from .scryfall_loader import card_to_creature
+from .scryfall_loader import cards_to_creatures
+from .scryfall_loader import fetch_french_vanilla_cards
+from .scryfall_loader import load_cards
+from .scryfall_loader import save_cards
 from .simulator import CombatSimulator
 
 __all__ = [

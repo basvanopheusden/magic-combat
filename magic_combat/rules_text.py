@@ -3,9 +3,12 @@
 
 from __future__ import annotations
 
-from typing import Iterable, List, Set
+from typing import Iterable
+from typing import List
+from typing import Set
 
-from .abilities import BOOL_NAMES, INT_NAMES
+from .abilities import BOOL_NAMES
+from .abilities import INT_NAMES
 from .creature import CombatCreature
 
 # Map of keyword ability name to a representative excerpt from the Comprehensive

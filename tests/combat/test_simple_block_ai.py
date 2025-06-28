@@ -1,10 +1,8 @@
-from magic_combat import (
-    CombatCreature,
-    CombatSimulator,
-    GameState,
-    PlayerState,
-    decide_simple_blocks,
-)
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
+from magic_combat import GameState
+from magic_combat import PlayerState
+from magic_combat import decide_simple_blocks
 
 
 def test_simple_ai_respects_provoke():

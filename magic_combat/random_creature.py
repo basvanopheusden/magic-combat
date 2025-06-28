@@ -3,14 +3,20 @@
 from __future__ import annotations
 
 import random
-from collections import Counter, defaultdict
-from typing import Any, Dict, Iterable, Tuple, cast
+from collections import Counter
+from collections import defaultdict
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import Tuple
+from typing import cast
 
 import numpy as np
 
 from .abilities import BOOL_ATTRIBUTES as _BOOL_ABILITIES
 from .abilities import INT_ATTRIBUTES as _INT_ABILITIES
-from .creature import Color, CombatCreature
+from .creature import Color
+from .creature import CombatCreature
 from .scryfall_loader import cards_to_creatures
 
 # Probability thresholds for assigning +1/+1 or -1/-1 counters

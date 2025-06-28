@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import Dict
+from typing import Optional
 
 from .creature import CombatCreature
 from .gamestate import GameState

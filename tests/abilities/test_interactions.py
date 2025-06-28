@@ -1,13 +1,11 @@
 import pytest
 
-from magic_combat import (
-    DEFAULT_STARTING_LIFE,
-    Color,
-    CombatCreature,
-    CombatSimulator,
-    GameState,
-    PlayerState,
-)
+from magic_combat import Color
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
+from magic_combat import GameState
+from magic_combat import PlayerState
+from magic_combat.constants import DEFAULT_STARTING_LIFE
 from tests.conftest import link_block
 
 

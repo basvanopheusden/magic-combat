@@ -1,13 +1,20 @@
 """Core simulation logic for the combat phase."""
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from dataclasses import dataclass
+from dataclasses import field
+from typing import Dict
+from typing import List
+from typing import Optional
 
-from .combat_utils import damage_creature, damage_player
+from .combat_utils import damage_creature
+from .combat_utils import damage_player
 from .creature import CombatCreature
-from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
-from .gamestate import GameState, has_player_lost
-from .utils import _can_block, ensure_player_state
+from .damage import DamageAssignmentStrategy
+from .damage import OptimalDamageStrategy
+from .gamestate import GameState
+from .gamestate import has_player_lost
+from .utils import _can_block
+from .utils import ensure_player_state
 
 
 @dataclass
@@ -289,7 +296,8 @@ class CombatSimulator:
 
     def _handle_bushido_rampage_flanking(self) -> None:
         """Apply bushido, rampage, and flanking bonuses."""
-        from .utils import apply_attacker_blocking_bonuses, apply_blocker_bushido
+        from .utils import apply_attacker_blocking_bonuses
+        from .utils import apply_blocker_bushido
 
         for attacker in self.attackers:
             apply_attacker_blocking_bonuses(attacker)

@@ -5,16 +5,15 @@ import argparse
 import json
 import random
 from pathlib import Path
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 import numpy as np
 
-from magic_combat import (
-    SNAPSHOT_VERSION,
-    build_value_map,
-    generate_random_scenario,
-    load_cards,
-)
+from magic_combat import build_value_map
+from magic_combat import generate_random_scenario
+from magic_combat import load_cards
+from magic_combat.constants import SNAPSHOT_VERSION
 
 
 def _dump_snapshot(data: List[dict], path: Path) -> None:

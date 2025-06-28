@@ -1,7 +1,10 @@
 import asyncio
 
-from magic_combat import CombatCreature, GameState, PlayerState
-from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
+from magic_combat import CombatCreature
+from magic_combat import GameState
+from magic_combat import PlayerState
+from magic_combat.create_llm_prompt import create_llm_prompt
+from magic_combat.create_llm_prompt import parse_block_assignments
 from magic_combat.llm_cache import MockLLMCache
 from scripts.evaluate_random_combat_scenarios import call_openai_model
 

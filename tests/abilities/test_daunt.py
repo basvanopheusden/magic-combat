@@ -1,6 +1,8 @@
 import pytest
 
-from magic_combat import Color, CombatCreature, CombatSimulator
+from magic_combat import Color
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
 from tests.conftest import link_block
 
 # 1

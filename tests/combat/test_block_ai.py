@@ -2,15 +2,13 @@ import time
 
 import pytest
 
-from magic_combat import (
-    DEFAULT_STARTING_LIFE,
-    Color,
-    CombatCreature,
-    CombatSimulator,
-    GameState,
-    PlayerState,
-    decide_optimal_blocks,
-)
+from magic_combat import Color
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
+from magic_combat import GameState
+from magic_combat import PlayerState
+from magic_combat import decide_optimal_blocks
+from magic_combat.constants import DEFAULT_STARTING_LIFE
 
 
 def test_optimal_ai_respects_provoke():

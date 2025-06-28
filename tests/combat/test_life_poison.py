@@ -1,12 +1,10 @@
-from magic_combat import (
-    DEFAULT_STARTING_LIFE,
-    POISON_LOSS_THRESHOLD,
-    CombatCreature,
-    CombatSimulator,
-    GameState,
-    PlayerState,
-    has_player_lost,
-)
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
+from magic_combat import GameState
+from magic_combat import PlayerState
+from magic_combat import has_player_lost
+from magic_combat.constants import DEFAULT_STARTING_LIFE
+from magic_combat.constants import POISON_LOSS_THRESHOLD
 from tests.conftest import link_block
 
 

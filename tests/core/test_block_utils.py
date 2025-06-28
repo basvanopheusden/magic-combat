@@ -1,6 +1,7 @@
 from magic_combat import CombatCreature
 from magic_combat.block_utils import evaluate_block_assignment
-from magic_combat.gamestate import GameState, PlayerState
+from magic_combat.gamestate import GameState
+from magic_combat.gamestate import PlayerState
 from magic_combat.limits import IterationCounter
 
 

@@ -1,6 +1,7 @@
 import random
 
-from magic_combat import CombatCreature, CombatSimulator
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
 from tests.conftest import link_block
 
 

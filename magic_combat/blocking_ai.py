@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 from itertools import product
-from typing import List, Optional, Sequence, Tuple
+from typing import List
+from typing import Optional
+from typing import Sequence
+from typing import Tuple
 
-from . import DEFAULT_STARTING_LIFE, POISON_LOSS_THRESHOLD
+from magic_combat.constants import DEFAULT_STARTING_LIFE
+from magic_combat.constants import POISON_LOSS_THRESHOLD
+
 from .block_utils import evaluate_block_assignment
 from .creature import CombatCreature
-from .damage import _blocker_value, score_combat_result
+from .damage import _blocker_value
+from .damage import score_combat_result
 from .gamestate import GameState
 from .limits import IterationCounter
 from .simulator import CombatSimulator

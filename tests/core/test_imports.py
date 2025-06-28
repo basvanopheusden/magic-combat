@@ -1,4 +1,6 @@
-from magic_combat import CombatCreature, CombatResult, CombatSimulator
+from magic_combat import CombatCreature
+from magic_combat import CombatResult
+from magic_combat import CombatSimulator
 
 
 def test_imports():

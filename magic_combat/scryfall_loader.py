@@ -1,5 +1,8 @@
 import json
-from typing import Any, Dict, Iterable, List
+from typing import Any
+from typing import Dict
+from typing import Iterable
+from typing import List
 
 import requests  # type: ignore[import]
 
