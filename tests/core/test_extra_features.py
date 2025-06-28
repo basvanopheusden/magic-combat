@@ -1,17 +1,15 @@
 import pytest
 
-
 from magic_combat import (
+    Color,
     CombatCreature,
+    CombatSimulator,
     DamageAssignmentStrategy,
     OptimalDamageStrategy,
-    CombatSimulator,
-    Color,
 )
 
 
 def test_string_representation():
-    """CR 109.2: A creature's power and toughness are written as `X/Y`."""
     creature = CombatCreature(name="Bear", power=2, toughness=2, controller="A")
     assert str(creature) == "Bear (2/2)"
 
@@ -19,7 +17,12 @@ def test_string_representation():
 def test_effective_stats_with_counters():
     """CR 122.1a: +1/+1 counters modify a creature's power and toughness."""
     creature = CombatCreature(
-        name="Scute", power=1, toughness=1, controller="A", _plus1_counters=2, _minus1_counters=1
+        name="Scute",
+        power=1,
+        toughness=1,
+        controller="A",
+        _plus1_counters=2,
+        _minus1_counters=1,
     )
     assert creature.effective_power() == 2
     assert creature.effective_toughness() == 2
@@ -28,7 +31,11 @@ def test_effective_stats_with_counters():
 def test_has_protection_from():
     """CR 702.16b: Protection prevents effects from objects of that color."""
     creature = CombatCreature(
-        name="Paladin", power=2, toughness=2, controller="A", protection_colors={Color.BLACK}
+        name="Paladin",
+        power=2,
+        toughness=2,
+        controller="A",
+        protection_colors={Color.BLACK},
     )
     assert creature.has_protection_from(Color.BLACK)
     assert not creature.has_protection_from(Color.RED)
@@ -92,7 +99,6 @@ def test_wither_can_target_indestructible_first():
 
 
 def test_plus1_minus1_counter_setters():
-    """CR 122.1a: Counters can increase or decrease stats."""
     creature = CombatCreature(name="Bug", power=1, toughness=1, controller="A")
     creature.plus1_counters = 1
     creature.minus1_counters = 1
@@ -124,7 +130,6 @@ def test_validate_blocking_inconsistent():
 
 
 def test_repr_includes_characteristics():
-    """CR 109.3: An object's characteristics include its name, power, toughness, and controller."""
     creature = CombatCreature(name="Elf", power=1, toughness=1, controller="A")
     assert (
         repr(creature)

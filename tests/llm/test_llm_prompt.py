@@ -1,17 +1,22 @@
 import asyncio
+
 import pytest
+
 from magic_combat import CombatCreature, GameState, PlayerState
 from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
-from scripts.evaluate_random_combat_scenarios import call_openai_model
 from magic_combat.llm_cache import MockLLMCache
+from scripts.evaluate_random_combat_scenarios import call_openai_model
+
 
 class DummyMessage:
     def __init__(self, content):
         self.content = content
 
+
 class DummyChoice:
     def __init__(self, content):
         self.message = DummyMessage(content)
+
 
 class DummyResponse:
     def __init__(self, content):
@@ -32,21 +37,24 @@ class DummyChat:
     def __init__(self):
         self.completions = DummyCompletions()
 
+
 class DummyClient:
     def __init__(self):
         self.chat = DummyChat()
+
     async def close(self):
         pass
 
 
 def test_create_prompt_contents():
-    """CR 509.1a: The defending player chooses how creatures block."""
     atk = CombatCreature("Goblin", 2, 2, "A")
     blk = CombatCreature("Guard", 2, 3, "B")
-    state = GameState(players={
-        "A": PlayerState(life=20, creatures=[atk]),
-        "B": PlayerState(life=20, creatures=[blk]),
-    })
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[blk]),
+        }
+    )
     prompt = create_llm_prompt(state, [atk], [blk])
     assert "The attackers are:" in prompt
     assert "Goblin" in prompt
@@ -55,7 +63,6 @@ def test_create_prompt_contents():
 
 
 def test_parse_block_assignments():
-    """CR 509.1a: The defending player chooses how creatures block."""
     text = "- Guard -> Goblin\n- Life total: 20"
     result, invalid = parse_block_assignments(text, ["Guard"], ["Goblin"])
     assert not invalid
@@ -63,7 +70,6 @@ def test_parse_block_assignments():
 
 
 def test_parse_block_assignments_none():
-    """CR 509.1a: The defending player chooses how creatures block."""
     text = "None"
     result, invalid = parse_block_assignments(text, ["Guard"], ["Goblin"])
     assert result == {}
@@ -71,7 +77,6 @@ def test_parse_block_assignments_none():
 
 
 def test_parse_block_assignments_invalid_name():
-    """CR 509.1a: The defending player chooses how creatures block."""
     text = "- Foo -> Goblin"
     result, invalid = parse_block_assignments(text, ["Guard"], ["Goblin"])
     assert invalid
@@ -79,14 +84,12 @@ def test_parse_block_assignments_invalid_name():
 
 
 def test_call_openai_model(monkeypatch):
-    """CR 509.1a: The defending player chooses how creatures block."""
     monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient())
     res = asyncio.run(call_openai_model(["p1", "p2"]))
     assert res == "response to p1\n\nresponse to p2"
 
 
 def test_llm_cache_hit(monkeypatch):
-    """CR 509.1a: The defending player chooses how creatures block."""
     monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient())
     cache = MockLLMCache()
     res1 = asyncio.run(
@@ -102,7 +105,6 @@ def test_llm_cache_hit(monkeypatch):
 
 
 def test_llm_cache_miss(monkeypatch):
-    """CR 509.1a: The defending player chooses how creatures block."""
     monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient())
     cache = MockLLMCache()
     res1 = asyncio.run(

@@ -1,9 +1,10 @@
 from pathlib import Path
+
 from magic_combat import (
-    load_cards,
+    CombatCreature,
     compute_card_statistics,
     generate_random_creature,
-    CombatCreature,
+    load_cards,
 )
 
 # Sample creature card data for random creature generation
@@ -11,7 +12,6 @@ DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "example_test_cards.j
 
 
 def test_compute_statistics_means():
-    """CR 109.3: Power and toughness are characteristics of creatures."""
     cards = load_cards(str(DATA_PATH))
     stats = compute_card_statistics(cards)
     assert abs(stats["power_mean"] - 2.2) < 0.01
@@ -19,7 +19,6 @@ def test_compute_statistics_means():
 
 
 def test_generate_random_creature_basic():
-    """CR 109.3: A creature has a name, power, toughness, and abilities."""
     cards = load_cards(str(DATA_PATH))
     stats = compute_card_statistics(cards)
     creature = generate_random_creature(stats, controller="A")
