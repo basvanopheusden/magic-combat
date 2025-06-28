@@ -124,3 +124,11 @@ def test_blocked_creature_no_trample_hits_no_player():
     sim = CombatSimulator([attacker], [blocker])
     result = sim.simulate()
     assert result.damage_to_players.get("B", 0) == 0
+
+def test_normal_attacker_taps_on_attack():
+    """CR 508.1g: Declaring an attacker causes it to become tapped."""
+    atk = CombatCreature("Orc", 2, 2, "A")
+    defender = CombatCreature("Dummy", 0, 1, "B")
+    sim = CombatSimulator([atk], [defender])
+    result = sim.simulate()
+    assert atk.tapped

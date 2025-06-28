@@ -123,3 +123,38 @@ def test_first_strike_deathtouch_both_sides():
     result = sim.simulate()
     assert atk in result.creatures_destroyed
     assert blk in result.creatures_destroyed
+
+def test_deathtouch_basic_lethal():
+    """CR 702.2b: Any nonzero damage from a creature with deathtouch is lethal."""
+    atk = CombatCreature("Assassin", 1, 1, "A", deathtouch=True)
+    blk = CombatCreature("Bear", 2, 2, "B")
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert atk in result.creatures_destroyed
+    assert blk in result.creatures_destroyed
+
+
+def test_deathtouch_multiple_blockers():
+    """CR 510.1a: Deathtouch lets an attacker assign only 1 damage per blocker."""
+    atk = CombatCreature("Venomous", 3, 3, "A", deathtouch=True)
+    b1 = CombatCreature("Guard1", 3, 3, "B")
+    b2 = CombatCreature("Guard2", 3, 3, "B")
+    link_block(atk, b1, b2)
+    sim = CombatSimulator([atk], [b1, b2])
+    result = sim.simulate()
+    assert atk in result.creatures_destroyed
+    assert b1 in result.creatures_destroyed
+    assert b2 in result.creatures_destroyed
+
+
+def test_deathtouch_vs_indestructible():
+    """CR 702.12b: Indestructible permanents aren't destroyed by deathtouch."""
+    atk = CombatCreature("Snake", 1, 1, "A", deathtouch=True)
+    blk = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert atk in result.creatures_destroyed
+    assert blk not in result.creatures_destroyed
+
