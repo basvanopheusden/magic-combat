@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/pyright/master/packages/pyright/config/schema.json",
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "strict",
+  "useLibraryCodeForTypes": true,
+
+  "extraPaths": ["src", "magic_combat"],
+
+  "exclude": [
+    "**/.git/**",
+    "**/.venv/**",
+    "**/__pycache__/**",
+    "build",
+    "dist",
+    "docs/_build"
+  ],
+
+  "executionEnvironments": [
+    {
+      "root": "./tests",
+      "typeCheckingMode": "basic"
+    }
+  ],
+
+  "reportUnknownVariableType": "warning",
+  "reportUnknownParameterType": "warning",
+  "reportUnknownMemberType": "warning",
+  "reportUnknownArgumentType": "warning",
+  "reportMissingParameterType": "warning",
+  "reportMissingTypeArgument": "warning",
+  "reportUnusedExpression": "warning",
+  "reportUnusedFunction": "warning"
+}
