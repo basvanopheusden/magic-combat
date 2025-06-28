@@ -1,0 +1,50 @@
+[
+  {
+    "seed": 100,
+    "optimal_assignment": [
+      0,
+      1
+    ],
+    "simple_assignment": null,
+    "combat_value": [
+      3,
+      0,
+      -1,
+      -0.5
+    ]
+  },
+  {
+    "seed": 101,
+    "optimal_assignment": [
+      2,
+      3
+    ],
+    "simple_assignment": [
+      1,
+      0
+    ],
+    "combat_value": [
+      3,
+      2,
+      -1,
+      -4.5
+    ]
+  },
+  {
+    "seed": 102,
+    "optimal_assignment": [
+      0,
+      0
+    ],
+    "simple_assignment": [
+      null,
+      0
+    ],
+    "combat_value": [
+      0,
+      0,
+      1,
+      1.5
+    ]
+  }
+]
