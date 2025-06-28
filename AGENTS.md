@@ -12,4 +12,5 @@ In particular, use the following linters and formatters:
 - Run `autoflake` to remove unused imports and variables.
 - Run `pylint` for more comprehensive linting.
 - Run `mypy` for static type checking.
+- Run `pyright` for additional type checking.
 - These tools are executed in the test suite to enforce the style guide.
