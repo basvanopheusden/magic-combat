@@ -297,7 +297,7 @@ Example: A player controls a planeswalker with three loyalty counters that is be
 }
 
 
-def _describe_abilities(creature: CombatCreature) -> str:
+def describe_abilities(creature: CombatCreature) -> str:
     """Return a comma separated string describing the creature's abilities."""
 
     parts: List[str] = []

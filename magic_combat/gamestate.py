@@ -10,7 +10,7 @@ from typing import List
 from magic_combat.constants import POISON_LOSS_THRESHOLD
 
 from .creature import CombatCreature
-from .rules_text import _describe_abilities
+from .rules_text import describe_abilities
 from .utils import check_non_negative
 
 
@@ -32,7 +32,7 @@ class PlayerState:
         if self.creatures:
             lines.append("Creatures:")
             for creature in self.creatures:
-                lines.append(f"  - {creature} -- {_describe_abilities(creature)}")
+                lines.append(f"  - {creature} -- {describe_abilities(creature)}")
         else:
             lines.append("Creatures: None")
         return "\n".join(lines)
