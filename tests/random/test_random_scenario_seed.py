@@ -1,4 +1,3 @@
-import random
 from pathlib import Path
 
 from magic_combat import load_cards

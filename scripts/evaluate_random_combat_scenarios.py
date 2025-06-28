@@ -3,19 +3,16 @@ import random
 from typing import List, Optional
 
 import numpy as np
-
 import openai
+
 from magic_combat import (
-    load_cards,
-    compute_card_statistics,
-    decide_optimal_blocks,
-    generate_random_scenario,
     build_value_map,
+    compute_card_statistics,
+    evaluate_combat_value,
+    generate_random_scenario,
+    load_cards,
 )
-from magic_combat.create_llm_prompt import (
-    create_llm_prompt,
-    parse_block_assignments,
-)
+from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
 from magic_combat.llm_cache import LLMCache
 
 
@@ -50,7 +47,8 @@ async def call_openai_model_single_prompt(
         max_tokens=1500,
         temperature=temperature,
     )
-    text = response.choices[0].message.content.strip()
+    content = response.choices[0].message.content or ""
+    text = content.strip()
     if cache is not None:
         cache.add(prompt, model, seed, temperature, text)
     return text
@@ -102,8 +100,11 @@ async def evaluate_random_scenarios(
             state,
             attackers,
             blockers,
-            _,
-            _,
+            provoke_map,
+            mentor_map,
+            optimal_assignment,
+            simple_assignment,
+            optimal_value,
         ) = generate_random_scenario(
             cards,
             values,
@@ -112,9 +113,29 @@ async def evaluate_random_scenarios(
             seed=seed + idx,
         )
 
-        # Determine optimal blocks for comparison
-        decide_optimal_blocks(attackers, blockers, game_state=state)
-        optimal = {b.name: b.blocking.name if b.blocking else None for b in blockers}
+        def _map(assignment):
+            if assignment is None:
+                return {}
+            return {
+                blockers[i].name: (attackers[c].name if c is not None else None)
+                for i, c in enumerate(assignment)
+            }
+
+        simple_value = (
+            evaluate_combat_value(
+                attackers,
+                blockers,
+                simple_assignment,
+                state,
+                provoke_map,
+                mentor_map,
+            )
+            if simple_assignment is not None
+            else None
+        )
+
+        optimal = _map(optimal_assignment)
+        simple = _map(simple_assignment)
 
         # Clear assignments for the LLM prompt
         for atk in attackers:
@@ -149,8 +170,32 @@ async def evaluate_random_scenarios(
             print("\nModel response:\n", llm_response)
             if invalid:
                 print("Response contained illegal block assignments")
+            ass = []
+            name_to_idx = {a.name: i for i, a in enumerate(attackers)}
+            for blk in blockers:
+                target = parsed.get(blk.name)
+                ass.append(name_to_idx.get(target) if target is not None else None)
+            llm_assignment = tuple(ass)
+            llm_value = evaluate_combat_value(
+                attackers,
+                blockers,
+                llm_assignment,
+                state,
+                provoke_map,
+                mentor_map,
+            )
+            diff = tuple(llm_value[i] - optimal_value[i] for i in range(4))
+
             correct = sum(1 for b, a in parsed.items() if optimal.get(b) == a)
             print(f"Correct assignments: {correct}/{len(blockers)}")
+            print("Simple blocks:", simple)
+            print("Optimal blocks:", optimal)
+            print("LLM blocks:", _map(llm_assignment))
+            if simple_value is not None:
+                print("Simple value:", simple_value)
+            print("Optimal value:", optimal_value)
+            print("LLM value:", llm_value)
+            print("Difference:", diff)
             break
 
 

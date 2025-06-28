@@ -22,6 +22,7 @@ from .random_creature import (
 from .random_scenario import (
     build_value_map,
     ensure_cards,
+    evaluate_combat_value,
     generate_balanced_creatures,
     generate_random_scenario,
     sample_balanced,
@@ -70,6 +71,7 @@ __all__ = [
     "sample_balanced",
     "generate_balanced_creatures",
     "generate_random_scenario",
+    "evaluate_combat_value",
     "damage_creature",
     "damage_player",
     "apply_attacker_blocking_bonuses",
