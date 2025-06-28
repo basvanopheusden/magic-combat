@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .creature import CombatCreature
+    from .gamestate import GameState, PlayerState
 
 
 def check_non_negative(value: int, name: str) -> None:
@@ -34,7 +35,7 @@ def check_positive(value: int, name: str) -> None:
         raise ValueError(f"{name} must be positive")
 
 
-def ensure_player_state(state, player: str):
+def ensure_player_state(state: "GameState", player: str) -> "PlayerState":
     """Return existing :class:`PlayerState` for ``player`` or create one."""
     if state is None:
         raise ValueError("state cannot be None")
