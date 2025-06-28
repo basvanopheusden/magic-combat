@@ -18,7 +18,8 @@
   "executionEnvironments": [
     {
       "root": "./tests",
-      "typeCheckingMode": "basic"
+      "typeCheckingMode": "basic",
+      "extraPaths": ["magic_combat"]
     }
   ],
 
@@ -26,6 +27,7 @@
   "reportUnknownParameterType": "warning",
   "reportUnknownMemberType": "warning",
   "reportUnknownArgumentType": "warning",
+  "reportMissingImports": "warning",
   "reportMissingParameterType": "warning",
   "reportMissingTypeArgument": "warning",
   "reportUnusedExpression": "warning",

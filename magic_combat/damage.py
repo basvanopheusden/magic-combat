@@ -169,7 +169,7 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
                     self._order = order
 
                 def order_blockers(
-                    self, a: CombatCreature, bs: List[CombatCreature]
+                    self, attacker: CombatCreature, blockers: List[CombatCreature]
                 ) -> List[CombatCreature]:
                     return self._order
 

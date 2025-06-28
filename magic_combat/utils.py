@@ -38,8 +38,6 @@ def check_positive(value: int, name: str) -> None:
 
 def ensure_player_state(state: "GameState", player: str) -> "PlayerState":
     """Return existing :class:`PlayerState` for ``player`` or create one."""
-    if state is None:
-        raise ValueError("state cannot be None")
 
     # Import inside the function to avoid circular imports at module load time.
     from magic_combat.constants import DEFAULT_STARTING_LIFE

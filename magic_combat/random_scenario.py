@@ -16,7 +16,7 @@ import numpy as np
 from .blocking_ai import decide_optimal_blocks
 from .blocking_ai import decide_simple_blocks
 from .creature import CombatCreature
-from .damage import _blocker_value
+from .damage import _blocker_value  # pyright: ignore[reportPrivateUsage]
 from .damage import score_combat_result
 from .gamestate import GameState
 from .gamestate import PlayerState

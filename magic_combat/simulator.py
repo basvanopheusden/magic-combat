@@ -13,7 +13,7 @@ from .damage import DamageAssignmentStrategy
 from .damage import OptimalDamageStrategy
 from .gamestate import GameState
 from .gamestate import has_player_lost
-from .utils import _can_block
+from .utils import _can_block  # pyright: ignore[reportPrivateUsage]
 from .utils import ensure_player_state
 
 
@@ -142,7 +142,7 @@ class CombatSimulator:
 
     def _check_evasion(self) -> None:
         """Check evasion abilities like flying, shadow, and skulk."""
-        from .utils import _can_block
+        from .utils import _can_block  # pyright: ignore[reportPrivateUsage]
 
         for attacker in self.attackers:
             for blocker in attacker.blocked_by:
@@ -213,7 +213,7 @@ class CombatSimulator:
         self, attackers_by_controller: Dict[str, List[CombatCreature]]
     ) -> None:
         """Apply exalted triggers (CR 702.90)."""
-        for controller, atks in attackers_by_controller.items():
+        for _, atks in attackers_by_controller.items():
             if len(atks) == 1:
                 atk = atks[0]
                 exalted_total = atk.exalted_count
@@ -262,7 +262,7 @@ class CombatSimulator:
         self, attackers_by_controller: Dict[str, List[CombatCreature]]
     ) -> None:
         """Apply battalion bonuses (CR 702.101)."""
-        for controller, atks in attackers_by_controller.items():
+        for _, atks in attackers_by_controller.items():
             if len(atks) >= 3:
                 for atk in atks:
                     if atk.battalion:
