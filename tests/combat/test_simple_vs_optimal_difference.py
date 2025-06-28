@@ -1,7 +1,13 @@
 import pytest
 
-from magic_combat import (Color, CombatCreature, GameState, PlayerState,
-                          decide_optimal_blocks, decide_simple_blocks)
+from magic_combat import (
+    Color,
+    CombatCreature,
+    GameState,
+    PlayerState,
+    decide_optimal_blocks,
+    decide_simple_blocks,
+)
 
 
 def _reset(*creatures):

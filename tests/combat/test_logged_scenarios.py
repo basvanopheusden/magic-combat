@@ -1,7 +1,12 @@
 import pytest
 
-from magic_combat import (CombatCreature, CombatSimulator, GameState,
-                          PlayerState, decide_optimal_blocks)
+from magic_combat import (
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+    decide_optimal_blocks,
+)
 from magic_combat.creature import Color
 
 

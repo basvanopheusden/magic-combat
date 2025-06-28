@@ -25,6 +25,6 @@ def test_style_check() -> None:
     """Run formatters and linters on this file to enforce the style guide."""
     run(f"black --check {THIS_FILE}")
     run(f"isort --check-only {THIS_FILE}")
-    run(f"flake8 {THIS_FILE}")
+    run(f"q {THIS_FILE}")
     run(f"pylint -E {THIS_FILE}")
     run(f"mypy {THIS_FILE}")

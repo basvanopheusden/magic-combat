@@ -13,11 +13,18 @@ from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
 from .creature import CombatCreature
 from .damage import _blocker_value, score_combat_result
 from .gamestate import GameState, PlayerState
-from .random_creature import (assign_random_counters, assign_random_tapped,
-                              generate_random_creature)
-from .scryfall_loader import (card_to_creature, cards_to_creatures,
-                              fetch_french_vanilla_cards, load_cards,
-                              save_cards)
+from .random_creature import (
+    assign_random_counters,
+    assign_random_tapped,
+    generate_random_creature,
+)
+from .scryfall_loader import (
+    card_to_creature,
+    cards_to_creatures,
+    fetch_french_vanilla_cards,
+    load_cards,
+    save_cards,
+)
 from .simulator import CombatSimulator
 
 __all__ = [

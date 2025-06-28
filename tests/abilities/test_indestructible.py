@@ -1,5 +1,10 @@
-from magic_combat import (DEFAULT_STARTING_LIFE, CombatCreature,
-                          CombatSimulator, GameState, PlayerState)
+from magic_combat import (
+    DEFAULT_STARTING_LIFE,
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+)
 from tests.conftest import link_block
 
 

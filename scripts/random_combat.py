@@ -8,9 +8,14 @@ from typing import List
 
 import numpy as np
 
-from magic_combat import (CombatSimulator, PlayerState, build_value_map,
-                          compute_card_statistics, ensure_cards,
-                          generate_random_scenario)
+from magic_combat import (
+    CombatSimulator,
+    PlayerState,
+    build_value_map,
+    compute_card_statistics,
+    ensure_cards,
+    generate_random_scenario,
+)
 from magic_combat.abilities import BOOL_NAMES as _BOOL_ABILITIES
 from magic_combat.abilities import INT_NAMES as _INT_ABILITIES
 from magic_combat.damage import _blocker_value

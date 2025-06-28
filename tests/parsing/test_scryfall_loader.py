@@ -2,8 +2,12 @@ from pathlib import Path
 
 from magic_combat.creature import Color
 from magic_combat.parsing import parse_protection as _parse_protection
-from magic_combat.scryfall_loader import (_parse_colors, card_to_creature,
-                                          cards_to_creatures, load_cards)
+from magic_combat.scryfall_loader import (
+    _parse_colors,
+    card_to_creature,
+    cards_to_creatures,
+    load_cards,
+)
 
 # Location of the test card data used for parsing tests
 DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "example_test_cards.json"

@@ -1,7 +1,13 @@
 import pytest
 
-from magic_combat import (DEFAULT_STARTING_LIFE, Color, CombatCreature,
-                          CombatSimulator, GameState, PlayerState)
+from magic_combat import (
+    DEFAULT_STARTING_LIFE,
+    Color,
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+)
 from tests.conftest import link_block
 
 
@@ -340,8 +346,14 @@ def test_normal_attacker_taps_on_attack():
 
 import pytest
 
-from magic_combat import (DEFAULT_STARTING_LIFE, Color, CombatCreature,
-                          CombatSimulator, GameState, PlayerState)
+from magic_combat import (
+    DEFAULT_STARTING_LIFE,
+    Color,
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+)
 from tests.conftest import link_block
 
 
@@ -1363,8 +1375,13 @@ def test_rampage_menace_two_blockers_bonus_applies():
 
 import pytest
 
-from magic_combat import (DEFAULT_STARTING_LIFE, CombatCreature,
-                          CombatSimulator, GameState, PlayerState)
+from magic_combat import (
+    DEFAULT_STARTING_LIFE,
+    CombatCreature,
+    CombatSimulator,
+    GameState,
+    PlayerState,
+)
 from tests.conftest import link_block
 
 
