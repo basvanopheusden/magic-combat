@@ -5,12 +5,13 @@ from __future__ import annotations
 import copy
 import os
 import random
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 
 from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
-from .damage import _blocker_value
+from .creature import CombatCreature
+from .damage import _blocker_value, score_combat_result
 from .gamestate import GameState, PlayerState
 from .random_creature import (
     assign_random_counters,
@@ -141,13 +142,25 @@ def generate_random_scenario(
     max_iterations: int = int(1e6),
     unique_optimal: bool = False,
     seed: int | None = None,
-) -> Tuple[GameState, List, List, dict, dict]:
+) -> Tuple[
+    GameState,
+    List,
+    List,
+    dict,
+    dict,
+    Tuple[Optional[int], ...],
+    Tuple[Optional[int], ...] | None,
+    Tuple[int, int, int, float],
+]:
     """Return a non-trivial random combat scenario.
 
     The returned ``GameState`` reflects the optimal blocks used to validate the
-    scenario.  ``attackers`` and ``blockers`` are cleared of any assignments so
-    they can be reused.  ``provoke_map`` and ``mentor_map`` describe any special
-    attacker interactions and should be supplied when simulating combat.
+    scenario. ``attackers`` and ``blockers`` are cleared of any assignments so
+    they can be reused. ``provoke_map`` and ``mentor_map`` describe any special
+    attacker interactions and should be supplied when simulating combat. The
+    optimal and simple block assignments are returned as tuples of attacker
+    indices, along with a summary tuple of life lost, poison counters, number of
+    creatures destroyed and value difference for the optimal blocks.
     """
 
     rng = random.Random(seed) if seed is not None else random.Random()
@@ -175,9 +188,11 @@ def generate_random_scenario(
                     )
                 attackers, blockers = generate_balanced_creatures(stats, n_atk, n_blk)
             else:
-                atk_idx, blk_idx = sample_balanced(cards, values, n_atk, n_blk, rng=rng)
+                atk_idx, blk_idx_list = sample_balanced(
+                    cards, values, n_atk, n_blk, rng=rng
+                )
                 attackers = cards_to_creatures((cards[j] for j in atk_idx), "A")
-                blockers = cards_to_creatures((cards[j] for j in blk_idx), "B")
+                blockers = cards_to_creatures((cards[j] for j in blk_idx_list), "B")
         except ValueError:
             continue
 
@@ -250,14 +265,61 @@ def generate_random_scenario(
             continue
 
         opt_map = {id(a): i for i, a in enumerate(attackers)}
-        optimal_assignment = tuple(opt_map.get(id(b.blocking), None) for b in blockers)
+        optimal_assignment: Tuple[Optional[int], ...] = tuple(
+            opt_map.get(id(b.blocking), None) for b in blockers
+        )
 
         if simple_assignment is not None and simple_assignment == optimal_assignment:
             continue
+
+        atk_copy = copy.deepcopy(attackers)
+        blk_copy = copy.deepcopy(blockers)
+        state_copy = copy.deepcopy(state)
+        prov_copies: dict[CombatCreature, CombatCreature] = {}
+        if provoke_map:
+            atk_map_idx = {id(a): i for i, a in enumerate(attackers)}
+            blk_map_idx = {id(b): i for i, b in enumerate(blockers)}
+            for atk, blk in provoke_map.items():
+                if atk in attackers and blk in blockers:
+                    a_copy = atk_copy[atk_map_idx[id(atk)]]
+                    b_copy = blk_copy[blk_map_idx[id(blk)]]
+                    prov_copies[a_copy] = b_copy
+        mentor_copies: dict[CombatCreature, CombatCreature] = {}
+        if mentor_map:
+            atk_map_idx = {id(a): i for i, a in enumerate(attackers)}
+            for mentor, target in mentor_map.items():
+                if mentor in attackers and target in attackers:
+                    mentor_copies[atk_copy[atk_map_idx[id(mentor)]]] = atk_copy[
+                        atk_map_idx[id(target)]
+                    ]
+        for blk_idx, choice in enumerate(optimal_assignment):
+            if choice is not None:
+                idx = int(choice)
+                blk_copy[blk_idx].blocking = atk_copy[idx]
+                atk_copy[idx].blocked_by.append(blk_copy[blk_idx])
+        sim = CombatSimulator(
+            atk_copy,
+            blk_copy,
+            game_state=state_copy,
+            provoke_map=prov_copies or None,
+            mentor_map=mentor_copies or None,
+        )
+        result = sim.simulate()
+        score = score_combat_result(result, "A", "B")
+        combat_value = (score[4], score[5], score[2], score[1])
 
         start_state = copy.deepcopy(state)
         for atk in attackers:
             atk.blocked_by.clear()
         for blk in blockers:
             blk.blocking = None
-        return start_state, attackers, blockers, provoke_map, mentor_map
+        return (
+            start_state,
+            attackers,
+            blockers,
+            provoke_map,
+            mentor_map,
+            optimal_assignment,
+            simple_assignment,
+            combat_value,
+        )
