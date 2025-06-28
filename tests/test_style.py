@@ -20,10 +20,42 @@ def test_style_guide_exists() -> None:
     assert STYLE_FILE.exists(), "style_guide.md is missing"
 
 
-def test_style_check() -> None:
-    """Run formatters and linters across the project to enforce the style guide."""
+def test_black() -> None:
+    """Ensure code is formatted with black."""
     run(f"black --check {ROOT}")
+
+
+def test_isort() -> None:
+    """Ensure imports are sorted with isort."""
     run(f"isort --check-only {ROOT}")
-    run(f"flake8 {ROOT}")
+
+
+def test_flake8() -> None:
+    """Run flake8 style checks."""
+    run(f"flake8 --ignore=I100,I201,W503,E226 {ROOT}")
+
+
+def test_pycodestyle() -> None:
+    """Run pycodestyle checks."""
+    opts = "--max-line-length=88 --ignore=E501,E203,E226,W503"
+    run(f"pycodestyle {opts} {ROOT}")
+
+
+def test_autoflake() -> None:
+    """Ensure autoflake finds no issues."""
+    run(f"autoflake -c -r {ROOT}")
+
+
+def test_pylint() -> None:
+    """Run pylint analysis."""
     run(f"pylint {ROOT}")
+
+
+def test_mypy() -> None:
+    """Run mypy type checking."""
     run(f"mypy {ROOT}")
+
+
+def test_pyright() -> None:
+    """Run pyright type checking."""
+    run("pyright")

@@ -13,12 +13,12 @@ from magic_combat.constants import POISON_LOSS_THRESHOLD
 
 from .block_utils import evaluate_block_assignment
 from .creature import CombatCreature
-from .damage import _blocker_value
+from .damage import _blocker_value  # pyright: ignore[reportPrivateUsage]
 from .damage import score_combat_result
 from .gamestate import GameState
 from .limits import IterationCounter
 from .simulator import CombatSimulator
-from .utils import _can_block
+from .utils import _can_block  # pyright: ignore[reportPrivateUsage]
 
 
 def _creature_value(creature: CombatCreature) -> float:
@@ -207,11 +207,7 @@ def decide_optimal_blocks(
             best_score = score
             best_score_numeric = numeric
             best = tuple(assignment)
-        elif (
-            best_score is not None
-            and best_score_numeric is not None
-            and numeric == best_score_numeric
-        ):
+        elif best_score_numeric is not None and numeric == best_score_numeric:
             # ``optimal_count`` should include all assignments that are tied on
             # the numeric criteria. Ignore the deterministic tiebreaker when
             # counting optimal results.

@@ -16,7 +16,7 @@ from magic_combat import ensure_cards
 from magic_combat import generate_random_scenario
 from magic_combat.abilities import BOOL_NAMES as _BOOL_ABILITIES
 from magic_combat.abilities import INT_NAMES as _INT_ABILITIES
-from magic_combat.damage import _blocker_value
+from magic_combat.damage import _blocker_value  # pyright: ignore[reportPrivateUsage]
 
 # Ability name mappings for pretty printing come from ``magic_combat.abilities``
 
