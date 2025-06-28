@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import os
 import random
+from typing import Any
 from typing import Dict
 from typing import Iterable
 from typing import List
@@ -16,7 +17,7 @@ import numpy as np
 from .blocking_ai import decide_optimal_blocks
 from .blocking_ai import decide_simple_blocks
 from .creature import CombatCreature
-from .damage import _blocker_value
+from .damage import blocker_value
 from .damage import score_combat_result
 from .gamestate import GameState
 from .gamestate import PlayerState
@@ -39,7 +40,7 @@ __all__ = [
 ]
 
 
-def ensure_cards(path: str) -> List[dict]:
+def ensure_cards(path: str) -> list[dict[str, Any]]:
     """Load card data, downloading it if necessary."""
     if not os.path.exists(path):
         try:
@@ -51,7 +52,7 @@ def ensure_cards(path: str) -> List[dict]:
     return load_cards(path)
 
 
-def build_value_map(cards: Iterable[dict]) -> Dict[int, float]:
+def build_value_map(cards: Iterable[dict[str, Any]]) -> Dict[int, float]:
     """Return a mapping of card index to combat value."""
     values: Dict[int, float] = {}
     for idx, card in enumerate(cards):
@@ -59,14 +60,14 @@ def build_value_map(cards: Iterable[dict]) -> Dict[int, float]:
             creature = card_to_creature(card, "A")
         except ValueError:
             continue
-        values[idx] = _blocker_value(creature)
+        values[idx] = blocker_value(creature)
     if not values:
         raise ValueError("No usable creatures found in card data")
     return values
 
 
 def sample_balanced(
-    cards: List[dict],
+    cards: list[dict[str, Any]],
     values: Dict[int, float],
     n_att: int,
     n_blk: int,
@@ -106,7 +107,7 @@ def sample_balanced(
 
 def generate_balanced_creatures(
     stats: Dict[str, object], n_att: int, n_blk: int
-) -> Tuple[List, List]:
+) -> Tuple[list[CombatCreature], list[CombatCreature]]:
     """Generate two sets of creatures with roughly equal value."""
     best: Tuple[List, List] | None = None
     best_diff = float("inf")
@@ -119,8 +120,8 @@ def generate_balanced_creatures(
             generate_random_creature(stats, controller="B") for _ in range(n_blk)
         ]
 
-        att_val = sum(_blocker_value(c) for c in attackers)
-        blk_val = sum(_blocker_value(c) for c in blockers)
+        att_val = sum(blocker_value(c) for c in attackers)
+        blk_val = sum(blocker_value(c) for c in blockers)
         avg = (att_val + blk_val) / 2 or 1
         diff = abs(att_val - blk_val) / avg
 
@@ -137,14 +138,14 @@ def generate_balanced_creatures(
 
 
 def _sample_creatures(
-    cards: List[dict],
+    cards: list[dict[str, Any]],
     values: Dict[int, float],
     stats: Dict[str, object] | None,
     *,
     generated_cards: bool,
     rng: random.Random,
     np_rng: np.random.Generator,
-) -> Tuple[List, List]:
+) -> Tuple[list[CombatCreature], list[CombatCreature]]:
     """Select or generate attackers and blockers with similar value."""
 
     n_atk = int(np_rng.geometric(1 / 2.5))
@@ -164,8 +165,8 @@ def _sample_creatures(
 
 
 def _build_gamestate(
-    attackers: List,
-    blockers: List,
+    attackers: list[CombatCreature],
+    blockers: list[CombatCreature],
     rng: random.Random,
 ) -> GameState:
     """Return a randomized ``GameState`` for the provided creatures."""
@@ -192,8 +193,8 @@ def _build_gamestate(
 
 
 def _generate_interactions(
-    attackers: List,
-    blockers: List,
+    attackers: list[CombatCreature],
+    blockers: list[CombatCreature],
     rng: random.Random,
 ) -> Tuple[dict, dict]:
     """Create provoke and mentor interaction mappings."""
@@ -217,8 +218,8 @@ def _generate_interactions(
 
 
 def _determine_block_assignments(
-    attackers: List,
-    blockers: List,
+    attackers: list[CombatCreature],
+    blockers: list[CombatCreature],
     state: GameState,
     provoke_map: dict,
     *,
@@ -264,8 +265,8 @@ def _determine_block_assignments(
 
 
 def _score_optimal_result(
-    attackers: List,
-    blockers: List,
+    attackers: list[CombatCreature],
+    blockers: list[CombatCreature],
     state: GameState,
     optimal_assignment: Tuple[Optional[int], ...],
     provoke_map: dict,
@@ -311,8 +312,8 @@ def _score_optimal_result(
 
 
 def _compute_combat_results(
-    attackers: List,
-    blockers: List,
+    attackers: list[CombatCreature],
+    blockers: list[CombatCreature],
     state: GameState,
     provoke_map: dict,
     mentor_map: dict,
@@ -347,7 +348,7 @@ def _compute_combat_results(
 
 
 def generate_random_scenario(
-    cards: List[dict],
+    cards: list[dict[str, Any]],
     values: Dict[int, float],
     stats: Dict[str, object] | None = None,
     *,
@@ -357,10 +358,10 @@ def generate_random_scenario(
     seed: int | None = None,
 ) -> Tuple[
     GameState,
-    List,
-    List,
-    dict,
-    dict,
+    list[CombatCreature],
+    list[CombatCreature],
+    dict[CombatCreature, CombatCreature],
+    dict[CombatCreature, CombatCreature],
     Tuple[Optional[int], ...],
     Tuple[Optional[int], ...] | None,
     Tuple[int, int, int, float],

@@ -50,7 +50,7 @@ _STACKABLE_KEYWORDS = [
 ]
 
 
-def _blocker_value(blocker: CombatCreature) -> float:
+def blocker_value(blocker: CombatCreature) -> float:
     """Heuristic combat value for tie-breaking."""
 
     positive = sum(1 for attr in _POSITIVE_KEYWORDS if getattr(blocker, attr, False))
@@ -101,14 +101,12 @@ def score_combat_result(
     lost = 1 if defender in getattr(result, "players_lost", []) else 0
 
     att_val = sum(
-        _blocker_value(c)
+        blocker_value(c)
         for c in result.creatures_destroyed
         if c.controller == attacker_player
     )
     def_val = sum(
-        _blocker_value(c)
-        for c in result.creatures_destroyed
-        if c.controller == defender
+        blocker_value(c) for c in result.creatures_destroyed if c.controller == defender
     )
     val_diff = def_val - att_val
 
@@ -169,7 +167,7 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
                     self._order = order
 
                 def order_blockers(
-                    self, a: CombatCreature, bs: List[CombatCreature]
+                    self, attacker: CombatCreature, blockers: List[CombatCreature]
                 ) -> List[CombatCreature]:
                     return self._order
 

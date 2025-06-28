@@ -10,7 +10,7 @@ from magic_combat import card_to_creature
 from magic_combat import decide_optimal_blocks
 from magic_combat import load_cards
 from magic_combat.block_utils import evaluate_block_assignment
-from magic_combat.blocking_ai import _can_block
+from magic_combat.blocking_ai import can_block
 from magic_combat.limits import IterationCounter
 
 # Card data used when generating random blocking scenarios
@@ -21,7 +21,7 @@ def _compute_best_assignment(atk, blk, state):
     counter = IterationCounter(1000)
     options = []
     for b in blk:
-        opts = [None] + [i for i, a in enumerate(atk) if _can_block(a, b)]
+        opts = [None] + [i for i, a in enumerate(atk) if can_block(a, b)]
         options.append(opts)
     best = None
     best_score = None

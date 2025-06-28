@@ -37,7 +37,7 @@ __all__ = [
 ]
 
 
-def compute_card_statistics(cards: Iterable[dict]) -> Dict[str, Any]:
+def compute_card_statistics(cards: Iterable[dict[str, Any]]) -> Dict[str, Any]:
     """Return first and second order statistics for ``cards``.
 
     The returned mapping contains the mean and standard deviation of power and

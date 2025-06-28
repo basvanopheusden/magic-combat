@@ -3,9 +3,7 @@
 from dataclasses import dataclass
 from dataclasses import field
 from enum import Enum
-from typing import List
 from typing import Optional
-from typing import Set
 
 from .utils import check_non_negative
 from .utils import check_positive
@@ -31,7 +29,7 @@ class CombatCreature:
     controller: str
     mana_cost: str = ""
     oracle_text: str = ""
-    colors: Set[Color] = field(default_factory=set)
+    colors: set[Color] = field(default_factory=set)
     artifact: bool = False
 
     # --- Combat Keywords ---
@@ -77,13 +75,13 @@ class CombatCreature:
     provoke: bool = False
 
     # --- Special Protections ---
-    protection_colors: Set[Color] = field(default_factory=set)
+    protection_colors: set[Color] = field(default_factory=set)
 
     # --- State ---
     tapped: bool = False
     attacking: bool = False
     blocking: Optional["CombatCreature"] = None
-    blocked_by: List["CombatCreature"] = field(default_factory=list)
+    blocked_by: list["CombatCreature"] = field(default_factory=list)
     damage_marked: int = 0
 
     # --- Counters ---

@@ -13,17 +13,17 @@ from magic_combat.constants import POISON_LOSS_THRESHOLD
 
 from .block_utils import evaluate_block_assignment
 from .creature import CombatCreature
-from .damage import _blocker_value
+from .damage import blocker_value
 from .damage import score_combat_result
 from .gamestate import GameState
 from .limits import IterationCounter
 from .simulator import CombatSimulator
-from .utils import _can_block
+from .utils import can_block
 
 
 def _creature_value(creature: CombatCreature) -> float:
     """Return a heuristic value for the creature."""
-    return _blocker_value(creature)
+    return blocker_value(creature)
 
 
 def _reset_block_assignments(
@@ -52,7 +52,7 @@ def _apply_provoke_assignments(
         if (
             attacker in attackers
             and target in available
-            and _can_block(attacker, target)
+            and can_block(attacker, target)
         ):
             target.blocking = attacker
             attacker.blocked_by.append(target)
@@ -86,7 +86,7 @@ def _assign_favorable_trades(
         best_atk: Optional[CombatCreature] = None
         best_diff = float("-inf")
         for atk in attackers_sorted:
-            if atk in chosen or not _can_block(atk, blk):
+            if atk in chosen or not can_block(atk, blk):
                 continue
             diff = _pair_value_diff(atk, blk)
             if diff > best_diff:
@@ -125,7 +125,7 @@ def _perform_chump_blocks(
             break
         dmg, psn = remaining_threat()
         if life <= dmg or poison + psn >= POISON_LOSS_THRESHOLD:
-            choices = [b for b in available if _can_block(atk, b)]
+            choices = [b for b in available if can_block(atk, b)]
             if not choices:
                 continue
             blk = min(choices, key=_creature_value)
@@ -175,7 +175,7 @@ def decide_optimal_blocks(
     options: List[List[int | None]] = []
     for blk in blockers:
         forced = provoked.get(blk)
-        if forced is not None and _can_block(forced, blk):
+        if forced is not None and can_block(forced, blk):
             options.append([attackers.index(forced)])
         else:
             options.append(list(range(len(attackers))) + [None])
@@ -207,15 +207,12 @@ def decide_optimal_blocks(
             best_score = score
             best_score_numeric = numeric
             best = tuple(assignment)
-        elif (
-            best_score is not None
-            and best_score_numeric is not None
-            and numeric == best_score_numeric
-        ):
-            # ``optimal_count`` should include all assignments that are tied on
-            # the numeric criteria. Ignore the deterministic tiebreaker when
-            # counting optimal results.
-            optimal_count += 1
+        elif best_score_numeric is not None:
+            if numeric == best_score_numeric:
+                # ``optimal_count`` should include all assignments that are
+                # tied on the numeric criteria. Ignore the deterministic
+                # tiebreaker when counting optimal results.
+                optimal_count += 1
 
     # Apply the chosen assignment to the real objects
     _reset_block_assignments(attackers, blockers)

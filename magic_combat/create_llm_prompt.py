@@ -4,14 +4,14 @@ from typing import Iterable
 
 from .creature import CombatCreature
 from .gamestate import GameState
-from .rules_text import _describe_abilities
+from .rules_text import describe_abilities
 from .rules_text import get_relevant_rules_text
 
 
 def summarize_creature(creature: CombatCreature) -> str:
     """Return a readable one-line summary of ``creature``."""
 
-    extra = []
+    extra: list[str] = []
     if creature.plus1_counters:
         extra.append(f"+1/+1 x{creature.plus1_counters}")
     if creature.minus1_counters:
@@ -21,7 +21,7 @@ def summarize_creature(creature: CombatCreature) -> str:
     if creature.tapped:
         extra.append("tapped")
     extras = f" [{' ,'.join(extra)}]" if extra else ""
-    return f"{creature}{extras} -- {_describe_abilities(creature)}"
+    return f"{creature}{extras} -- {describe_abilities(creature)}"
 
 
 def create_llm_prompt(

@@ -4,13 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
-from typing import Dict
-from typing import List
 
 from magic_combat.constants import POISON_LOSS_THRESHOLD
 
 from .creature import CombatCreature
-from .rules_text import _describe_abilities
+from .rules_text import describe_abilities
 from .utils import check_non_negative
 
 
@@ -19,7 +17,7 @@ class PlayerState:
     """State for a single player."""
 
     life: int
-    creatures: List[CombatCreature]
+    creatures: list[CombatCreature]
     poison: int = 0
 
     def __post_init__(self) -> None:
@@ -32,7 +30,7 @@ class PlayerState:
         if self.creatures:
             lines.append("Creatures:")
             for creature in self.creatures:
-                lines.append(f"  - {creature} -- {_describe_abilities(creature)}")
+                lines.append(f"  - {creature} -- {describe_abilities(creature)}")
         else:
             lines.append("Creatures: None")
         return "\n".join(lines)
@@ -42,7 +40,7 @@ class PlayerState:
 class GameState:
     """Overall game state tracking both players."""
 
-    players: Dict[str, PlayerState] = field(default_factory=dict)
+    players: dict[str, PlayerState] = field(default_factory=dict)
 
     def __str__(self) -> str:
         """Return a readable summary of all players."""

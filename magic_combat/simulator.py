@@ -13,7 +13,7 @@ from .damage import DamageAssignmentStrategy
 from .damage import OptimalDamageStrategy
 from .gamestate import GameState
 from .gamestate import has_player_lost
-from .utils import _can_block
+from .utils import can_block
 from .utils import ensure_player_state
 
 
@@ -142,11 +142,11 @@ class CombatSimulator:
 
     def _check_evasion(self) -> None:
         """Check evasion abilities like flying, shadow, and skulk."""
-        from .utils import _can_block
+        from .utils import can_block
 
         for attacker in self.attackers:
             for blocker in attacker.blocked_by:
-                if not _can_block(attacker, blocker):
+                if not can_block(attacker, blocker):
                     raise ValueError("Illegal block according to keyword abilities")
 
     def _check_provoke(self) -> None:
@@ -156,7 +156,7 @@ class CombatSimulator:
                 raise ValueError("Provoke attacker not in combat")
             if target not in self.defenders:
                 raise ValueError("Provoke target not defending creature")
-            if _can_block(attacker, target) and target.blocking is not attacker:
+            if can_block(attacker, target) and target.blocking is not attacker:
                 raise ValueError("Provoke target failed to block")
 
     def _check_mentor(self) -> None:
@@ -213,7 +213,7 @@ class CombatSimulator:
         self, attackers_by_controller: Dict[str, List[CombatCreature]]
     ) -> None:
         """Apply exalted triggers (CR 702.90)."""
-        for controller, atks in attackers_by_controller.items():
+        for _controller, atks in attackers_by_controller.items():
             if len(atks) == 1:
                 atk = atks[0]
                 exalted_total = atk.exalted_count
@@ -262,7 +262,7 @@ class CombatSimulator:
         self, attackers_by_controller: Dict[str, List[CombatCreature]]
     ) -> None:
         """Apply battalion bonuses (CR 702.101)."""
-        for controller, atks in attackers_by_controller.items():
+        for _controller, atks in attackers_by_controller.items():
             if len(atks) >= 3:
                 for atk in atks:
                     if atk.battalion:
