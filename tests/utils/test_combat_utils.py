@@ -15,8 +15,8 @@ def test_damage_creature_wither_and_deathtouch():
 def test_damage_player_infect():
     """CR 702.90b: Damage from a source with infect gives poison counters instead of life loss."""
     source = CombatCreature("Infecter", 2, 2, "A", infect=True)
-    damage = {}
-    poison = {}
+    damage: dict[str, int] = {}
+    poison: dict[str, int] = {}
     damage_player(
         "B",
         2,

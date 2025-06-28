@@ -8,7 +8,7 @@ DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "example_test_cards.j
 
 
 def test_generate_random_scenario_seed():
-    cards = load_cards(DATA_PATH)
+    cards = load_cards(str(DATA_PATH))
     values = build_value_map(cards)
     res1 = generate_random_scenario(cards, values, seed=123)
     res2 = generate_random_scenario(cards, values, seed=123)

@@ -1,3 +1,5 @@
+import pytest
+
 from magic_combat import CombatCreature, CombatSimulator
 from tests.conftest import link_block
 
@@ -44,9 +46,6 @@ def test_rampage_single_blocker_no_bonus():
     result = sim.simulate()
     assert attacker in result.creatures_destroyed
     assert blocker in result.creatures_destroyed
-
-
-import pytest
 
 
 @pytest.mark.parametrize("unused", range(16))

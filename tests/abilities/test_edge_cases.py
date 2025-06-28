@@ -139,5 +139,5 @@ def test_normal_attacker_taps_on_attack():
     atk = CombatCreature("Orc", 2, 2, "A")
     defender = CombatCreature("Dummy", 0, 1, "B")
     sim = CombatSimulator([atk], [defender])
-    result = sim.simulate()
+    sim.simulate()
     assert atk.tapped

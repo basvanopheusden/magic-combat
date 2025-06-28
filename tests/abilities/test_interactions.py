@@ -336,7 +336,7 @@ def test_normal_attacker_taps_on_attack():
     atk = CombatCreature("Orc", 2, 2, "A")
     defender = CombatCreature("Dummy", 0, 1, "B")
     sim = CombatSimulator([atk], [defender])
-    result = sim.simulate()
+    sim.simulate()
     assert atk.tapped
 
 
@@ -386,7 +386,7 @@ def test_afflict_wither_blocked():
         }
     )
     sim = CombatSimulator([atk], [blk], game_state=state)
-    result = sim.simulate()
+    sim.simulate()
     assert blk.minus1_counters == 2
     assert state.players["B"].life == 18
 
@@ -460,7 +460,7 @@ def test_double_strike_infect_split_between_blockers():
     b2 = CombatCreature("B2", 2, 2, "B")
     link_block(atk, b1, b2)
     sim = CombatSimulator([atk], [b1, b2])
-    result = sim.simulate()
+    sim.simulate()
     assert b1.minus1_counters + b2.minus1_counters == 4
 
 
@@ -475,7 +475,7 @@ def test_infect_wither_combined_counters():
     assert blk in result.creatures_destroyed
 
 
-def test_intimidate_same_color_blocker_allowed():
+def test_intimidate_same_color_blocker_allowed_alt():
     """CR 702.13a: Intimidate allows blocking by a creature that shares a color."""
     atk = CombatCreature("Rogue", 2, 2, "A", intimidate=True, colors={Color.RED})
     blk = CombatCreature("Guard", 2, 2, "B", colors={Color.RED})
@@ -484,7 +484,7 @@ def test_intimidate_same_color_blocker_allowed():
     sim.validate_blocking()
 
 
-def test_intimidate_artifact_blocker_allowed():
+def test_intimidate_artifact_blocker_allowed_alt():
     """CR 702.13a: Artifacts can block a creature with intimidate."""
     atk = CombatCreature("Rogue", 2, 2, "A", intimidate=True, colors={Color.BLUE})
     blk = CombatCreature("Golem", 2, 2, "B", artifact=True)
@@ -775,7 +775,7 @@ def test_afflict_unblocked_no_life_loss():
 # 12
 
 
-def test_intimidate_same_color_blocker_allowed():
+def test_intimidate_same_color_blocker_allowed_again():
     """CR 702.13a: A creature that shares a color may block an intimidate attacker."""
     atk = CombatCreature("Rogue", 2, 2, "A", intimidate=True, colors={Color.RED})
     blk = CombatCreature("Ally", 2, 2, "B", colors={Color.RED})
@@ -805,7 +805,7 @@ def test_infect_wither_stack_counters_on_blocker():
     blk = CombatCreature("Target", 2, 2, "B")
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
-    result = sim.simulate()
+    sim.simulate()
     assert blk.minus1_counters == 2
 
 
