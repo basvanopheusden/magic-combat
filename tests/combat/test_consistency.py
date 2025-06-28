@@ -1,6 +1,5 @@
 import random
 
-
 from magic_combat import CombatCreature, CombatSimulator
 from tests.conftest import link_block
 

@@ -6,14 +6,11 @@ from typing import List, Optional
 import numpy as np
 import openai
 
-from magic_combat import (
-    CombatSimulator,
-    build_value_map,
-    compute_card_statistics,
-    generate_random_scenario,
-    load_cards,
-)
-from magic_combat.create_llm_prompt import create_llm_prompt, parse_block_assignments
+from magic_combat import (CombatSimulator, build_value_map,
+                          compute_card_statistics, generate_random_scenario,
+                          load_cards)
+from magic_combat.create_llm_prompt import (create_llm_prompt,
+                                            parse_block_assignments)
 from magic_combat.damage import score_combat_result
 from magic_combat.llm_cache import LLMCache
 

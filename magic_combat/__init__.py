@@ -13,33 +13,19 @@ from .create_llm_prompt import create_llm_prompt, parse_block_assignments
 from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
 from .gamestate import GameState, PlayerState, has_player_lost
 from .llm_cache import LLMCache, MockLLMCache
-from .random_creature import (
-    assign_random_counters,
-    assign_random_tapped,
-    compute_card_statistics,
-    generate_random_creature,
-)
-from .random_scenario import (
-    build_value_map,
-    ensure_cards,
-    generate_balanced_creatures,
-    generate_random_scenario,
-    sample_balanced,
-)
+from .random_creature import (assign_random_counters, assign_random_tapped,
+                              compute_card_statistics,
+                              generate_random_creature)
+from .random_scenario import (build_value_map, ensure_cards,
+                              generate_balanced_creatures,
+                              generate_random_scenario, sample_balanced)
 from .rules_text import RULES_TEXT, get_relevant_rules_text
-from .scryfall_loader import (
-    card_to_creature,
-    cards_to_creatures,
-    fetch_french_vanilla_cards,
-    load_cards,
-    save_cards,
-)
+from .scryfall_loader import (card_to_creature, cards_to_creatures,
+                              fetch_french_vanilla_cards, load_cards,
+                              save_cards)
 from .simulator import CombatResult, CombatSimulator
-from .utils import (
-    apply_attacker_blocking_bonuses,
-    apply_blocker_bushido,
-    calculate_mana_value,
-)
+from .utils import (apply_attacker_blocking_bonuses, apply_blocker_bushido,
+                    calculate_mana_value)
 
 __all__ = [
     "CombatCreature",

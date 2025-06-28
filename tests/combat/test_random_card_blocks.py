@@ -1,17 +1,11 @@
-from pathlib import Path
 import random
+from itertools import product
+from pathlib import Path
 
 import pytest
 
-from magic_combat import (
-    load_cards,
-    card_to_creature,
-    GameState,
-    PlayerState,
-    decide_optimal_blocks,
-)
-from itertools import product
-
+from magic_combat import (GameState, PlayerState, card_to_creature,
+                          decide_optimal_blocks, load_cards)
 from magic_combat.block_utils import evaluate_block_assignment
 from magic_combat.blocking_ai import _can_block
 from magic_combat.limits import IterationCounter

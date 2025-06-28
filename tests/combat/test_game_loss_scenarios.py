@@ -1,13 +1,8 @@
 import pytest
-from magic_combat import (
-    CombatCreature,
-    CombatSimulator,
-    GameState,
-    PlayerState,
-    DEFAULT_STARTING_LIFE,
-    POISON_LOSS_THRESHOLD,
-    has_player_lost,
-)
+
+from magic_combat import (DEFAULT_STARTING_LIFE, POISON_LOSS_THRESHOLD,
+                          CombatCreature, CombatSimulator, GameState,
+                          PlayerState, has_player_lost)
 from tests.conftest import link_block
 
 

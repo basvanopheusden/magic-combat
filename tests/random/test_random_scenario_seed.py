@@ -2,7 +2,8 @@ import random
 from pathlib import Path
 
 from magic_combat import load_cards
-from magic_combat.random_scenario import build_value_map, generate_random_scenario
+from magic_combat.random_scenario import (build_value_map,
+                                          generate_random_scenario)
 
 # Path to the sample card data used for random scenario generation
 DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "example_test_cards.json"

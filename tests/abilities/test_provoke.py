@@ -1,6 +1,6 @@
 import pytest
 
-from magic_combat import CombatCreature, CombatSimulator, Color
+from magic_combat import Color, CombatCreature, CombatSimulator
 
 
 def test_provoke_target_blocks_successfully():

@@ -289,7 +289,8 @@ class CombatSimulator:
 
     def _handle_bushido_rampage_flanking(self) -> None:
         """Apply bushido, rampage, and flanking bonuses."""
-        from .utils import apply_attacker_blocking_bonuses, apply_blocker_bushido
+        from .utils import (apply_attacker_blocking_bonuses,
+                            apply_blocker_bushido)
 
         for attacker in self.attackers:
             apply_attacker_blocking_bonuses(attacker)
