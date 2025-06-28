@@ -4,7 +4,6 @@ Downloaded from: https://media.wizards.com/2025/downloads/MagicCompRules%2020250
 See also: https://magic.wizards.com/en/rules
 """
 
-
 COMPREHENSIVE_RULES = """
 Magic: The Gathering Comprehensive Rules
 
