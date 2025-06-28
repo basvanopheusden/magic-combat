@@ -5,13 +5,10 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, Set
 
-from .keywords import (
-    BOOLEAN_KEYWORDS as _BOOLEAN_KEYWORDS,
-    VALUE_KEYWORDS as _VALUE_KEYWORDS,
-    STACKABLE_KEYWORDS as _STACKABLE_KEYWORDS,
-)
-
 from .creature import Color
+from .keywords import BOOLEAN_KEYWORDS as _BOOLEAN_KEYWORDS
+from .keywords import STACKABLE_KEYWORDS as _STACKABLE_KEYWORDS
+from .keywords import VALUE_KEYWORDS as _VALUE_KEYWORDS
 
 # Mapping from short mana cost letters to :class:`Color` enums
 _COLOR_MAP = {
@@ -83,4 +80,3 @@ def apply_keyword_attributes(keywords: Set[str], oracle_text: str) -> Dict[str, 
     if prot:
         attrs["protection_colors"] = prot
     return attrs
-

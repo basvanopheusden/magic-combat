@@ -1,0 +1,5 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E501,E203
+per-file-ignores =
+    magic_combat/__init__.py:E402

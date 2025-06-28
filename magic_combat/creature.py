@@ -1,10 +1,11 @@
 """Data model for creatures used during combat simulation."""
 
 from dataclasses import dataclass, field
-from typing import Set, List, Optional
 from enum import Enum
+from typing import List, Optional, Set
 
 from .utils import check_non_negative, check_positive
+
 
 class Color(Enum):
     """Enumeration of Magic: The Gathering's five colors."""
@@ -110,10 +111,7 @@ class CombatCreature:
         """Base power, counters, and temporary modifiers."""
         return max(
             0,
-            self.power
-            + self.plus1_counters
-            - self.minus1_counters
-            + self.temp_power,
+            self.power + self.plus1_counters - self.minus1_counters + self.temp_power,
         )
 
     def effective_toughness(self) -> int:
@@ -130,7 +128,10 @@ class CombatCreature:
         """Check if damage received is lethal, including deathtouch."""
         if self.indestructible:
             return False
-        return self.damage_marked >= self.effective_toughness() or self.damaged_by_deathtouch
+        return (
+            self.damage_marked >= self.effective_toughness()
+            or self.damaged_by_deathtouch
+        )
 
     def __str__(self) -> str:
         return f"{self.name} ({self.power}/{self.toughness})"
