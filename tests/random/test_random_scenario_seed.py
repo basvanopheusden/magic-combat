@@ -1,4 +1,4 @@
-# pylint: disable=missing-function-docstring, missing-module-docstring
+import random
 from pathlib import Path
 
 from magic_combat import load_cards
