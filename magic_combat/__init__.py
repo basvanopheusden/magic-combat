@@ -7,6 +7,9 @@ DEFAULT_STARTING_LIFE = 20
 # Poison counter threshold at which a player loses the game
 POISON_LOSS_THRESHOLD = 10
 
+# Version string used to tag snapshot data for tests
+SNAPSHOT_VERSION = "1"
+
 from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
 from .combat_utils import damage_creature, damage_player
 from .create_llm_prompt import create_llm_prompt, parse_block_assignments
@@ -56,6 +59,7 @@ __all__ = [
     "calculate_mana_value",
     "DEFAULT_STARTING_LIFE",
     "POISON_LOSS_THRESHOLD",
+    "SNAPSHOT_VERSION",
     "fetch_french_vanilla_cards",
     "load_cards",
     "save_cards",
