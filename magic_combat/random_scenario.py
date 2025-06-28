@@ -9,21 +9,22 @@ from typing import Dict, Iterable, List, Tuple
 
 import numpy as np
 
-from . import (
-    CombatSimulator,
-    GameState,
-    PlayerState,
-    cards_to_creatures,
-    card_to_creature,
-    fetch_french_vanilla_cards,
-    load_cards,
-    save_cards,
+from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
+from .damage import _blocker_value
+from .gamestate import GameState, PlayerState
+from .random_creature import (
     assign_random_counters,
     assign_random_tapped,
     generate_random_creature,
 )
-from .damage import _blocker_value
-from .blocking_ai import decide_optimal_blocks, decide_simple_blocks
+from .scryfall_loader import (
+    card_to_creature,
+    cards_to_creatures,
+    fetch_french_vanilla_cards,
+    load_cards,
+    save_cards,
+)
+from .simulator import CombatSimulator
 
 __all__ = [
     "ensure_cards",
@@ -69,7 +70,7 @@ def sample_balanced(
     rng: random.Random | None = None,
 ) -> Tuple[List[int], List[int]]:
     """Select attackers and blockers with roughly equal value."""
-    rng = rng or random
+    rng = rng if rng is not None else random.Random()
     idxs = list(values.keys())
     if n_att + n_blk > len(idxs):
         raise ValueError("Not enough cards to sample from")
@@ -107,8 +108,12 @@ def generate_balanced_creatures(
     best_diff = float("inf")
 
     for _ in range(1000):
-        attackers = [generate_random_creature(stats, controller="A") for _ in range(n_att)]
-        blockers = [generate_random_creature(stats, controller="B") for _ in range(n_blk)]
+        attackers = [
+            generate_random_creature(stats, controller="A") for _ in range(n_att)
+        ]
+        blockers = [
+            generate_random_creature(stats, controller="B") for _ in range(n_blk)
+        ]
 
         att_val = sum(_blocker_value(c) for c in attackers)
         blk_val = sum(_blocker_value(c) for c in blockers)
@@ -145,8 +150,10 @@ def generate_random_scenario(
     attacker interactions and should be supplied when simulating combat.
     """
 
-    rng = random.Random(seed) if seed is not None else random
-    np_rng = np.random.default_rng(seed) if seed is not None else np.random.default_rng()
+    rng = random.Random(seed) if seed is not None else random.Random()
+    np_rng = (
+        np.random.default_rng(seed) if seed is not None else np.random.default_rng()
+    )
 
     valid_len = len(values)
     attempts = 0
@@ -162,11 +169,13 @@ def generate_random_scenario(
 
         try:
             if generated_cards:
+                if stats is None:
+                    raise ValueError(
+                        "stats must be provided when generated_cards is True"
+                    )
                 attackers, blockers = generate_balanced_creatures(stats, n_atk, n_blk)
             else:
-                atk_idx, blk_idx = sample_balanced(
-                    cards, values, n_atk, n_blk, rng=rng
-                )
+                atk_idx, blk_idx = sample_balanced(cards, values, n_atk, n_blk, rng=rng)
                 attackers = cards_to_creatures((cards[j] for j in atk_idx), "A")
                 blockers = cards_to_creatures((cards[j] for j in blk_idx), "B")
         except ValueError:
@@ -192,11 +201,7 @@ def generate_random_scenario(
             }
         )
 
-        provoke_map = {
-            atk: rng.choice(blockers)
-            for atk in attackers
-            if atk.provoke
-        }
+        provoke_map = {atk: rng.choice(blockers) for atk in attackers if atk.provoke}
         for blk in provoke_map.values():
             blk.tapped = False
 
@@ -206,7 +211,8 @@ def generate_random_scenario(
                 targets = [
                     c
                     for c in attackers
-                    if c is not mentor and c.effective_power() < mentor.effective_power()
+                    if c is not mentor
+                    and c.effective_power() < mentor.effective_power()
                 ]
                 if targets:
                     mentor_map[mentor] = rng.choice(targets)

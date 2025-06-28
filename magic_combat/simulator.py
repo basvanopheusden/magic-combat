@@ -3,12 +3,13 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
+from . import DEFAULT_STARTING_LIFE
+from .combat_utils import damage_creature, damage_player
 from .creature import CombatCreature
 from .damage import DamageAssignmentStrategy, OptimalDamageStrategy
 from .gamestate import GameState, has_player_lost
-from . import DEFAULT_STARTING_LIFE
-from .utils import ensure_player_state, _can_block
-from .combat_utils import damage_creature, damage_player
+from .utils import _can_block, ensure_player_state
+
 
 @dataclass
 class CombatResult:
@@ -75,6 +76,7 @@ class CombatSimulator:
         self.provoke_map: Dict[CombatCreature, CombatCreature] = provoke_map or {}
         self.mentor_map: Dict[CombatCreature, CombatCreature] = mentor_map or {}
         self.players_lost: List[str] = []
+        self.dead_creatures: List[CombatCreature] = []
 
         for attacker in attackers:
             if attacker.defender:
@@ -95,7 +97,10 @@ class CombatSimulator:
         """Record any players who have lost the game."""
         if self.game_state is not None:
             for player in self.game_state.players:
-                if has_player_lost(self.game_state, player) and player not in self.players_lost:
+                if (
+                    has_player_lost(self.game_state, player)
+                    and player not in self.players_lost
+                ):
                     self.players_lost.append(player)
 
     def _check_block_assignments(self) -> None:
@@ -137,8 +142,6 @@ class CombatSimulator:
             for blocker in attacker.blocked_by:
                 if not _can_block(attacker, blocker):
                     raise ValueError("Illegal block according to keyword abilities")
-
-
 
     def _check_provoke(self) -> None:
         """Verify provoke targets are blocking as required."""
@@ -200,7 +203,9 @@ class CombatSimulator:
         for creature in self.all_creatures:
             creature.reset_temporary_bonuses()
 
-    def _handle_exalted(self, attackers_by_controller: Dict[str, List[CombatCreature]]) -> None:
+    def _handle_exalted(
+        self, attackers_by_controller: Dict[str, List[CombatCreature]]
+    ) -> None:
         """Apply exalted triggers (CR 702.90)."""
         for controller, atks in attackers_by_controller.items():
             if len(atks) == 1:
@@ -247,7 +252,9 @@ class CombatSimulator:
             ):
                 target.plus1_counters += 1
 
-    def _handle_battalion(self, attackers_by_controller: Dict[str, List[CombatCreature]]) -> None:
+    def _handle_battalion(
+        self, attackers_by_controller: Dict[str, List[CombatCreature]]
+    ) -> None:
         """Apply battalion bonuses (CR 702.101)."""
         for controller, atks in attackers_by_controller.items():
             if len(atks) >= 3:
@@ -274,7 +281,9 @@ class CombatSimulator:
                 atk.temp_power += atk.frenzy
             if atk.afflict and atk.blocked_by:
                 defender = self._get_defending_player()
-                self.player_damage[defender] = self.player_damage.get(defender, 0) + atk.afflict
+                self.player_damage[defender] = (
+                    self.player_damage.get(defender, 0) + atk.afflict
+                )
                 if self.game_state is not None:
                     ps = ensure_player_state(self.game_state, defender)
                     ps.life -= atk.afflict
@@ -407,13 +416,17 @@ class CombatSimulator:
         normal_power = {}
         for attacker in self.attackers:
             for blocker in attacker.blocked_by:
-                if blocker not in self.dead_creatures and (not blocker.first_strike or blocker.double_strike):
+                if blocker not in self.dead_creatures and (
+                    not blocker.first_strike or blocker.double_strike
+                ):
                     normal_power[blocker] = blocker.effective_power()
 
         for attacker in self.attackers:
             if attacker in self.dead_creatures:
                 continue
-            blockers_alive = [b for b in attacker.blocked_by if b not in self.dead_creatures]
+            blockers_alive = [
+                b for b in attacker.blocked_by if b not in self.dead_creatures
+            ]
             if blockers_alive:
                 if not attacker.first_strike or attacker.double_strike:
                     self._assign_damage_from_attacker(attacker, blockers_alive)
@@ -438,9 +451,7 @@ class CombatSimulator:
         destroyed_by_damage = [
             c for c in self.all_creatures if c.is_destroyed_by_damage()
         ]
-        zero_toughness = [
-            c for c in self.all_creatures if c.effective_toughness() <= 0
-        ]
+        zero_toughness = [c for c in self.all_creatures if c.effective_toughness() <= 0]
         self.dead_creatures = destroyed_by_damage
         for creature in zero_toughness:
             if creature not in self.dead_creatures:
@@ -480,7 +491,7 @@ class CombatSimulator:
 
     def simulate(self) -> CombatResult:
         """Run a full combat phase resolution and return the result."""
-        self.dead_creatures: List[CombatCreature] = []
+        self.dead_creatures = []
         self.tap_attackers()
         self.validate_blocking()
         self.apply_precombat_triggers()
@@ -488,7 +499,9 @@ class CombatSimulator:
         self._check_players_lost()
 
         # First strike step
-        any_first_strike = any(c.first_strike or c.double_strike for c in self.all_creatures)
+        any_first_strike = any(
+            c.first_strike or c.double_strike for c in self.all_creatures
+        )
         if any_first_strike:
             self.resolve_first_strike_damage()
             self.apply_lifelink_and_combat_lifegain()

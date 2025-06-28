@@ -1,15 +1,12 @@
 import json
-from typing import List, Dict, Any, Iterable
-
-from .creature import CombatCreature
-from .parsing import (
-    parse_colors as _parse_colors,
-    apply_keyword_attributes,
-)
-from .keywords import ALLOWED_KEYWORDS
-
+from typing import Any, Dict, Iterable, List
 
 import requests
+
+from .creature import CombatCreature
+from .keywords import ALLOWED_KEYWORDS
+from .parsing import apply_keyword_attributes
+from .parsing import parse_colors as _parse_colors
 
 SCRYFALL_API = "https://api.scryfall.com/cards/search"
 QUERY = "is:frenchvanilla t:creature"
@@ -31,7 +28,7 @@ def fetch_french_vanilla_cards(timeout: float = 10.0) -> List[Dict[str, Any]]:
         of 10 seconds should be suitable for most use cases.
     """
     url = SCRYFALL_API
-    params = {"q": QUERY}
+    params: Dict[str, str] | None = {"q": QUERY}
     cards: List[Dict[str, Any]] = []
     with requests.Session() as session:
         while url:
@@ -71,8 +68,6 @@ def load_cards(path: str) -> List[Dict[str, Any]]:
         return json.load(fh)
 
 
-
-
 def card_to_creature(card: Dict[str, Any], controller: str) -> CombatCreature:
     """Convert a single card dictionary into a :class:`CombatCreature`."""
 
@@ -104,7 +99,9 @@ def card_to_creature(card: Dict[str, Any], controller: str) -> CombatCreature:
     return CombatCreature(**kwargs)
 
 
-def cards_to_creatures(cards: Iterable[Dict[str, Any]], controller: str) -> List[CombatCreature]:
+def cards_to_creatures(
+    cards: Iterable[Dict[str, Any]], controller: str
+) -> List[CombatCreature]:
     """Convert an iterable of card dicts into :class:`CombatCreature` objects."""
 
     return [card_to_creature(c, controller) for c in cards]
