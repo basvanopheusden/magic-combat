@@ -22,5 +22,5 @@ def test_wither_basic(unused):
     blk = CombatCreature("Dummy", 2, 2, "B")
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
-    result = sim.simulate()
+    sim.simulate()
     assert blk.minus1_counters == 2

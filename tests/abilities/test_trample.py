@@ -1,3 +1,5 @@
+import pytest
+
 from magic_combat import CombatCreature, CombatSimulator
 from tests.conftest import link_block
 
@@ -61,9 +63,6 @@ def test_trample_excess_damage_to_player():
     result = sim.simulate()
     assert blk in result.creatures_destroyed
     assert result.damage_to_players["B"] == 1
-
-
-import pytest
 
 
 @pytest.mark.parametrize("unused", range(15))
