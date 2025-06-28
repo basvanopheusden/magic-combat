@@ -19,7 +19,7 @@ requirements to ensure consistency across the code base.
 - Break complex operations into helper functions.
 
 ## Imports
-- Use `isort` to sort imports in the following sections:
+- Use `isort --profile black` to sort imports in the following sections:
   1. Standard library
   2. Third-party packages
   3. Local packages
