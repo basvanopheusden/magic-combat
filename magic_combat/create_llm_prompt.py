@@ -4,7 +4,7 @@ from typing import Iterable
 
 from .creature import CombatCreature
 from .gamestate import GameState
-from .rules_text import _describe_abilities
+from .rules_text import _describe_abilities, get_relevant_rules_text
 
 
 def summarize_creature(creature: CombatCreature) -> str:
@@ -40,6 +40,7 @@ def create_llm_prompt(
     """
     attacker_string = "\n".join(summarize_creature(attacker) for attacker in attackers)
     blocker_string = "\n".join(summarize_creature(blocker) for blocker in blockers)
+    rules_text = get_relevant_rules_text(list(attackers) + list(blockers))
 
     prompt = f"""You are a component of a Magic: The Gathering playing AI.
 Your task is to decide the best blocks for the defending player given a set of attackers, a set of candidate blockers, and the current game state.
@@ -52,6 +53,8 @@ The attackers are:
 
 The blockers are:
 {blocker_string}
+
+{rules_text}
 
 Please analyze the combat situation and provide a detailed explanation of the best blocking strategy for the defending player.
 The criteria for the best blocking strategy are as follows:
