@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+"""Generate snapshot scenarios for optimal blocking tests."""
+
+import argparse
+import json
+import random
+from pathlib import Path
+from typing import List, Optional
+
+import numpy as np
+
+from magic_combat import build_value_map, generate_random_scenario, load_cards
+
+
+def _dump_snapshot(data: List[dict], path: Path) -> None:
+    """Write snapshot data to ``path`` in JSON format."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as fh:
+        json.dump(data, fh, indent=2)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Create optimal block snapshots")
+    parser.add_argument("-n", "--num", type=int, default=5, help="Number of scenarios")
+    parser.add_argument(
+        "--cards",
+        default="tests/data/example_test_cards.json",
+        help="Path to card data JSON",
+    )
+    parser.add_argument(
+        "--seed", type=int, default=0, help="Base random seed controlling sampling"
+    )
+    parser.add_argument(
+        "--output",
+        default="tests/data/blocking_snapshots.json",
+        help="Output JSON file",
+    )
+    args = parser.parse_args()
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+
+    cards = load_cards(args.cards)
+    values = build_value_map(cards)
+
+    snapshots: List[dict] = []
+    for i in range(args.num):
+        seed = args.seed + i
+        res = generate_random_scenario(cards, values, seed=seed)
+        optimal_assignment: List[Optional[int]] = list(res[5])
+        simple_assignment = list(res[6]) if res[6] is not None else None
+        combat_value = list(res[7])
+        snapshots.append(
+            {
+                "seed": seed,
+                "optimal_assignment": optimal_assignment,
+                "simple_assignment": simple_assignment,
+                "combat_value": combat_value,
+            }
+        )
+
+    _dump_snapshot(snapshots, Path(args.output))
+
+
+if __name__ == "__main__":
+    main()

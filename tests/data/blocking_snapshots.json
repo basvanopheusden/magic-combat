@@ -1,0 +1,75 @@
+[
+  {
+    "seed": 0,
+    "optimal_assignment": [
+      1
+    ],
+    "simple_assignment": null,
+    "combat_value": [
+      2,
+      2,
+      -1,
+      -2.5
+    ]
+  },
+  {
+    "seed": 1,
+    "optimal_assignment": [
+      0,
+      1
+    ],
+    "simple_assignment": null,
+    "combat_value": [
+      4,
+      0,
+      -2,
+      -6.5
+    ]
+  },
+  {
+    "seed": 2,
+    "optimal_assignment": [
+      null
+    ],
+    "simple_assignment": null,
+    "combat_value": [
+      2,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "seed": 3,
+    "optimal_assignment": [
+      0,
+      1
+    ],
+    "simple_assignment": [
+      null,
+      1
+    ],
+    "combat_value": [
+      2,
+      2,
+      0,
+      2.0
+    ]
+  },
+  {
+    "seed": 4,
+    "optimal_assignment": [
+      1,
+      null,
+      1,
+      null
+    ],
+    "simple_assignment": null,
+    "combat_value": [
+      2,
+      0,
+      -1,
+      -7.0
+    ]
+  }
+]
