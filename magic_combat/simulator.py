@@ -3,7 +3,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from . import DEFAULT_STARTING_LIFE
 from .combat_utils import damage_creature, damage_player
 from .creature import CombatCreature
 from .damage import DamageAssignmentStrategy, OptimalDamageStrategy

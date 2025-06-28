@@ -9,7 +9,9 @@ from .utils import ensure_player_state
 __all__ = ["damage_creature", "damage_player"]
 
 
-def damage_creature(creature: CombatCreature, amount: int, source: CombatCreature) -> None:
+def damage_creature(
+    creature: CombatCreature, amount: int, source: CombatCreature
+) -> None:
     """Apply combat damage to ``creature``.
 
     CR 702.90a states that wither damage is dealt in the form of -1/-1 counters,
@@ -54,4 +56,3 @@ def damage_player(
         if game_state is not None:
             ps = ensure_player_state(game_state, player)
             ps.poison += source.toxic
-

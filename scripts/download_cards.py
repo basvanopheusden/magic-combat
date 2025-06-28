@@ -14,7 +14,7 @@ import sys
 # Allow running this script without installing the package
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from magic_combat import fetch_french_vanilla_cards, save_cards
+from magic_combat import fetch_french_vanilla_cards, save_cards  # noqa: E402
 
 
 def main() -> None:

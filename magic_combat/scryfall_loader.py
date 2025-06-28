@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, Iterable, List
 
-import requests
+import requests  # type: ignore[import]
 
 from .creature import CombatCreature
 from .keywords import ALLOWED_KEYWORDS

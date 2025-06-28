@@ -2,23 +2,23 @@
 """Generate and resolve random combat scenarios."""
 
 import argparse
-import random
 import copy
-from typing import Dict, List
+import random
+from typing import List
 
 import numpy as np
 
 from magic_combat import (
-    compute_card_statistics,
     CombatSimulator,
-    GameState,
     PlayerState,
-    ensure_cards,
     build_value_map,
+    compute_card_statistics,
+    ensure_cards,
     generate_random_scenario,
 )
+from magic_combat.abilities import BOOL_NAMES as _BOOL_ABILITIES
+from magic_combat.abilities import INT_NAMES as _INT_ABILITIES
 from magic_combat.damage import _blocker_value
-from magic_combat.abilities import BOOL_NAMES as _BOOL_ABILITIES, INT_NAMES as _INT_ABILITIES
 
 # Ability name mappings for pretty printing come from ``magic_combat.abilities``
 
@@ -67,12 +67,8 @@ def print_player_state(label: str, ps: PlayerState, destroyed: List) -> None:
         print("  no creatures")
 
 
-
-
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Simulate random combat scenarios"
-    )
+    parser = argparse.ArgumentParser(description="Simulate random combat scenarios")
     parser.add_argument(
         "-n",
         "--iterations",
@@ -153,8 +149,12 @@ def main() -> None:
         for blk in start_state.players["B"].creatures:
             print(f"  {summarize_creature(blk)}, {_blocker_value(blk)}")
 
-        prov_map_display = {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None
-        mentor_map_display = {m.name: t.name for m, t in mentor_map.items()} if mentor_map else None
+        prov_map_display = (
+            {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None
+        )
+        mentor_map_display = (
+            {m.name: t.name for m, t in mentor_map.items()} if mentor_map else None
+        )
 
         print("Block assignments:")
         for atk in start_state.players["A"].creatures:
@@ -173,7 +173,9 @@ def main() -> None:
 
         print("Final state:")
         for p in ["A", "B"]:
-            print_player_state(f"Player {p}", state.players[p], result.creatures_destroyed)
+            print_player_state(
+                f"Player {p}", state.players[p], result.creatures_destroyed
+            )
         if result.players_lost:
             print("Players lost:", ", ".join(result.players_lost))
         print()

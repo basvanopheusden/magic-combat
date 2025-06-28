@@ -2,10 +2,8 @@
 
 from typing import List, Tuple
 
-from .limits import IterationCounter
-
 from .creature import CombatCreature
-
+from .limits import IterationCounter
 
 # Keyword sets used for estimating combat value of a creature
 _POSITIVE_KEYWORDS = [
@@ -61,7 +59,9 @@ def _blocker_value(blocker: CombatCreature) -> float:
     return blocker.power + blocker.toughness + positive / 2
 
 
-def _select_kill_indices(power: int, costs: List[float], values: List[float]) -> List[int]:
+def _select_kill_indices(
+    power: int, costs: List[float], values: List[float]
+) -> List[int]:
     """Return indices of blockers that should be destroyed first."""
 
     dp: List[Tuple[int, float, List[int]]] = [(0, 0.0, []) for _ in range(power + 1)]
@@ -96,14 +96,20 @@ def score_combat_result(
     lost = 1 if defender in getattr(result, "players_lost", []) else 0
 
     att_val = sum(
-        _blocker_value(c) for c in result.creatures_destroyed if c.controller == attacker_player
+        _blocker_value(c)
+        for c in result.creatures_destroyed
+        if c.controller == attacker_player
     )
     def_val = sum(
-        _blocker_value(c) for c in result.creatures_destroyed if c.controller == defender
+        _blocker_value(c)
+        for c in result.creatures_destroyed
+        if c.controller == defender
     )
     val_diff = def_val - att_val
 
-    att_cnt = sum(1 for c in result.creatures_destroyed if c.controller == attacker_player)
+    att_cnt = sum(
+        1 for c in result.creatures_destroyed if c.controller == attacker_player
+    )
     def_cnt = sum(1 for c in result.creatures_destroyed if c.controller == defender)
     cnt_diff = def_cnt - att_cnt
 
@@ -124,7 +130,6 @@ class DamageAssignmentStrategy:
         return list(blockers)
 
 
-
 class OptimalDamageStrategy(DamageAssignmentStrategy):
     """Order blockers to maximize value destroyed similarly to optimal blocks."""
 
@@ -137,8 +142,9 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
         if len(blockers) <= 1:
             return list(blockers)
 
-        from itertools import permutations
         from copy import deepcopy
+        from itertools import permutations
+
         from .simulator import CombatSimulator
 
         index_map = {id(b): i for i, b in enumerate(blockers)}
@@ -156,8 +162,10 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
             class _Fixed(DamageAssignmentStrategy):
                 def __init__(self, order):
                     self._order = order
+
                 def order_blockers(self, a, bs):
                     return self._order
+
             strat = _Fixed([clone_map[id(b)] for b in perm])
             sim = CombatSimulator([atk], blks, strategy=strat)
             if self.counter is not None:
@@ -173,4 +181,3 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
                 best_order = list(perm)
 
         return best_order
-
