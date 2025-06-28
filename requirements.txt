@@ -3,7 +3,12 @@ requests
 numpy
 openai==1.79.0
 flake8
+flake8-import-order
 black
 isort
 pylint
 mypy
+pyflakes
+pycodestyle
+typing_extensions
+types-requests
