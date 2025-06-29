@@ -1,3 +1,7 @@
+import time
+
+import pytest
+
 from magic_combat import CombatCreature
 from magic_combat import CombatSimulator
 from magic_combat import GameState
@@ -285,3 +289,41 @@ def test_simple_ai_reacher_blocks_flyer_only():
     )
     decide_simple_blocks([flyer, ground], [reacher], game_state=state)
     assert reacher.blocking is ground
+
+
+def test_simple_ai_iteration_limit_triggers():
+    """CR 509.1a: The defending player chooses how creatures block."""
+    atk = CombatCreature("Big", 5, 5, "A")
+    b1 = CombatCreature("B1", 2, 2, "B")
+    b2 = CombatCreature("B2", 2, 2, "B")
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[b1, b2]),
+        }
+    )
+    with pytest.raises(RuntimeError):
+        decide_simple_blocks([atk], [b1, b2], game_state=state, max_iterations=1)
+
+
+def test_simple_ai_iteration_limit_allows_fast_run():
+    """CR 509.1a: The defending player chooses how creatures block."""
+    a1 = CombatCreature("A1", 3, 3, "A")
+    a2 = CombatCreature("A2", 3, 3, "A")
+    b1 = CombatCreature("B1", 3, 3, "B")
+    b2 = CombatCreature("B2", 3, 3, "B")
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[a1, a2]),
+            "B": PlayerState(life=20, creatures=[b1, b2]),
+        }
+    )
+    start = time.perf_counter()
+    decide_simple_blocks(
+        [a1, a2],
+        [b1, b2],
+        game_state=state,
+        max_iterations=1000,
+    )
+    duration = time.perf_counter() - start
+    assert duration < 2
