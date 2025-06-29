@@ -369,7 +369,9 @@ def test_iteration_limit_triggers():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2]),
         }
     )
-    with pytest.raises(RuntimeError):
+    from magic_combat import IterationLimitError
+
+    with pytest.raises(IterationLimitError):
         decide_optimal_blocks([atk], [b1, b2], game_state=state, max_iterations=1)
 
 

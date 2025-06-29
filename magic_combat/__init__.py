@@ -16,6 +16,7 @@ from .damage import OptimalDamageStrategy
 from .exceptions import CardDataError
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
+from .exceptions import IterationLimitError
 from .exceptions import UnparsableLLMOutputError
 from .gamestate import GameState
 from .gamestate import PlayerState
@@ -77,6 +78,7 @@ __all__ = [
     "apply_blocker_bushido",
     "IllegalBlockError",
     "InvalidBlockScenarioError",
+    "IterationLimitError",
     "CardDataError",
     "UnparsableLLMOutputError",
     "parse_block_assignments",

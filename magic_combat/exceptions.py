@@ -17,5 +17,9 @@ class InvalidBlockScenarioError(MagicCombatError):
     """Raised when generated block assignments are invalid or trivial."""
 
 
+class IterationLimitError(MagicCombatError, RuntimeError):
+    """Raised when a search exceeds the configured iteration limit."""
+
+
 class CardDataError(MagicCombatError, ValueError):
     """Raised when card data is missing or unusable."""
