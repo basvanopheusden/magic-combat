@@ -16,12 +16,13 @@ from magic_combat import ensure_cards
 from magic_combat import generate_random_scenario
 from magic_combat.abilities import BOOL_NAMES as _BOOL_ABILITIES
 from magic_combat.abilities import INT_NAMES as _INT_ABILITIES
+from magic_combat.creature import CombatCreature
 from magic_combat.damage import blocker_value
 
 # Ability name mappings for pretty printing come from ``magic_combat.abilities``
 
 
-def describe_abilities(creature) -> str:
+def describe_abilities(creature: CombatCreature) -> str:
     """Return a comma-separated string of the creature's keyword abilities."""
     parts: List[str] = []
     for attr, name in _BOOL_ABILITIES.items():
@@ -39,7 +40,7 @@ def describe_abilities(creature) -> str:
     return ", ".join(parts) if parts else "none"
 
 
-def summarize_creature(creature) -> str:
+def summarize_creature(creature: CombatCreature) -> str:
     """Return a readable one-line summary of ``creature``."""
     extra: List[str] = []
     if creature.plus1_counters:
@@ -54,7 +55,9 @@ def summarize_creature(creature) -> str:
     return f"{creature}{extras} -- {describe_abilities(creature)}"
 
 
-def print_player_state(label: str, ps: PlayerState, destroyed: List) -> None:
+def print_player_state(
+    label: str, ps: PlayerState, destroyed: List[CombatCreature]
+) -> None:
     """Display life total and surviving creatures for a player."""
     print(f"{label}: {ps.life} life, {ps.poison} poison")
     survivors = [c for c in ps.creatures if c not in destroyed]
@@ -135,7 +138,7 @@ def main() -> None:
             mentor_map=mentor_map,
         ).simulate()
 
-        print(f"\n=== Scenario {i+1} ===")
+        print(f"\n=== Scenario {i + 1} ===")
         print("Starting life totals:")
         for p in ["A", "B"]:
             ps = start_state.players[p]

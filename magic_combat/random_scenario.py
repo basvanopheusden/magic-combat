@@ -109,7 +109,7 @@ def generate_balanced_creatures(
     stats: Dict[str, object], n_att: int, n_blk: int
 ) -> Tuple[list[CombatCreature], list[CombatCreature]]:
     """Generate two sets of creatures with roughly equal value."""
-    best: Tuple[List, List] | None = None
+    best: Tuple[list[CombatCreature], list[CombatCreature]] | None = None
     best_diff = float("inf")
 
     for _ in range(1000):
@@ -196,10 +196,12 @@ def _generate_interactions(
     attackers: list[CombatCreature],
     blockers: list[CombatCreature],
     rng: random.Random,
-) -> Tuple[dict, dict]:
+) -> Tuple[dict[CombatCreature, CombatCreature], dict[CombatCreature, CombatCreature],]:
     """Create provoke and mentor interaction mappings."""
 
-    provoke_map = {atk: rng.choice(blockers) for atk in attackers if atk.provoke}
+    provoke_map: dict[CombatCreature, CombatCreature] = {
+        atk: rng.choice(blockers) for atk in attackers if atk.provoke
+    }
     for blk in provoke_map.values():
         blk.tapped = False
 
@@ -221,7 +223,7 @@ def _determine_block_assignments(
     attackers: list[CombatCreature],
     blockers: list[CombatCreature],
     state: GameState,
-    provoke_map: dict,
+    provoke_map: dict[CombatCreature, CombatCreature],
     *,
     max_iterations: int,
     unique_optimal: bool,
@@ -269,8 +271,8 @@ def _score_optimal_result(
     blockers: list[CombatCreature],
     state: GameState,
     optimal_assignment: Tuple[Optional[int], ...],
-    provoke_map: dict,
-    mentor_map: dict,
+    provoke_map: dict[CombatCreature, CombatCreature],
+    mentor_map: dict[CombatCreature, CombatCreature],
 ) -> Tuple[int, int, int, float]:
     """Simulate combat using ``optimal_assignment`` and return its value."""
 
@@ -315,8 +317,8 @@ def _compute_combat_results(
     attackers: list[CombatCreature],
     blockers: list[CombatCreature],
     state: GameState,
-    provoke_map: dict,
-    mentor_map: dict,
+    provoke_map: dict[CombatCreature, CombatCreature],
+    mentor_map: dict[CombatCreature, CombatCreature],
     *,
     max_iterations: int,
     unique_optimal: bool,

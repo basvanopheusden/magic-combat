@@ -29,7 +29,7 @@ class CombatCreature:
     controller: str
     mana_cost: str = ""
     oracle_text: str = ""
-    colors: set[Color] = field(default_factory=set)
+    colors: set[Color] = field(default_factory=set[Color])
     artifact: bool = False
 
     # --- Combat Keywords ---
@@ -75,13 +75,13 @@ class CombatCreature:
     provoke: bool = False
 
     # --- Special Protections ---
-    protection_colors: set[Color] = field(default_factory=set)
+    protection_colors: set[Color] = field(default_factory=set[Color])
 
     # --- State ---
     tapped: bool = False
     attacking: bool = False
     blocking: Optional["CombatCreature"] = None
-    blocked_by: list["CombatCreature"] = field(default_factory=list)
+    blocked_by: list["CombatCreature"] = field(default_factory=list["CombatCreature"])
     damage_marked: int = 0
 
     # --- Counters ---

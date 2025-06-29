@@ -49,12 +49,12 @@ def compute_card_statistics(cards: Iterable[dict[str, Any]]) -> Dict[str, Any]:
     powers: list[int] = []
     toughnesses: list[int] = []
     ability_counts: Counter[str] = Counter()
-    pair_counts: Dict[str, Counter[str]] = defaultdict(Counter)
+    pair_counts: Dict[str, Counter[str]] = defaultdict(lambda: Counter[str]())
 
     for cr in creatures:
         powers.append(cr.power)
         toughnesses.append(cr.toughness)
-        present = []
+        present: list[str] = []
         for attr in _BOOL_ABILITIES:
             if getattr(cr, attr, False):
                 present.append(attr)
@@ -66,7 +66,7 @@ def compute_card_statistics(cards: Iterable[dict[str, Any]]) -> Dict[str, Any]:
         ability_counts.update(present)
         for i, a in enumerate(present):
             for b in present[i + 1 :]:
-                pair = tuple(sorted((a, b)))
+                pair = cast(Tuple[str, str], tuple(sorted((a, b))))
                 pair_counts[pair[0]][pair[1]] += 1
                 pair_counts[pair[1]][pair[0]] += 1
 

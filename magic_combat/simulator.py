@@ -24,8 +24,8 @@ class CombatResult:
     damage_to_players: Dict[str, int]
     creatures_destroyed: List[CombatCreature]
     lifegain: Dict[str, int]
-    poison_counters: Dict[str, int] = field(default_factory=dict)
-    players_lost: List[str] = field(default_factory=list)
+    poison_counters: Dict[str, int] = field(default_factory=dict[str, int])
+    players_lost: List[str] = field(default_factory=list[str])
 
     def __repr__(self) -> str:
         cls = self.__class__.__name__
@@ -73,16 +73,20 @@ class CombatSimulator:
         self.attackers = attackers
         self.defenders = defenders
         self.all_creatures = attackers + defenders
-        self.player_damage: Dict[str, int] = {}
-        self.poison_counters: Dict[str, int] = {}
-        self.lifegain: Dict[str, int] = {}
-        self._lifegain_applied: Dict[str, int] = {}
+        self.player_damage: Dict[str, int] = dict[str, int]()
+        self.poison_counters: Dict[str, int] = dict[str, int]()
+        self.lifegain: Dict[str, int] = dict[str, int]()
+        self._lifegain_applied: Dict[str, int] = dict[str, int]()
         self.assignment_strategy = strategy or OptimalDamageStrategy()
         self.game_state = game_state
-        self.provoke_map: Dict[CombatCreature, CombatCreature] = provoke_map or {}
-        self.mentor_map: Dict[CombatCreature, CombatCreature] = mentor_map or {}
-        self.players_lost: List[str] = []
-        self.dead_creatures: List[CombatCreature] = []
+        self.provoke_map: Dict[CombatCreature, CombatCreature] = (
+            provoke_map or dict[CombatCreature, CombatCreature]()
+        )
+        self.mentor_map: Dict[CombatCreature, CombatCreature] = (
+            mentor_map or dict[CombatCreature, CombatCreature]()
+        )
+        self.players_lost: List[str] = list[str]()
+        self.dead_creatures: List[CombatCreature] = list[CombatCreature]()
 
         for attacker in attackers:
             if attacker.defender:
@@ -121,7 +125,7 @@ class CombatSimulator:
                     raise ValueError("Inconsistent blocking assignments")
 
         for attacker in self.attackers:
-            seen_ids = set()
+            seen_ids: set[int] = set()
             for blocker in attacker.blocked_by:
                 bid = id(blocker)
                 if bid in seen_ids:
@@ -329,7 +333,7 @@ class CombatSimulator:
         """Handle the first strike combat damage step."""
         # Capture blockers' power before any damage is assigned so damage is
         # simultaneous even when wither or infect would reduce it.
-        first_strike_power = {}
+        first_strike_power: dict[CombatCreature, int] = {}
         for attacker in self.attackers:
             for blocker in attacker.blocked_by:
                 if blocker.first_strike or blocker.double_strike:
@@ -341,7 +345,7 @@ class CombatSimulator:
                     self._assign_damage_from_attacker(attacker)
                 for blocker in attacker.blocked_by:
                     if blocker.first_strike or blocker.double_strike:
-                        dmg = first_strike_power[blocker]
+                        dmg: int = first_strike_power[blocker]
                         self._apply_damage_to_creature(attacker, dmg, blocker)
             else:
                 if attacker.first_strike or attacker.double_strike:
@@ -356,7 +360,7 @@ class CombatSimulator:
         remaining = attacker.effective_power()
         for blocker in ordered:
             lethal = 1 if attacker.deathtouch else blocker.effective_toughness()
-            dmg = min(remaining, lethal)
+            dmg: int = min(remaining, lethal)
             self._apply_damage_to_creature(blocker, dmg, attacker)
             remaining -= dmg
             if remaining <= 0:
@@ -370,7 +374,7 @@ class CombatSimulator:
         """Deal each blocker's combat damage to the attacker."""
         blockers = blockers if blockers is not None else attacker.blocked_by
         for blocker in blockers:
-            dmg = blocker.effective_power()
+            dmg: int = blocker.effective_power()
             self._apply_damage_to_creature(attacker, dmg, blocker)
 
     def _deal_damage_to_player(
@@ -378,7 +382,7 @@ class CombatSimulator:
     ) -> None:
         """Deal combat damage from ``attacker`` to a defending player."""
         defender = self._get_defending_player()
-        dmg = attacker.effective_power() if dmg is None else dmg
+        dmg = attacker.effective_power() if dmg is None else int(dmg)
         self._apply_damage_to_creature(defender, dmg, attacker)
 
     def _revive_creature(
@@ -420,7 +424,7 @@ class CombatSimulator:
         """Assign and deal damage in the normal damage step."""
         # Record blocker power before any damage so lifelink isn't reduced by
         # simultaneous wither/infect damage.
-        normal_power = {}
+        normal_power: dict[CombatCreature, int] = {}
         for attacker in self.attackers:
             for blocker in attacker.blocked_by:
                 if blocker not in self.dead_creatures and (

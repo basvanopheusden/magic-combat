@@ -14,17 +14,19 @@ from magic_combat import generate_random_scenario
 from magic_combat import load_cards
 from magic_combat.create_llm_prompt import create_llm_prompt
 from magic_combat.create_llm_prompt import parse_block_assignments
+from magic_combat.creature import CombatCreature
 from magic_combat.damage import score_combat_result
+from magic_combat.gamestate import GameState
 from magic_combat.llm_cache import LLMCache
 
 
 def _value_for_assignment(
-    attackers: List,
-    blockers: List,
+    attackers: List[CombatCreature],
+    blockers: List[CombatCreature],
     assignment: List[Optional[int]],
-    state,
-    provoke_map: dict,
-    mentor_map: dict,
+    state: GameState,
+    provoke_map: dict[CombatCreature, CombatCreature],
+    mentor_map: dict[CombatCreature, CombatCreature],
 ) -> tuple[int, int, int, float]:
     atk = copy.deepcopy(attackers)
     blk = copy.deepcopy(blockers)
@@ -112,9 +114,9 @@ async def call_openai_model(
 
 async def _evaluate_single_scenario(
     idx: int,
-    cards: list,
-    stats,
-    values,
+    cards: list[dict[str, object]],
+    stats: dict[str, object],
+    values: dict[int, float],
     *,
     seed: int = 0,
     semaphore: asyncio.Semaphore,
@@ -152,7 +154,7 @@ async def _evaluate_single_scenario(
         blk.blocking = None
 
     prompt = create_llm_prompt(state, attackers, blockers)
-    print(f"\n=== Scenario {idx+1} ===")
+    print(f"\n=== Scenario {idx + 1} ===")
     # print(prompt)
 
     attempts = 0
@@ -178,7 +180,7 @@ async def _evaluate_single_scenario(
         if invalid:
             print("Response contained illegal block assignments")
         correct = sum(1 for b, a in parsed.items() if optimal.get(b) == a)
-        llm_map = []
+        llm_map: list[Optional[int]] = []
         for blk in blockers:
             target = parsed.get(blk.name)
             idx_choice = None

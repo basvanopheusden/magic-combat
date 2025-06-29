@@ -40,11 +40,11 @@ class PlayerState:
 class GameState:
     """Overall game state tracking both players."""
 
-    players: dict[str, PlayerState] = field(default_factory=dict)
+    players: dict[str, PlayerState] = field(default_factory=dict[str, PlayerState])
 
     def __str__(self) -> str:
         """Return a readable summary of all players."""
-        lines = []
+        lines: list[str] = []
         for label, state in self.players.items():
             lines.append(f"Player {label}:")
             for line in str(state).splitlines():
