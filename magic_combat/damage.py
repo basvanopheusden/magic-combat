@@ -64,16 +64,6 @@ def blocker_value(blocker: CombatCreature) -> float:
     return blocker.power + blocker.toughness + positive / 2
 
 
-def score_combat_result(
-    result: "CombatResult",
-    attacker_player: str,
-    defender: str,
-) -> Tuple[int, float, int, int, int, int]:
-    """Wrapper calling :meth:`CombatResult.score` for backward compatibility."""
-
-    return result.score(attacker_player, defender)
-
-
 class DamageAssignmentStrategy:
     """Base strategy for ordering blockers when assigning combat damage."""
 

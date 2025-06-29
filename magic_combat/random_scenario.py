@@ -18,7 +18,6 @@ from .blocking_ai import decide_optimal_blocks
 from .blocking_ai import decide_simple_blocks
 from .creature import CombatCreature
 from .damage import blocker_value
-from .damage import score_combat_result
 from .exceptions import CardDataError
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
@@ -323,8 +322,8 @@ def _score_optimal_result(
         mentor_map=mentor_copies or None,
     )
     result = sim.simulate()
-    score = score_combat_result(result, "A", "B")
-    return (score[4], score[5], score[2], score[1])
+    score =  result.score("A", "B")
+    return score[4], score[5], score[2], score[1]
 
 
 def _compute_combat_results(
