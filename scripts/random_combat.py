@@ -41,7 +41,9 @@ def describe_abilities(creature: CombatCreature) -> str:
     return ", ".join(parts) if parts else "none"
 
 
-def summarize_creature(creature: CombatCreature) -> str:
+def summarize_creature(
+    creature: CombatCreature, *, include_colors: bool = False
+) -> str:
     """Return a readable one-line summary of ``creature``."""
     extra: List[str] = []
     if creature.plus1_counters:
@@ -53,18 +55,30 @@ def summarize_creature(creature: CombatCreature) -> str:
     if creature.tapped:
         extra.append("tapped")
     extras = f" [{', '.join(extra)}]" if extra else ""
-    return f"{creature}{extras} -- {describe_abilities(creature)}"
+    color_info = ""
+    if include_colors and creature.colors:
+        joined = "/".join(
+            c.name.capitalize() for c in sorted(creature.colors, key=lambda x: x.name)
+        )
+        color_info = f" [{joined}]"
+    elif include_colors:
+        color_info = " [Colorless]"
+    return f"{creature}{color_info}{extras} -- {describe_abilities(creature)}"
 
 
 def print_player_state(
-    label: str, ps: PlayerState, destroyed: List[CombatCreature]
+    label: str,
+    ps: PlayerState,
+    destroyed: List[CombatCreature],
+    *,
+    include_colors: bool = False,
 ) -> None:
     """Display life total and surviving creatures for a player."""
     print(f"{label}: {ps.life} life, {ps.poison} poison")
     survivors = [c for c in ps.creatures if c not in destroyed]
     if survivors:
         for cr in survivors:
-            print(f"  {summarize_creature(cr)}")
+            print(f"  {summarize_creature(cr, include_colors=include_colors)}")
     else:
         print("  no creatures")
 
@@ -148,12 +162,18 @@ def main() -> None:
             ps = start_state.players[p]
             print(f"  Player {p}: {ps.life} life, {ps.poison} poison")
 
+        include_colors = any(
+            c.fear or c.intimidate or c.protection_colors for c in attackers + blockers
+        )
+
         print("Attackers:")
         for atk in start_state.players["A"].creatures:
-            print(f"  {summarize_creature(atk)}, {blocker_value(atk)}")
+            summary = summarize_creature(atk, include_colors=include_colors)
+            print(f"  {summary}, {blocker_value(atk)}")
         print("Blockers:")
         for blk in start_state.players["B"].creatures:
-            print(f"  {summarize_creature(blk)}, {blocker_value(blk)}")
+            summary = summarize_creature(blk, include_colors=include_colors)
+            print(f"  {summary}, {blocker_value(blk)}")
 
         prov_map_display = (
             {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None
@@ -180,7 +200,10 @@ def main() -> None:
         print("Final state:")
         for p in ["A", "B"]:
             print_player_state(
-                f"Player {p}", state.players[p], result.creatures_destroyed
+                f"Player {p}",
+                state.players[p],
+                result.creatures_destroyed,
+                include_colors=include_colors,
             )
         if result.players_lost:
             print("Players lost:", ", ".join(result.players_lost))

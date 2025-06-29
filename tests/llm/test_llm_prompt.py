@@ -1,5 +1,6 @@
 import asyncio
 
+from magic_combat import Color
 from magic_combat import CombatCreature
 from magic_combat import GameState
 from magic_combat import PlayerState
@@ -62,6 +63,21 @@ def test_create_prompt_contents():
     assert "Goblin" in prompt
     assert "The blockers are:" in prompt
     assert "Guard" in prompt
+
+
+def test_prompt_includes_colors_when_relevant():
+    """CR 702.13b: Intimidate checks color of potential blockers."""
+    atk = CombatCreature("Rogue", 2, 2, "A", intimidate=True, colors={Color.GREEN})
+    blk = CombatCreature("Guard", 2, 2, "B", colors={Color.BLUE})
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[blk]),
+        }
+    )
+    prompt = create_llm_prompt(state, [atk], [blk])
+    assert "[Green]" in prompt
+    assert "[Blue]" in prompt
 
 
 def test_parse_block_assignments():

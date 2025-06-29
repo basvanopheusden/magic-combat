@@ -8,7 +8,9 @@ from .rules_text import describe_abilities
 from .rules_text import get_relevant_rules_text
 
 
-def summarize_creature(creature: CombatCreature) -> str:
+def summarize_creature(
+    creature: CombatCreature, *, include_colors: bool = False
+) -> str:
     """Return a readable one-line summary of ``creature``."""
 
     extra: list[str] = []
@@ -21,7 +23,15 @@ def summarize_creature(creature: CombatCreature) -> str:
     if creature.tapped:
         extra.append("tapped")
     extras = f" [{', '.join(extra)}]" if extra else ""
-    return f"{creature}{extras} -- {describe_abilities(creature)}"
+    color_info = ""
+    if include_colors and creature.colors:
+        joined = "/".join(
+            c.name.capitalize() for c in sorted(creature.colors, key=lambda x: x.name)
+        )
+        color_info = f" [{joined}]"
+    elif include_colors:
+        color_info = " [Colorless]"
+    return f"{creature}{color_info}{extras} -- {describe_abilities(creature)}"
 
 
 def create_llm_prompt(
@@ -39,9 +49,19 @@ def create_llm_prompt(
     Returns:
         A formatted prompt for the model.
     """
-    attacker_string = "\n".join(summarize_creature(attacker) for attacker in attackers)
-    blocker_string = "\n".join(summarize_creature(blocker) for blocker in blockers)
-    rules_text = get_relevant_rules_text(list(attackers) + list(blockers))
+    all_creatures = list(attackers) + list(blockers)
+    include_colors = any(
+        c.fear or c.intimidate or c.protection_colors for c in all_creatures
+    )
+    attacker_string = "\n".join(
+        summarize_creature(attacker, include_colors=include_colors)
+        for attacker in attackers
+    )
+    blocker_string = "\n".join(
+        summarize_creature(blocker, include_colors=include_colors)
+        for blocker in blockers
+    )
+    rules_text = get_relevant_rules_text(all_creatures)
 
     prompt = f"""You are a component of a Magic: The Gathering playing AI.
 Your task is to decide the best blocks for the defending player
