@@ -57,4 +57,8 @@ requirements to ensure consistency across the code base.
 - Avoid relative imports that escape the package.
 - Limit parameter lists to keep APIs simple.
 - Document non-obvious behavior with comments and docstrings.
+- Domain-specific errors should be implemented as custom exception classes
+  derived from ``MagicCombatError`` (and from relevant built-in exceptions
+  when compatibility is needed). Examples include ``IterationLimitError``,
+  ``CardDataError``, ``ScenarioGenerationError`` and ``MissingStatisticsError``.
 
