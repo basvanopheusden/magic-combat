@@ -4,6 +4,9 @@ from .blocking_ai import decide_optimal_blocks
 from .blocking_ai import decide_simple_blocks
 from .combat_utils import damage_creature
 from .combat_utils import damage_player
+from .constants import DEFAULT_STARTING_LIFE
+from .constants import POISON_LOSS_THRESHOLD
+from .constants import SNAPSHOT_VERSION
 from .create_llm_prompt import create_llm_prompt
 from .create_llm_prompt import parse_block_assignments
 from .creature import Color
@@ -39,7 +42,6 @@ from .utils import calculate_mana_value
 
 # Default life total used when initializing ``PlayerState`` instances
 # Poison counter threshold at which a player loses the game
-
 # Version string used to tag snapshot data for tests
 
 
@@ -80,4 +82,7 @@ __all__ = [
     "MockLLMCache",
     "RULES_TEXT",
     "get_relevant_rules_text",
+    "DEFAULT_STARTING_LIFE",
+    "POISON_LOSS_THRESHOLD",
+    "SNAPSHOT_VERSION",
 ]
