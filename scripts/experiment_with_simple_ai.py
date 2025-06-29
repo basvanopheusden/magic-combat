@@ -1,43 +1,53 @@
-from magic_combat import CombatCreature, decide_simple_blocks, GameState, PlayerState
+from magic_combat import CombatCreature
+from magic_combat import GameState
+from magic_combat import PlayerState
+from magic_combat import decide_simple_blocks
+from scripts.random_combat import summarize_creature
 
 
 def main():
-    atk1 = CombatCreature(
-        name="Attacker 1",
-        power=2,
-        toughness=2,
-        controller="Player A",
-        double_strike=True,
-    )
-    blk1 = CombatCreature(
-        name="Blocker 1",
-        power=2,
-        toughness=3,
-        controller="Player B",
-    )
-    blk2 = CombatCreature(
-        name="Blocker 2",
-        power=3,
-        toughness=3,
-        controller="Player B",
-    )
+    attackers = [
+        CombatCreature(
+            name="Attacker 1",
+            power=2,
+            toughness=2,
+            controller="Player A",
+            double_strike=True,
+        )
+    ]
+    blockers = [
+        CombatCreature(
+            name="Blocker 1",
+            power=2,
+            toughness=3,
+            controller="Player B",
+        ),
+        CombatCreature(
+            name="Blocker 2",
+            power=3,
+            toughness=3,
+            controller="Player B",
+        ),
+    ]
     game_state = GameState(
         players={
-            "Player A": PlayerState(
-                life=20, creatures=[atk1], poison=0
-            ),
-            "Player B": PlayerState(
-                life=, creatures=[blk1], poison=0
-            ),
+            "Player A": PlayerState(life=20, creatures=attackers, poison=0),
+            "Player B": PlayerState(life=20, creatures=blockers, poison=0),
         }
     )
     decide_simple_blocks(
-        attackers=[atk1],
-        blockers=[blk1],
+        attackers=attackers,
+        blockers=blockers,
         game_state=game_state,
         provoke_map={},
     )
-    print(atk1.blocked_by)
+    for attacker in attackers:
+        print("----")
+        print(summarize_creature(attacker))
+        for creature in attacker.blocked_by:
+            print(summarize_creature(creature))
+    print(game_state)
+
 
 if __name__ == "__main__":
     main()
