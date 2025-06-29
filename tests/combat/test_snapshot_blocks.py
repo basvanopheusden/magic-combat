@@ -3,15 +3,15 @@ from pathlib import Path
 from typing import List
 from typing import Optional
 
-from magic_combat import build_value_map
-from magic_combat import generate_random_scenario
-from magic_combat import load_cards
+from magic_combat import creature_from_dict
+from magic_combat import decode_mentor
+from magic_combat import decode_provoke
+from magic_combat import state_from_dict
 from magic_combat.blocking_ai import decide_optimal_blocks
 from magic_combat.constants import SNAPSHOT_VERSION
 from magic_combat.random_scenario import _score_optimal_result
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "data"
-CARDS_PATH = DATA_PATH / "example_test_cards.json"
 SNAP_PATH = DATA_PATH / "blocking_snapshots.json"
 
 
@@ -22,8 +22,6 @@ def _load_snapshots() -> List[dict]:
 
 def test_optimal_blocks_snapshots() -> None:
     """CR 509.1a: The defending player chooses how creatures block."""
-    cards = load_cards(str(CARDS_PATH))
-    values = build_value_map(cards)
     snapshots = _load_snapshots()
     for snap in snapshots:
         if snap.get("version") != SNAPSHOT_VERSION:
@@ -34,15 +32,11 @@ def test_optimal_blocks_snapshots() -> None:
                 SNAPSHOT_VERSION,
             )
             continue
-        seed = snap["seed"]
-        (
-            state,
-            attackers,
-            blockers,
-            provoke_map,
-            mentor_map,
-            *_,
-        ) = generate_random_scenario(cards, values, seed=seed)
+        attackers = [creature_from_dict(d) for d in snap["attackers"]]
+        blockers = [creature_from_dict(d) for d in snap["blockers"]]
+        state = state_from_dict(snap["state"], attackers, blockers)
+        provoke_map = decode_provoke(snap["provoke_map"], attackers, blockers)
+        mentor_map = decode_mentor(snap["mentor_map"], attackers)
         decide_optimal_blocks(
             attackers,
             blockers,
