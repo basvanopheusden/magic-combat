@@ -161,7 +161,10 @@ def _sample_creatures(
             raise ValueError("stats must be provided when generated_cards is True")
         return generate_balanced_creatures(stats, n_atk, n_blk)
 
-    atk_idx, blk_idx_list = sample_balanced(cards, values, n_atk, n_blk, rng=rng)
+    try:
+        atk_idx, blk_idx_list = sample_balanced(cards, values, n_atk, n_blk, rng=rng)
+    except ValueError as exc:  # pragma: no cover - rare
+        raise InvalidBlockScenarioError(str(exc)) from exc
     attackers = cards_to_creatures((cards[j] for j in atk_idx), "A")
     blockers = cards_to_creatures((cards[j] for j in blk_idx_list), "B")
     return attackers, blockers
