@@ -69,7 +69,23 @@ class CombatResult:
         include_poison: bool = True,
         include_loss: bool = True,
     ) -> tuple[int, float, int, int, int, int]:
-        """Return a scoring tuple evaluating combat from ``defender``'s view."""
+        """Return a scoring tuple from the defender's perspective.
+
+        The tuple elements are ordered so that smaller values represent better
+        outcomes for the defending player:
+
+        1. ``lost`` -- ``1`` if the defender lost the game, else ``0``.
+        2. ``val_diff`` -- difference in total creature value destroyed
+           (defender minus attacker).
+        3. ``cnt_diff`` -- difference in number of creatures destroyed
+           (defender minus attacker).
+        4. ``mana_component`` -- difference in mana value lost
+           (defender minus attacker).
+        5. ``life_component`` -- difference in net life change including
+           lifelink (defender minus attacker).
+        6. ``poison_component`` -- difference in poison counters gained
+           (defender minus attacker).
+        """
 
         lost = 1 if defender in self.players_lost else 0
         if not include_loss:
@@ -93,13 +109,26 @@ class CombatResult:
         def_cnt = sum(1 for c in self.creatures_destroyed if c.controller == defender)
         cnt_diff = def_cnt - att_cnt if include_count else 0
 
-        mana_total = sum(c.mana_value for c in self.creatures_destroyed)
-        mana_component = -mana_total if include_mana else 0
+        att_mana = sum(
+            c.mana_value
+            for c in self.creatures_destroyed
+            if c.controller == attacker_player
+        )
+        def_mana = sum(
+            c.mana_value for c in self.creatures_destroyed if c.controller == defender
+        )
+        mana_component = def_mana - att_mana if include_mana else 0
 
-        life_lost = self.damage_to_players.get(defender, 0)
-        life_component = life_lost if include_life else 0
-        poison = self.poison_counters.get(defender, 0)
-        poison_component = poison if include_poison else 0
+        dmg_def = self.damage_to_players.get(defender, 0)
+        dmg_att = self.damage_to_players.get(attacker_player, 0)
+        gain_def = self.lifegain.get(defender, 0)
+        gain_att = self.lifegain.get(attacker_player, 0)
+        life_component = (
+            (dmg_def - dmg_att) + (gain_att - gain_def) if include_life else 0
+        )
+        poison_def = self.poison_counters.get(defender, 0)
+        poison_att = self.poison_counters.get(attacker_player, 0)
+        poison_component = poison_def - poison_att if include_poison else 0
 
         return (
             lost,

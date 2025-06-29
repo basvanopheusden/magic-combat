@@ -372,7 +372,7 @@ def test_ai_prefers_blocking_to_kill_more_mana():
         }
     )
     decide_optimal_blocks([a1, a2], [b1, b2], game_state=state)
-    assert b1.blocking is a1 and b2.blocking is a2
+    assert b1.blocking is a2 and b2.blocking is a1
 
 
 def test_iteration_limit_triggers():
