@@ -18,6 +18,7 @@ from magic_combat.abilities import BOOL_NAMES as _BOOL_ABILITIES
 from magic_combat.abilities import INT_NAMES as _INT_ABILITIES
 from magic_combat.creature import CombatCreature
 from magic_combat.damage import blocker_value
+from magic_combat.exceptions import CardDataError
 
 # Ability name mappings for pretty printing come from ``magic_combat.abilities``
 
@@ -109,7 +110,10 @@ def main() -> None:
     random.seed(args.seed)
     np.random.seed(args.seed)
 
-    cards = ensure_cards(args.cards)
+    try:
+        cards = ensure_cards(args.cards)
+    except CardDataError as exc:
+        raise SystemExit(str(exc)) from exc
     values = build_value_map(cards)
     stats = compute_card_statistics(cards) if args.generated_cards else None
 
