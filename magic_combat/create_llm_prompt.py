@@ -4,34 +4,8 @@ from typing import Iterable
 
 from .creature import CombatCreature
 from .gamestate import GameState
-from .rules_text import describe_abilities
 from .rules_text import get_relevant_rules_text
-
-
-def summarize_creature(
-    creature: CombatCreature, *, include_colors: bool = False
-) -> str:
-    """Return a readable one-line summary of ``creature``."""
-
-    extra: list[str] = []
-    if creature.plus1_counters:
-        extra.append(f"+1/+1 x{creature.plus1_counters}")
-    if creature.minus1_counters:
-        extra.append(f"-1/-1 x{creature.minus1_counters}")
-    if creature.damage_marked:
-        extra.append(f"{creature.damage_marked} dmg")
-    if creature.tapped:
-        extra.append("tapped")
-    extras = f" [{', '.join(extra)}]" if extra else ""
-    color_info = ""
-    if include_colors and creature.colors:
-        joined = "/".join(
-            c.name.capitalize() for c in sorted(creature.colors, key=lambda x: x.name)
-        )
-        color_info = f" [{joined}]"
-    elif include_colors:
-        color_info = " [Colorless]"
-    return f"{creature}{color_info}{extras} -- {describe_abilities(creature)}"
+from .text_utils import summarize_creature
 
 
 def create_llm_prompt(
