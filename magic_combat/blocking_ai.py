@@ -41,6 +41,7 @@ def _best_value_trade_assignment(
     blockers: Sequence[CombatCreature],
     game_state: Optional[GameState],
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
+    counter: IterationCounter | None = None,
 ) -> tuple[Tuple[Optional[int], ...], tuple[int, float, int, int, int, int]]:
     """Search simple blocks focusing on favorable trades."""
 
@@ -87,6 +88,7 @@ def _best_value_trade_assignment(
                 assignment,
                 game_state,
                 provoke_map,
+                counter,
             )
         except ValueError:
             continue
@@ -124,6 +126,7 @@ def _best_survival_assignment(
     base_assignment: Sequence[Optional[int]],
     game_state: Optional[GameState],
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
+    counter: IterationCounter | None = None,
 ) -> Tuple[Optional[Tuple[Optional[int], ...]], tuple[int, float, int, int, int, int]]:
     """Try to prevent lethal damage with chump blocks."""
 
@@ -185,6 +188,7 @@ def _best_survival_assignment(
                 ass,
                 game_state,
                 provoke_map,
+                counter,
             )
         except ValueError:
             continue
@@ -214,6 +218,7 @@ def _simulate_assignment(
     assignment: Sequence[Optional[int]],
     game_state: Optional[GameState],
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
+    counter: IterationCounter | None = None,
 ) -> tuple[CombatResult, set[int], set[int], tuple[int, float, int, int, int, int]]:
     """Return simulation result and sets of dead attacker/blocker indices."""
 
@@ -243,6 +248,8 @@ def _simulate_assignment(
         game_state=deepcopy(game_state) if game_state else None,
         provoke_map=prov_copies or None,
     )
+    if counter is not None:
+        counter.increment()
     result = sim.simulate()
     attacker_player = atk_copy[0].controller if atk_copy else "attacker"
     defender = blk_copy[0].controller if blk_copy else "defender"
@@ -366,14 +373,30 @@ def decide_simple_blocks(
         return
 
     best_ass, best_score = _best_value_trade_assignment(
-        attackers, blockers, game_state, provoke_map
+        attackers,
+        blockers,
+        game_state,
+        provoke_map,
+        counter,
     )
 
-    _, *_ = _simulate_assignment(attackers, blockers, best_ass, game_state, provoke_map)
+    _, *_ = _simulate_assignment(
+        attackers,
+        blockers,
+        best_ass,
+        game_state,
+        provoke_map,
+        counter,
+    )
 
     if best_score[0] != 0:
         second_ass, _ = _best_survival_assignment(
-            attackers, blockers, best_ass, game_state, provoke_map
+            attackers,
+            blockers,
+            best_ass,
+            game_state,
+            provoke_map,
+            counter,
         )
         if second_ass is not None:
             best_ass = second_ass
