@@ -286,8 +286,8 @@ def _score_optimal_result(
     optimal_assignment: Tuple[Optional[int], ...],
     provoke_map: dict[CombatCreature, CombatCreature],
     mentor_map: dict[CombatCreature, CombatCreature],
-) -> Tuple[int, int, int, float]:
-    """Simulate combat using ``optimal_assignment`` and return its value."""
+) -> tuple[int, float, int, int, int, int]:
+    """Simulate combat using ``optimal_assignment`` and return the scoring tuple."""
 
     atk_copy = copy.deepcopy(attackers)
     blk_copy = copy.deepcopy(blockers)
@@ -322,8 +322,7 @@ def _score_optimal_result(
         mentor_map=mentor_copies or None,
     )
     result = sim.simulate()
-    score =  result.score("A", "B")
-    return score[4], score[5], score[2], score[1]
+    return result.score("A", "B")
 
 
 def _compute_combat_results(
@@ -338,7 +337,7 @@ def _compute_combat_results(
 ) -> Tuple[
     Tuple[Optional[int], ...] | None,
     Tuple[Optional[int], ...],
-    Tuple[int, int, int, float],
+    tuple[int, float, int, int, int, int],
 ]:
     """Return block assignments and outcome for ``attackers`` and ``blockers``."""
 
@@ -379,7 +378,7 @@ def _attempt_random_scenario(
     dict[CombatCreature, CombatCreature],
     Tuple[Optional[int], ...],
     Tuple[Optional[int], ...] | None,
-    Tuple[int, int, int, float],
+    tuple[int, float, int, int, int, int],
 ]:
     """Attempt to create a single random combat scenario."""
 
@@ -408,6 +407,11 @@ def _attempt_random_scenario(
         max_iterations=max_iterations,
         unique_optimal=unique_optimal,
     )
+
+    if combat_value[0] == 1:
+        raise InvalidBlockScenarioError(
+            "defending player loses even with optimal blocks"
+        )
 
     start_state = copy.deepcopy(state)
     for atk in attackers:
@@ -444,7 +448,7 @@ def generate_random_scenario(
     dict[CombatCreature, CombatCreature],
     Tuple[Optional[int], ...],
     Tuple[Optional[int], ...] | None,
-    Tuple[int, int, int, float],
+    tuple[int, float, int, int, int, int],
 ]:
     """Return a non-trivial random combat scenario.
 
@@ -453,8 +457,8 @@ def generate_random_scenario(
     they can be reused. ``provoke_map`` and ``mentor_map`` describe any special
     attacker interactions and should be supplied when simulating combat. The
     optimal and simple block assignments are returned as tuples of attacker
-    indices, along with a summary tuple of life lost, poison counters, number of
-    creatures destroyed and value difference for the optimal blocks.
+    indices, along with the full scoring tuple returned by ``CombatResult.score``
+    for the optimal blocks.
     """
 
     rng = random.Random(seed) if seed is not None else random.Random()

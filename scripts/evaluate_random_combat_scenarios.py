@@ -57,7 +57,7 @@ def _value_for_assignment(
     state: GameState,
     provoke_map: dict[CombatCreature, CombatCreature],
     mentor_map: dict[CombatCreature, CombatCreature],
-) -> tuple[int, int, int, float]:
+) -> tuple[int, float, int, int, int, int]:
     result = _simulate_assignment(
         attackers,
         blockers,
@@ -66,17 +66,16 @@ def _value_for_assignment(
         provoke_map,
         mentor_map,
     )
-    score = result.score("A", "B")
-    return (score[4], score[5], score[2], score[1])
+    return result.score("A", "B")
 
 
-def _format_value(value: tuple[float, float, float, float]) -> str:
+def _format_value(value: tuple[int, float, int, int, int, int]) -> str:
     """Return a human-friendly string for ``value``."""
 
-    life, poison, creature_diff, value_diff = value
+    lost, val_diff, cnt_diff, mana, life, poison = value
     return (
-        f"life lost {life}, poison {poison}, "
-        f"creature diff {creature_diff}, value diff {value_diff}"
+        f"lost {lost}, value diff {val_diff}, creature diff {cnt_diff}, "
+        f"mana {mana}, life lost {life}, poison {poison}"
     )
 
 
@@ -265,7 +264,7 @@ async def _evaluate_single_scenario(
             )
         except ValueError as exc:
             print(f"Error evaluating LLM assignment: {exc}")
-            llm_value = (0, 0, 0, float("inf"))
+            llm_value = (0, 0.0, 0, 0, 0, 0)
             llm_result = CombatResult({}, [], {})
         if simple_map is not None:
             simple_value = _value_for_assignment(
@@ -295,11 +294,13 @@ async def _evaluate_single_scenario(
             provoke_map,
             mentor_map,
         )
-        diff: tuple[float, float, float, float] = (
+        diff: tuple[int, float, int, int, int, int] = (
             llm_value[0] - opt_value[0],
             llm_value[1] - opt_value[1],
             llm_value[2] - opt_value[2],
             llm_value[3] - opt_value[3],
+            llm_value[4] - opt_value[4],
+            llm_value[5] - opt_value[5],
         )
         print(f"\n=== Scenario {idx + 1} ===")
         print("Initial game state:")
