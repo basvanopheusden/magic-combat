@@ -7,6 +7,7 @@ from typing import Optional
 import numpy as np
 import openai
 
+from magic_combat import CombatResult
 from magic_combat import CombatSimulator
 from magic_combat import build_value_map
 from magic_combat import compute_card_statistics
@@ -20,14 +21,16 @@ from magic_combat.gamestate import GameState
 from magic_combat.llm_cache import LLMCache
 
 
-def _value_for_assignment(
+def _simulate_assignment(
     attackers: List[CombatCreature],
     blockers: List[CombatCreature],
     assignment: List[Optional[int]],
     state: GameState,
     provoke_map: dict[CombatCreature, CombatCreature],
     mentor_map: dict[CombatCreature, CombatCreature],
-) -> tuple[int, int, int, float]:
+) -> CombatResult:
+    """Return the combat result for ``assignment``."""
+
     atk = copy.deepcopy(attackers)
     blk = copy.deepcopy(blockers)
     state_copy = copy.deepcopy(state)
@@ -42,7 +45,25 @@ def _value_for_assignment(
         provoke_map=provoke_map,
         mentor_map=mentor_map,
     )
-    result = sim.simulate()
+    return sim.simulate()
+
+
+def _value_for_assignment(
+    attackers: List[CombatCreature],
+    blockers: List[CombatCreature],
+    assignment: List[Optional[int]],
+    state: GameState,
+    provoke_map: dict[CombatCreature, CombatCreature],
+    mentor_map: dict[CombatCreature, CombatCreature],
+) -> tuple[int, int, int, float]:
+    result = _simulate_assignment(
+        attackers,
+        blockers,
+        assignment,
+        state,
+        provoke_map,
+        mentor_map,
+    )
     score = result.score("A", "B")
     return (score[4], score[5], score[2], score[1])
 
@@ -211,11 +232,20 @@ async def _evaluate_single_scenario(
                 provoke_map,
                 mentor_map,
             )
+            llm_result = _simulate_assignment(
+                attackers,
+                blockers,
+                llm_map,
+                state,
+                provoke_map,
+                mentor_map,
+            )
         except ValueError as exc:
             print(f"Error evaluating LLM assignment: {exc}")
             llm_value = (0, 0, 0, float("inf"))
-        simple_value = (
-            _value_for_assignment(
+            llm_result = CombatResult({}, [], {})
+        if simple_map is not None:
+            simple_value = _value_for_assignment(
                 attackers,
                 blockers,
                 list(simple_map),
@@ -223,8 +253,24 @@ async def _evaluate_single_scenario(
                 provoke_map,
                 mentor_map,
             )
-            if simple_map is not None
-            else None
+            simple_result = _simulate_assignment(
+                attackers,
+                blockers,
+                list(simple_map),
+                state,
+                provoke_map,
+                mentor_map,
+            )
+        else:
+            simple_value = None
+            simple_result = None
+        opt_result = _simulate_assignment(
+            attackers,
+            blockers,
+            list(opt_map),
+            state,
+            provoke_map,
+            mentor_map,
         )
         diff: tuple[float, float, float, float] = (
             llm_value[0] - opt_value[0],
@@ -233,14 +279,19 @@ async def _evaluate_single_scenario(
             llm_value[3] - opt_value[3],
         )
         print(f"\n=== Scenario {idx + 1} ===")
-        print(prompt)
+        print("Initial game state:")
+        print(state)
+        print()
         print(f"Correct assignments: {correct}/{len(blockers)}")
-        print("Simple blocks:", simple)
-        print("Optimal blocks:", optimal)
-        print("LLM blocks:", {b: parsed.get(b) for b in optimal})
-        if simple_value is not None:
+        if simple_result is not None and simple_value is not None:
+            print("\nSimple blocks:", simple)
+            print(simple_result)
             print("Simple value:", _format_value(simple_value))
+        print("\nOptimal blocks:", optimal)
+        print(opt_result)
         print("Optimal value:", _format_value(opt_value))
+        print("\nLLM blocks:", {b: parsed.get(b) for b in optimal})
+        print(llm_result)
         print("LLM value:", _format_value(llm_value))
         print("Difference:", _format_value(diff))
         break
