@@ -1,3 +1,10 @@
+"""Combat damage utility functions.
+
+This module provides helpers for applying combat damage to creatures and
+players while accounting for keyword abilities such as deathtouch, wither,
+infect and toxic.
+"""
+
 from __future__ import annotations
 
 from typing import Dict

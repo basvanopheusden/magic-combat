@@ -1,3 +1,9 @@
+"""Utilities for fetching and converting Scryfall card data.
+
+Functions in this module retrieve French vanilla creature cards from Scryfall
+and convert them into :class:`~magic_combat.creature.CombatCreature` objects.
+"""
+
 import json
 from typing import Any
 from typing import Dict
