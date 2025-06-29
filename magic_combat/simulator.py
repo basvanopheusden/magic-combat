@@ -246,7 +246,17 @@ class CombatSimulator:
                 raise IllegalBlockError("Provoke attacker not in combat")
             if target not in self.defenders:
                 raise IllegalBlockError("Provoke target not defending creature")
-            if can_block(attacker, target) and target.blocking is not attacker:
+            if not can_block(attacker, target) or target.tapped:
+                continue
+            if attacker.menace:
+                eligible = [
+                    b
+                    for b in self.defenders
+                    if b is not target and not b.tapped and can_block(attacker, b)
+                ]
+                if not eligible:
+                    continue
+            if target.blocking is not attacker:
                 raise IllegalBlockError("Provoke target failed to block")
 
     def _check_tapped_blockers(self) -> None:

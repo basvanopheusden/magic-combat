@@ -206,6 +206,20 @@ def test_ai_blocks_menace_with_two_blockers():
     assert b1.blocking is atk and b2.blocking is atk
 
 
+def test_optimal_ai_ignores_provoke_with_single_blocker():
+    """CR 702.40a & 702.110b: Provoke doesn't force a block if menace can't be satisfied."""
+    atk = CombatCreature("Tunnel Rogue", 2, 2, "A", menace=True, provoke=True)
+    blk = CombatCreature("Goblin", 2, 2, "B")
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
+        }
+    )
+    decide_optimal_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    assert blk.blocking is None
+
+
 def test_ai_blocks_fear_with_correct_color():
     """CR 702.36a: Fear restricts blocking to black or artifact creatures."""
     atk = CombatCreature("Shade", 2, 2, "A", fear=True)

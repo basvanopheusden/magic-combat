@@ -1046,13 +1046,14 @@ def test_skulk_flanking_bushido_precombat_death():
 
 
 def test_provoke_and_menace_insufficient_blockers():
-    """CR 702.40a & 702.110b: Provoke requires the targeted creature to block, but menace demands two blockers."""
+    """CR 702.40a & 702.110b: Provoke is ignored when menace can't be satisfied."""
     attacker = CombatCreature("Taunting Brute", 2, 2, "A", menace=True)
     blocker = CombatCreature("Goblin", 2, 2, "B")
-    link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker], provoke_map={attacker: blocker})
-    with pytest.raises(ValueError):
-        sim.validate_blocking()
+    sim.validate_blocking()
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 2
+    assert blocker not in result.creatures_destroyed
 
 
 def test_undying_and_persist_prefers_undying():
