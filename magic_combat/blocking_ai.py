@@ -14,6 +14,7 @@ from .damage import blocker_value
 from .damage import score_combat_result
 from .gamestate import GameState
 from .limits import IterationCounter
+from .simulator import CombatResult
 from .simulator import CombatSimulator
 from .utils import can_block
 
@@ -80,7 +81,7 @@ def _best_value_trade_assignment(
             continue
 
         try:
-            result, dead_atk, dead_blk, score = _simulate_assignment(
+            _, dead_atk, dead_blk, score = _simulate_assignment(
                 attackers,
                 blockers,
                 assignment,
@@ -178,7 +179,7 @@ def _best_survival_assignment(
             continue
 
         try:
-            result, dead_atk, dead_blk, score = _simulate_assignment(
+            result, _dead_atk, _dead_blk, score = _simulate_assignment(
                 attackers,
                 blockers,
                 ass,
@@ -213,7 +214,7 @@ def _simulate_assignment(
     assignment: Sequence[Optional[int]],
     game_state: Optional[GameState],
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
-) -> tuple["CombatResult", set[int], set[int], tuple[int, float, int, int, int, int],]:
+) -> tuple[CombatResult, set[int], set[int], tuple[int, float, int, int, int, int]]:
     """Return simulation result and sets of dead attacker/blocker indices."""
 
     from copy import deepcopy
@@ -365,9 +366,7 @@ def decide_simple_blocks(
         attackers, blockers, game_state, provoke_map
     )
 
-    result, *_ = _simulate_assignment(
-        attackers, blockers, best_ass, game_state, provoke_map
-    )
+    _, *_ = _simulate_assignment(attackers, blockers, best_ass, game_state, provoke_map)
 
     if best_score[0] != 0:
         second_ass, _ = _best_survival_assignment(
