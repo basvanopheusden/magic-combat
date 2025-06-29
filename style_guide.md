@@ -59,6 +59,8 @@ requirements to ensure consistency across the code base.
 - Document non-obvious behavior with comments and docstrings.
 - Domain-specific errors should be implemented as custom exception classes
   derived from ``MagicCombatError`` (and from relevant built-in exceptions
-  when compatibility is needed). Examples include ``IterationLimitError``,
+  when compatibility is needed). The package defines the following custom
+  exceptions: ``MagicCombatError`` (base class), ``UnparsableLLMOutputError``,
+  ``IllegalBlockError``, ``InvalidBlockScenarioError``, ``IterationLimitError``,
   ``CardDataError``, ``ScenarioGenerationError`` and ``MissingStatisticsError``.
 

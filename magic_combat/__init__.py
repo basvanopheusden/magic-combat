@@ -17,6 +17,8 @@ from .exceptions import CardDataError
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
 from .exceptions import IterationLimitError
+from .exceptions import MissingStatisticsError
+from .exceptions import ScenarioGenerationError
 from .exceptions import UnparsableLLMOutputError
 from .gamestate import GameState
 from .gamestate import PlayerState
@@ -80,6 +82,8 @@ __all__ = [
     "InvalidBlockScenarioError",
     "IterationLimitError",
     "CardDataError",
+    "ScenarioGenerationError",
+    "MissingStatisticsError",
     "UnparsableLLMOutputError",
     "parse_block_assignments",
     "create_llm_prompt",

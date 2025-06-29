@@ -23,6 +23,8 @@ from .exceptions import CardDataError
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
 from .exceptions import MagicCombatError
+from .exceptions import MissingStatisticsError
+from .exceptions import ScenarioGenerationError
 from .gamestate import GameState
 from .gamestate import PlayerState
 from .random_creature import assign_random_counters
@@ -105,8 +107,8 @@ def sample_balanced(
             return att_idx, blk_idx
 
     if best is None:
-        raise MagicCombatError("Failed to sample creatures")
-    raise MagicCombatError("Unable to generate balanced creature sets")
+        raise ScenarioGenerationError("Failed to sample creatures")
+    raise ScenarioGenerationError("Unable to generate balanced creature sets")
 
 
 def generate_balanced_creatures(
@@ -137,8 +139,8 @@ def generate_balanced_creatures(
             return attackers, blockers
 
     if best is None:
-        raise ValueError("Failed to generate creatures")
-    raise ValueError("Unable to generate balanced creature sets")
+        raise ScenarioGenerationError("Failed to generate creatures")
+    raise ScenarioGenerationError("Unable to generate balanced creature sets")
 
 
 def _sample_creatures(
@@ -159,7 +161,9 @@ def _sample_creatures(
 
     if generated_cards:
         if stats is None:
-            raise ValueError("stats must be provided when generated_cards is True")
+            raise MissingStatisticsError(
+                "stats must be provided when generated_cards is True"
+            )
         return generate_balanced_creatures(stats, n_atk, n_blk)
 
     try:
@@ -463,7 +467,7 @@ def generate_random_scenario(
     while True:
         attempts += 1
         if attempts > 100:
-            raise RuntimeError("Unable to generate valid scenario")
+            raise ScenarioGenerationError("Unable to generate valid scenario")
         try:
             return _attempt_random_scenario(
                 cards,
@@ -475,5 +479,7 @@ def generate_random_scenario(
                 max_iterations,
                 unique_optimal,
             )
+        except MissingStatisticsError:
+            raise
         except (MagicCombatError, IllegalBlockError, InvalidBlockScenarioError):
             continue
