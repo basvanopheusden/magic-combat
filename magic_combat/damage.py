@@ -52,9 +52,6 @@ def blocker_value(blocker: CombatCreature) -> float:
     if blocker.double_strike:
         # Count double strike twice so it contributes 1 point instead of 0.5.
         positive += 1
-    if blocker.lifelink:
-        # Favor killing lifelinkers so opponents gain less life.
-        positive += 1
     positive += sum(getattr(blocker, attr, 0) for attr in _STACKABLE_KEYWORDS)
 
     value = blocker.effective_power() + blocker.effective_toughness() + positive / 2
