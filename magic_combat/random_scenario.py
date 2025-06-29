@@ -182,6 +182,8 @@ def _build_gamestate(
     """Return a randomized ``GameState`` for the provided creatures."""
 
     assign_random_counters(attackers + blockers, rng=rng)
+    if not all(c.effective_toughness() > 0 for c in attackers + blockers):
+        raise ScenarioGenerationError("Failed to sample creatures")
     assign_random_tapped(blockers, rng=rng)
 
     poison_relevant = any(c.infect or c.toxic for c in attackers + blockers)
