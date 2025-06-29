@@ -23,3 +23,11 @@ class IterationLimitError(MagicCombatError, RuntimeError):
 
 class CardDataError(MagicCombatError, ValueError):
     """Raised when card data is missing or unusable."""
+
+
+class ScenarioGenerationError(MagicCombatError, RuntimeError):
+    """Raised when a random scenario cannot be generated."""
+
+
+class MissingStatisticsError(MagicCombatError, ValueError):
+    """Raised when required statistics are not provided."""
