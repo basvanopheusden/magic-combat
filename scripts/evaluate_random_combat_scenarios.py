@@ -15,7 +15,6 @@ from magic_combat import load_cards
 from magic_combat.create_llm_prompt import create_llm_prompt
 from magic_combat.create_llm_prompt import parse_block_assignments
 from magic_combat.creature import CombatCreature
-from magic_combat.damage import score_combat_result
 from magic_combat.exceptions import UnparsableLLMOutputError
 from magic_combat.gamestate import GameState
 from magic_combat.llm_cache import LLMCache
@@ -44,8 +43,18 @@ def _value_for_assignment(
         mentor_map=mentor_map,
     )
     result = sim.simulate()
-    score = score_combat_result(result, "A", "B")
+    score = result.score("A", "B")
     return (score[4], score[5], score[2], score[1])
+
+
+def _format_value(value: tuple[float, float, float, float]) -> str:
+    """Return a human-friendly string for ``value``."""
+
+    life, poison, creature_diff, value_diff = value
+    return (
+        f"life lost {life}, poison {poison}, "
+        f"creature diff {creature_diff}, value diff {value_diff}"
+    )
 
 
 async def call_openai_model_single_prompt(
@@ -216,7 +225,12 @@ async def _evaluate_single_scenario(
             if simple_map is not None
             else None
         )
-        diff = tuple(lv - ov for lv, ov in zip(llm_value, opt_value))
+        diff: tuple[float, float, float, float] = (
+            llm_value[0] - opt_value[0],
+            llm_value[1] - opt_value[1],
+            llm_value[2] - opt_value[2],
+            llm_value[3] - opt_value[3],
+        )
         print(f"\n=== Scenario {idx + 1} ===")
         print(prompt)
         print(f"Correct assignments: {correct}/{len(blockers)}")
@@ -224,10 +238,10 @@ async def _evaluate_single_scenario(
         print("Optimal blocks:", optimal)
         print("LLM blocks:", {b: parsed.get(b) for b in optimal})
         if simple_value is not None:
-            print("Simple value:", simple_value)
-        print("Optimal value:", opt_value)
-        print("LLM value:", llm_value)
-        print("Difference:", diff)
+            print("Simple value:", _format_value(simple_value))
+        print("Optimal value:", _format_value(opt_value))
+        print("LLM value:", _format_value(llm_value))
+        print("Difference:", _format_value(diff))
         break
 
 

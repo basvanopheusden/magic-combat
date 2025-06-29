@@ -11,6 +11,7 @@ from .combat_utils import damage_player
 from .creature import CombatCreature
 from .damage import DamageAssignmentStrategy
 from .damage import OptimalDamageStrategy
+from .damage import blocker_value
 from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .gamestate import has_player_lost
@@ -55,6 +56,59 @@ class CombatResult:
         if self.players_lost:
             parts.append("Players lost: " + ", ".join(self.players_lost))
         return "\n".join(parts) if parts else "No changes"
+
+    def score(
+        self,
+        attacker_player: str,
+        defender: str,
+        *,
+        include_value: bool = True,
+        include_count: bool = True,
+        include_mana: bool = True,
+        include_life: bool = True,
+        include_poison: bool = True,
+        include_loss: bool = True,
+    ) -> tuple[int, float, int, int, int, int]:
+        """Return a scoring tuple evaluating combat from ``defender``'s view."""
+
+        lost = 1 if defender in self.players_lost else 0
+        if not include_loss:
+            lost = 0
+
+        att_val = sum(
+            blocker_value(c)
+            for c in self.creatures_destroyed
+            if c.controller == attacker_player
+        )
+        def_val = sum(
+            blocker_value(c)
+            for c in self.creatures_destroyed
+            if c.controller == defender
+        )
+        val_diff = def_val - att_val if include_value else 0
+
+        att_cnt = sum(
+            1 for c in self.creatures_destroyed if c.controller == attacker_player
+        )
+        def_cnt = sum(1 for c in self.creatures_destroyed if c.controller == defender)
+        cnt_diff = def_cnt - att_cnt if include_count else 0
+
+        mana_total = sum(c.mana_value for c in self.creatures_destroyed)
+        mana_component = -mana_total if include_mana else 0
+
+        life_lost = self.damage_to_players.get(defender, 0)
+        life_component = life_lost if include_life else 0
+        poison = self.poison_counters.get(defender, 0)
+        poison_component = poison if include_poison else 0
+
+        return (
+            lost,
+            val_diff,
+            cnt_diff,
+            mana_component,
+            life_component,
+            poison_component,
+        )
 
 
 class CombatSimulator:
