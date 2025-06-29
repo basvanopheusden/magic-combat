@@ -170,6 +170,7 @@ async def _evaluate_single_scenario(
         stats,
         generated_cards=False,
         seed=seed + idx,
+        unique_optimal=True,
     )
 
     optimal = {
