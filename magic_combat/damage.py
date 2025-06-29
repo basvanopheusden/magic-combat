@@ -61,17 +61,13 @@ def blocker_value(blocker: CombatCreature) -> float:
         # Favor killing lifelinkers so opponents gain less life.
         positive += 1
     positive += sum(getattr(blocker, attr, 0) for attr in _STACKABLE_KEYWORDS)
-    return blocker.power + blocker.toughness + positive / 2
 
-
-def score_combat_result(
-    result: "CombatResult",
-    attacker_player: str,
-    defender: str,
-) -> Tuple[int, float, int, int, int, int]:
-    """Wrapper calling :meth:`CombatResult.score` for backward compatibility."""
-
-    return result.score(attacker_player, defender)
+    value = blocker.effective_power() + blocker.effective_toughness() + positive / 2
+    if blocker.persist and blocker.minus1_counters:
+        value -= 0.5
+    if blocker.undying and blocker.plus1_counters:
+        value -= 2.5
+    return value
 
 
 class DamageAssignmentStrategy:
