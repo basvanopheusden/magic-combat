@@ -217,7 +217,6 @@ async def _evaluate_single_scenario(
             print("Unparseable response; retrying...")
             continue
 
-        print("\nModel response:\n", llm_response)
         if invalid:
             print("Response contained illegal block assignments")
         correct = sum(1 for b, a in parsed.items() if optimal.get(b) == a)
@@ -298,6 +297,7 @@ async def _evaluate_single_scenario(
         print("\nOptimal blocks:", optimal)
         print(opt_result)
         print("Optimal value:", _format_value(opt_value))
+        print("\nModel response:\n", llm_response)
         print("\nLLM blocks:", {b: parsed.get(b) for b in optimal})
         print(llm_result)
         print("LLM value:", _format_value(llm_value))
