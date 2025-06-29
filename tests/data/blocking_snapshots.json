@@ -5,7 +5,7 @@
     "optimal_assignment": [
       null,
       null,
-      null,
+      1,
       1
     ],
     "simple_assignment": [
@@ -15,10 +15,10 @@
       null
     ],
     "combat_value": [
-      5,
+      1,
       0,
-      0,
-      0
+      1,
+      -2.0
     ]
   },
   {
@@ -48,7 +48,7 @@
     ],
     "simple_assignment": [
       null,
-      0
+      null
     ],
     "combat_value": [
       4,
@@ -61,124 +61,136 @@
     "version": "2",
     "seed": 45,
     "optimal_assignment": [
-      null,
-      1,
+      2,
       1
     ],
     "simple_assignment": [
       null,
-      null,
       null
     ],
     "combat_value": [
-      3,
+      2,
       0,
       0,
-      -2.5
+      0
     ]
   },
   {
     "version": "2",
     "seed": 46,
     "optimal_assignment": [
-      0,
-      0,
-      0
+      1,
+      1,
+      null
     ],
     "simple_assignment": [
       null,
       null,
-      1
+      null
     ],
     "combat_value": [
-      5,
-      2,
+      4,
+      0,
       1,
-      1.0
+      -1.0
     ]
   },
   {
     "version": "2",
     "seed": 47,
     "optimal_assignment": [
+      null,
+      0,
       0
     ],
-    "simple_assignment": null,
+    "simple_assignment": [
+      null,
+      null,
+      null
+    ],
     "combat_value": [
-      2,
-      2,
-      -1,
-      -4.5
+      5,
+      0,
+      0,
+      0.0
     ]
   },
   {
     "version": "2",
     "seed": 48,
     "optimal_assignment": [
-      0,
+      2,
+      null,
+      2,
       0
     ],
     "simple_assignment": [
-      0,
+      null,
+      null,
+      null,
       null
     ],
     "combat_value": [
-      0,
+      3,
       0,
       -1,
-      -4.0
+      -3.5
     ]
   },
   {
     "version": "2",
     "seed": 49,
     "optimal_assignment": [
-      0
-    ],
-    "simple_assignment": [
-      null
-    ],
-    "combat_value": [
-      0,
-      0,
-      0,
-      -1.0
-    ]
-  },
-  {
-    "version": "2",
-    "seed": 50,
-    "optimal_assignment": [
-      0
-    ],
-    "simple_assignment": [
-      null
-    ],
-    "combat_value": [
-      0,
-      0,
-      0,
-      0
-    ]
-  },
-  {
-    "version": "2",
-    "seed": 51,
-    "optimal_assignment": [
-      null,
-      3,
-      2
-    ],
-    "simple_assignment": [
-      null,
       2,
+      3
+    ],
+    "simple_assignment": [
+      null,
       null
     ],
     "combat_value": [
       4,
       2,
       -2,
-      -12.0
+      -11.0
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 50,
+    "optimal_assignment": [
+      3,
+      4,
+      4,
+      0
+    ],
+    "simple_assignment": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "combat_value": [
+      8,
+      2,
+      -3,
+      -16.0
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 51,
+    "optimal_assignment": [
+      0
+    ],
+    "simple_assignment": [
+      null
+    ],
+    "combat_value": [
+      0,
+      0,
+      0,
+      0
     ]
   }
 ]

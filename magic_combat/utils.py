@@ -152,6 +152,9 @@ def can_block(attacker: "CombatCreature", blocker: "CombatCreature") -> bool:
     # Import locally to avoid circular dependencies at module import time.
     from .creature import Color
 
+    if blocker.tapped:
+        return False
+
     if attacker.unblockable:
         return False
     if attacker.flying and not (blocker.flying or blocker.reach):

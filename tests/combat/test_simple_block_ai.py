@@ -329,3 +329,18 @@ def test_simple_ai_iteration_limit_allows_fast_run():
     )
     duration = time.perf_counter() - start
     assert duration < 2
+
+
+def test_simple_ai_ignores_tapped_blocker():
+    """CR 509.1a: The chosen creatures must be untapped."""
+
+    atk = CombatCreature("Bear", 2, 2, "A")
+    blk = CombatCreature("Exhausted", 2, 2, "B", tapped=True)
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=1, creatures=[blk]),
+        }
+    )
+    decide_simple_blocks([atk], [blk], game_state=state)
+    assert blk.blocking is None
