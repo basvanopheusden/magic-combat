@@ -5,62 +5,6 @@ from typing import List
 from .creature import CombatCreature
 from .limits import IterationCounter
 
-# Keyword sets used for estimating combat value of a creature
-_POSITIVE_KEYWORDS = [
-    "flying",
-    "reach",
-    "menace",
-    "fear",
-    "shadow",
-    "horsemanship",
-    "skulk",
-    "unblockable",
-    "vigilance",
-    "daunt",
-    "first_strike",
-    "double_strike",
-    "deathtouch",
-    "trample",
-    "lifelink",
-    "wither",
-    "infect",
-    "indestructible",
-    "melee",
-    "training",
-    "battalion",
-    "dethrone",
-    "intimidate",
-    "undying",
-    "persist",
-]
-
-_STACKABLE_KEYWORDS = [
-    "bushido",
-    "flanking",
-    "rampage",
-    "exalted_count",
-    "battle_cry_count",
-    "frenzy",
-    "afflict",
-]
-
-
-def blocker_value(blocker: CombatCreature) -> float:
-    """Heuristic combat value for tie-breaking."""
-
-    positive = sum(1 for attr in _POSITIVE_KEYWORDS if getattr(blocker, attr, False))
-    if blocker.double_strike:
-        # Count double strike twice so it contributes 1 point instead of 0.5.
-        positive += 1
-    positive += sum(getattr(blocker, attr, 0) for attr in _STACKABLE_KEYWORDS)
-
-    value = blocker.effective_power() + blocker.effective_toughness() + positive / 2
-    if blocker.persist and blocker.minus1_counters:
-        value -= 0.5
-    if blocker.undying and blocker.plus1_counters:
-        value -= 2.5
-    return value
-
 
 class DamageAssignmentStrategy:
     """Base strategy for ordering blockers when assigning combat damage."""
@@ -75,7 +19,7 @@ class DamageAssignmentStrategy:
 class OptimalDamageStrategy(DamageAssignmentStrategy):
     """Order blockers to maximize value destroyed similarly to optimal blocks."""
 
-    def __init__(self, counter: "IterationCounter | None" = None) -> None:
+    def __init__(self, counter: IterationCounter | None = None) -> None:
         self.counter = counter
 
     def order_blockers(

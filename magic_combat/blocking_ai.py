@@ -10,7 +10,7 @@ from typing import Tuple
 
 from .block_utils import evaluate_block_assignment
 from .creature import CombatCreature
-from .damage import blocker_value
+from .creature import creature_value
 from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .limits import IterationCounter
@@ -41,7 +41,7 @@ def _should_force_provoke(
 
 def _creature_value(creature: CombatCreature) -> float:
     """Return a heuristic value for the creature."""
-    return blocker_value(creature)
+    return creature_value(creature)
 
 
 def _reset_block_assignments(
@@ -226,7 +226,7 @@ def _best_survival_assignment(
 
         defender = blockers[0].controller if blockers else "B"
         def_val = sum(
-            blocker_value(c)
+            creature_value(c)
             for c in result.creatures_destroyed
             if c.controller == defender
         )

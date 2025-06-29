@@ -17,7 +17,7 @@ import numpy as np
 from .blocking_ai import decide_optimal_blocks
 from .blocking_ai import decide_simple_blocks
 from .creature import CombatCreature
-from .damage import blocker_value
+from .creature import creature_value
 from .exceptions import CardDataError
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
@@ -65,7 +65,7 @@ def build_value_map(cards: Iterable[dict[str, Any]]) -> Dict[int, float]:
             creature = card_to_creature(card, "A")
         except ValueError:
             continue
-        values[idx] = blocker_value(creature)
+        values[idx] = creature_value(creature)
     if not values:
         raise CardDataError("No usable creatures found in card data")
     return values
@@ -125,8 +125,8 @@ def generate_balanced_creatures(
             generate_random_creature(stats, controller="B") for _ in range(n_blk)
         ]
 
-        att_val = sum(blocker_value(c) for c in attackers)
-        blk_val = sum(blocker_value(c) for c in blockers)
+        att_val = sum(creature_value(c) for c in attackers)
+        blk_val = sum(creature_value(c) for c in blockers)
         avg = (att_val + blk_val) / 2 or 1
         diff = abs(att_val - blk_val) / avg
 

@@ -8,6 +8,44 @@ from typing import Optional
 from .utils import check_non_negative
 from .utils import check_positive
 
+# Keyword sets used for estimating combat value of a creature
+_POSITIVE_KEYWORDS = [
+    "flying",
+    "reach",
+    "menace",
+    "fear",
+    "shadow",
+    "horsemanship",
+    "skulk",
+    "unblockable",
+    "vigilance",
+    "daunt",
+    "first_strike",
+    "double_strike",
+    "deathtouch",
+    "trample",
+    "lifelink",
+    "wither",
+    "infect",
+    "indestructible",
+    "melee",
+    "training",
+    "battalion",
+    "dethrone",
+    "intimidate",
+    "undying",
+    "persist",
+]
+_STACKABLE_KEYWORDS = [
+    "bushido",
+    "flanking",
+    "rampage",
+    "exalted_count",
+    "battle_cry_count",
+    "frenzy",
+    "afflict",
+]
+
 
 class Color(Enum):
     """Enumeration of Magic: The Gathering's five colors."""
@@ -190,3 +228,20 @@ class CombatCreature:
         """Clear temporary power and toughness modifiers."""
         self.temp_power = 0
         self.temp_toughness = 0
+
+
+def creature_value(creature: CombatCreature) -> float:
+    """Heuristic combat value for tie-breaking."""
+
+    positive = sum(1 for attr in _POSITIVE_KEYWORDS if getattr(creature, attr, False))
+    if creature.double_strike:
+        # Count double strike twice so it contributes 1 point instead of 0.5.
+        positive += 1
+    positive += sum(getattr(creature, attr, 0) for attr in _STACKABLE_KEYWORDS)
+
+    value = creature.effective_power() + creature.effective_toughness() + positive / 2
+    if creature.persist and creature.minus1_counters:
+        value -= 0.5
+    if creature.undying and creature.plus1_counters:
+        value -= 2.5
+    return value

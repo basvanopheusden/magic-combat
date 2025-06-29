@@ -9,9 +9,9 @@ from typing import Optional
 from .combat_utils import damage_creature
 from .combat_utils import damage_player
 from .creature import CombatCreature
+from .creature import creature_value
 from .damage import DamageAssignmentStrategy
 from .damage import OptimalDamageStrategy
-from .damage import blocker_value
 from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .gamestate import has_player_lost
@@ -92,12 +92,12 @@ class CombatResult:
             lost = 0
 
         att_val = sum(
-            blocker_value(c)
+            creature_value(c)
             for c in self.creatures_destroyed
             if c.controller == attacker_player
         )
         def_val = sum(
-            blocker_value(c)
+            creature_value(c)
             for c in self.creatures_destroyed
             if c.controller == defender
         )

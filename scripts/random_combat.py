@@ -17,7 +17,7 @@ from magic_combat import generate_random_scenario
 from magic_combat.abilities import BOOL_NAMES as _BOOL_ABILITIES
 from magic_combat.abilities import INT_NAMES as _INT_ABILITIES
 from magic_combat.creature import CombatCreature
-from magic_combat.damage import blocker_value
+from magic_combat.creature import creature_value
 from magic_combat.exceptions import CardDataError
 from magic_combat.text_utils import summarize_creature
 
@@ -145,11 +145,11 @@ def main() -> None:
         print("Attackers:")
         for atk in start_state.players["A"].creatures:
             summary = summarize_creature(atk, include_colors=include_colors)
-            print(f"  {summary}, {blocker_value(atk)}")
+            print(f"  {summary}, {creature_value(atk)}")
         print("Blockers:")
         for blk in start_state.players["B"].creatures:
             summary = summarize_creature(blk, include_colors=include_colors)
-            print(f"  {summary}, {blocker_value(blk)}")
+            print(f"  {summary}, {creature_value(blk)}")
 
         prov_map_display = (
             {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None
