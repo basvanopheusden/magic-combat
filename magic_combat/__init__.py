@@ -15,6 +15,7 @@ from .damage import DamageAssignmentStrategy
 from .damage import OptimalDamageStrategy
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
+from .exceptions import IterationLimitError
 from .exceptions import UnparsableLLMOutputError
 from .gamestate import GameState
 from .gamestate import PlayerState
@@ -76,6 +77,7 @@ __all__ = [
     "apply_blocker_bushido",
     "IllegalBlockError",
     "InvalidBlockScenarioError",
+    "IterationLimitError",
     "UnparsableLLMOutputError",
     "parse_block_assignments",
     "create_llm_prompt",

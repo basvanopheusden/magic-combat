@@ -302,7 +302,9 @@ def test_simple_ai_iteration_limit_triggers():
             "B": PlayerState(life=20, creatures=[b1, b2]),
         }
     )
-    with pytest.raises(RuntimeError):
+    from magic_combat import IterationLimitError
+
+    with pytest.raises(IterationLimitError):
         decide_simple_blocks([atk], [b1, b2], game_state=state, max_iterations=1)
 
 

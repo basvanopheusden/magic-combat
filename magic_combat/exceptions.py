@@ -15,3 +15,7 @@ class IllegalBlockError(MagicCombatError, ValueError):
 
 class InvalidBlockScenarioError(MagicCombatError):
     """Raised when generated block assignments are invalid or trivial."""
+
+
+class IterationLimitError(MagicCombatError, RuntimeError):
+    """Raised when a search exceeds the configured iteration limit."""

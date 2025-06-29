@@ -6,7 +6,9 @@ class IterationCounter:
         self.count = 0
 
     def increment(self) -> None:
-        """Increment the counter and raise ``RuntimeError`` if the limit is exceeded."""
+        """Increment the counter and raise ``IterationLimitError`` if exceeded."""
         self.count += 1
         if self.count > self.max_iterations:
-            raise RuntimeError("Maximum combat simulation iterations exceeded")
+            from .exceptions import IterationLimitError
+
+            raise IterationLimitError("Maximum combat simulation iterations exceeded")
