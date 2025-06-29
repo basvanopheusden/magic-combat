@@ -61,7 +61,13 @@ def blocker_value(blocker: CombatCreature) -> float:
         # Favor killing lifelinkers so opponents gain less life.
         positive += 1
     positive += sum(getattr(blocker, attr, 0) for attr in _STACKABLE_KEYWORDS)
-    return blocker.power + blocker.toughness + positive / 2
+
+    value = blocker.effective_power() + blocker.effective_toughness() + positive / 2
+    if blocker.persist and blocker.minus1_counters:
+        value -= 0.5
+    if blocker.undying and blocker.plus1_counters:
+        value -= 2.5
+    return value
 
 
 def score_combat_result(
