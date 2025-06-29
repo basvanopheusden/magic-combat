@@ -293,6 +293,20 @@ def test_simple_ai_blocks_provoke_target_favorably():
     assert blk2.blocking is atk2
 
 
+def test_simple_ai_ignores_provoke_with_single_blocker():
+    """CR 702.40a & 702.110b: Provoke is ignored when menace can't be satisfied."""
+    atk = CombatCreature("Tunnel Rogue", 2, 2, "A", provoke=True, menace=True)
+    blk = CombatCreature("Goblin", 2, 2, "B")
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[blk]),
+        }
+    )
+    decide_simple_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    assert blk.blocking is None
+
+
 def test_simple_ai_reacher_blocks_flyer_only():
     """CR 702.9b: Reach allows blocking a creature with flying."""
     flyer = CombatCreature("Angel", 3, 3, "A", flying=True)

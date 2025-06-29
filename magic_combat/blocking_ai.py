@@ -19,6 +19,26 @@ from .simulator import CombatSimulator
 from .utils import can_block
 
 
+def _should_force_provoke(
+    attacker: CombatCreature,
+    blocker: CombatCreature,
+    blockers: Sequence[CombatCreature],
+) -> bool:
+    """Return ``True`` if ``blocker`` must block ``attacker``."""
+
+    if not can_block(attacker, blocker):
+        return False
+    if attacker.menace:
+        eligible = [
+            b
+            for b in blockers
+            if b is not blocker and not b.tapped and can_block(attacker, b)
+        ]
+        if not eligible:
+            return False
+    return True
+
+
 def _creature_value(creature: CombatCreature) -> float:
     """Return a heuristic value for the creature."""
     return blocker_value(creature)
@@ -57,7 +77,7 @@ def _best_value_trade_assignment(
             options.append([None])
             continue
         forced = provoked.get(blk)
-        if forced is not None and can_block(forced, blk):
+        if forced is not None and _should_force_provoke(forced, blk, blockers):
             options.append([attackers.index(forced)])
         else:
             options.append(list(range(len(attackers))) + [None])
@@ -156,7 +176,7 @@ def _best_survival_assignment(
             options.append([None])
             continue
         forced = provoked.get(blk)
-        if forced is not None and can_block(forced, blk):
+        if forced is not None and _should_force_provoke(forced, blk, blockers):
             options.append([attackers.index(forced)])
         else:
             options.append(list(range(len(attackers))) + [None])
@@ -329,7 +349,7 @@ def decide_optimal_blocks(
             options.append([None])
             continue
         forced = provoked.get(blk)
-        if forced is not None and can_block(forced, blk):
+        if forced is not None and _should_force_provoke(forced, blk, blockers):
             options.append([attackers.index(forced)])
         else:
             options.append(list(range(len(attackers))) + [None])
