@@ -7,6 +7,8 @@ The ``magic_combat`` package now includes fully implemented modules such as
 ``CombatCreature`` and ``CombatSimulator`` which handle blocking validation,
 damage assignment, keyword abilities and more.
 
+This project requires **Python 3.12**.
+
 ## Repository layout
 
 ```
