@@ -40,11 +40,6 @@ from .utils import apply_attacker_blocking_bonuses
 from .utils import apply_blocker_bushido
 from .utils import calculate_mana_value
 
-# Default life total used when initializing ``PlayerState`` instances
-# Poison counter threshold at which a player loses the game
-# Version string used to tag snapshot data for tests
-
-
 __all__ = [
     "CombatCreature",
     "Color",
