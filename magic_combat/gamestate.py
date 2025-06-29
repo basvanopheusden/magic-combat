@@ -8,7 +8,7 @@ from dataclasses import field
 from magic_combat.constants import POISON_LOSS_THRESHOLD
 
 from .creature import CombatCreature
-from .rules_text import describe_abilities
+from .text_utils import summarize_creature
 from .utils import check_non_negative
 
 
@@ -30,7 +30,7 @@ class PlayerState:
         if self.creatures:
             lines.append("Creatures:")
             for creature in self.creatures:
-                lines.append(f"  - {creature} -- {describe_abilities(creature)}")
+                lines.append(f"  - {summarize_creature(creature)}")
         else:
             lines.append("Creatures: None")
         return "\n".join(lines)

@@ -19,6 +19,7 @@ from magic_combat.abilities import INT_NAMES as _INT_ABILITIES
 from magic_combat.creature import CombatCreature
 from magic_combat.damage import blocker_value
 from magic_combat.exceptions import CardDataError
+from magic_combat.text_utils import summarize_creature
 
 # Ability name mappings for pretty printing come from ``magic_combat.abilities``
 
@@ -39,31 +40,6 @@ def describe_abilities(creature: CombatCreature) -> str:
     if creature.artifact:
         parts.append("Artifact")
     return ", ".join(parts) if parts else "none"
-
-
-def summarize_creature(
-    creature: CombatCreature, *, include_colors: bool = False
-) -> str:
-    """Return a readable one-line summary of ``creature``."""
-    extra: List[str] = []
-    if creature.plus1_counters:
-        extra.append(f"+1/+1 x{creature.plus1_counters}")
-    if creature.minus1_counters:
-        extra.append(f"-1/-1 x{creature.minus1_counters}")
-    if creature.damage_marked:
-        extra.append(f"{creature.damage_marked} dmg")
-    if creature.tapped:
-        extra.append("tapped")
-    extras = f" [{', '.join(extra)}]" if extra else ""
-    color_info = ""
-    if include_colors and creature.colors:
-        joined = "/".join(
-            c.name.capitalize() for c in sorted(creature.colors, key=lambda x: x.name)
-        )
-        color_info = f" [{joined}]"
-    elif include_colors:
-        color_info = " [Colorless]"
-    return f"{creature}{color_info}{extras} -- {describe_abilities(creature)}"
 
 
 def print_player_state(
