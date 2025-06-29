@@ -15,9 +15,11 @@ from magic_combat import generate_random_scenario
 from magic_combat import load_cards
 from magic_combat.create_llm_prompt import create_llm_prompt
 from magic_combat.create_llm_prompt import parse_block_assignments
+from magic_combat.create_llm_prompt import summarize_creature
 from magic_combat.creature import CombatCreature
 from magic_combat.exceptions import UnparsableLLMOutputError
 from magic_combat.gamestate import GameState
+from magic_combat.gamestate import PlayerState
 from magic_combat.llm_cache import LLMCache
 
 
@@ -76,6 +78,20 @@ def _format_value(value: tuple[float, float, float, float]) -> str:
         f"life lost {life}, poison {poison}, "
         f"creature diff {creature_diff}, value diff {value_diff}"
     )
+
+
+def _print_player_state(
+    label: str, ps: PlayerState, *, include_colors: bool = False
+) -> None:
+    """Display the player's life total and creatures."""
+
+    print(f"{label}: {ps.life} life, {ps.poison} poison")
+    if ps.creatures:
+        for creature in ps.creatures:
+            summary = summarize_creature(creature, include_colors=include_colors)
+            print(f"  {summary}")
+    else:
+        print("  no creatures")
 
 
 async def call_openai_model_single_prompt(
@@ -287,7 +303,16 @@ async def _evaluate_single_scenario(
         )
         print(f"\n=== Scenario {idx + 1} ===")
         print("Initial game state:")
-        print(state)
+        all_creatures = state.players["A"].creatures + state.players["B"].creatures
+        include_colors = any(
+            c.fear or c.intimidate or c.protection_colors for c in all_creatures
+        )
+        _print_player_state(
+            "Player A", state.players["A"], include_colors=include_colors
+        )
+        _print_player_state(
+            "Player B", state.players["B"], include_colors=include_colors
+        )
         print()
         print(f"Correct assignments: {correct}/{len(blockers)}")
         if simple_result is not None and simple_value is not None:

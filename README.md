@@ -105,3 +105,23 @@ rampage and flanking bonuses to an attacker, while ``apply_blocker_bushido``
 handles bushido on a blocker.  ``magic_combat.combat_utils`` exposes
 ``damage_creature`` and ``damage_player`` for applying damage outside of the
 ``CombatSimulator`` class.
+
+## Using the OpenAI scripts
+
+The ``scripts`` directory includes tools that rely on the OpenAI API.  These
+require the ``openai`` package, which is installed when running ``pip install
+-r requirements.txt``.  Before using these scripts you must set the
+``OPENAI_API_KEY`` environment variable so that the client can authenticate.
+
+``scripts/evaluate_random_combat_scenarios.py`` contacts the model to
+evaluate blocking assignments for randomly generated combat scenarios.  A
+typical invocation looks like this:
+
+```bash
+OPENAI_API_KEY=<your-key> \
+    python scripts/evaluate_random_combat_scenarios.py -n 3 \
+    --cards data/cards.json
+```
+
+The script will generate scenarios, send them to the model and print the
+results to the console.

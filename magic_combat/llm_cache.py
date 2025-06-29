@@ -1,3 +1,9 @@
+"""Simple JSONL cache implementations for LLM responses.
+
+The :class:`LLMCache` class persists prompts and responses on disk, while
+``MockLLMCache`` provides an in-memory variant for testing.
+"""
+
 import json
 from pathlib import Path
 from typing import Optional
