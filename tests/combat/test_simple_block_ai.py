@@ -26,6 +26,23 @@ def test_simple_ai_respects_provoke():
     assert atk.blocked_by == [blk]
 
 
+def test_simple_ai_provoke_untaps_tapped_blocker():
+    """CR 702.39a: Provoke untaps the target before it blocks."""
+    atk = CombatCreature("Needler", 1, 1, "A", provoke=True)
+    blk = CombatCreature("Sentry", 2, 2, "B", tapped=True)
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[blk]),
+        }
+    )
+    blk.tapped = False
+    decide_simple_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    sim = CombatSimulator([atk], [blk], game_state=state, provoke_map={atk: blk})
+    sim.validate_blocking()
+    assert blk.blocking is atk
+
+
 def test_simple_ai_blocks_best_trade():
     """CR 509.1a: The defending player chooses how creatures block."""
     a1 = CombatCreature("Giant", 4, 4, "A")

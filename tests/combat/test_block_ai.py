@@ -28,6 +28,23 @@ def test_optimal_ai_respects_provoke():
     assert atk.blocked_by == [blk]
 
 
+def test_optimal_ai_provoke_untaps_tapped_blocker():
+    """CR 702.39a: Provoke untaps the target before it blocks."""
+    atk = CombatCreature("Needler", 1, 1, "A", provoke=True)
+    blk = CombatCreature("Sentry", 2, 2, "B", tapped=True)
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[blk]),
+        }
+    )
+    blk.tapped = False
+    decide_optimal_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    sim = CombatSimulator([atk], [blk], game_state=state, provoke_map={atk: blk})
+    sim.validate_blocking()
+    assert blk.blocking is atk
+
+
 def test_ai_blocks_to_prevent_lethal():
     """CR 104.3a: A player with 0 or less life loses the game."""
     atk = CombatCreature("Ogre", 3, 3, "A")
