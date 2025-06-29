@@ -8,9 +8,6 @@ from typing import Optional
 from typing import Sequence
 from typing import Tuple
 
-from magic_combat.constants import DEFAULT_STARTING_LIFE
-from magic_combat.constants import POISON_LOSS_THRESHOLD
-
 from .block_utils import evaluate_block_assignment
 from .creature import CombatCreature
 from .damage import blocker_value
@@ -38,100 +35,222 @@ def _reset_block_assignments(
         blk.blocking = None
 
 
-def _apply_provoke_assignments(
+def _best_value_trade_assignment(
     attackers: Sequence[CombatCreature],
-    available: List[CombatCreature],
-    provoke_map: Optional[dict[CombatCreature, CombatCreature]],
-) -> None:
-    """Assign blocks dictated by provoke."""
+    blockers: Sequence[CombatCreature],
+    game_state: Optional[GameState],
+    provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
+) -> tuple[Tuple[Optional[int], ...], tuple[int, float, int, int, int, int]]:
+    """Search simple blocks focusing on favorable trades."""
 
-    if not provoke_map:
-        return
+    provoked: dict[CombatCreature, CombatCreature] = {}
+    if provoke_map:
+        for atk, blk in provoke_map.items():
+            if atk in attackers and blk in blockers:
+                provoked[blk] = atk
 
-    for attacker, target in provoke_map.items():
-        if (
-            attacker in attackers
-            and target in available
-            and can_block(attacker, target)
-        ):
-            target.blocking = attacker
-            attacker.blocked_by.append(target)
-            available.remove(target)
+    options: list[list[int | None]] = []
+    for blk in blockers:
+        forced = provoked.get(blk)
+        if forced is not None and can_block(forced, blk):
+            options.append([attackers.index(forced)])
+        else:
+            options.append(list(range(len(attackers))) + [None])
+
+    best_assignment: Tuple[Optional[int], ...] = tuple(None for _ in blockers)
+    best_score = (float("-inf"), float("-inf"))
+    best_numeric: tuple[int, float, int, int, int, int] = (0, 0.0, 0, 0, 0, 0)
+
+    for assignment in product(*options):
+        counts: dict[int, int] = {}
+        for choice in assignment:
+            if choice is not None:
+                counts[choice] = counts.get(choice, 0) + 1
+        valid = True
+        for idx, atk in enumerate(attackers):
+            cnt = counts.get(idx, 0)
+            if atk.menace:
+                if cnt not in (0, 2):
+                    valid = False
+                    break
+            elif cnt > 1:
+                valid = False
+                break
+        if not valid:
+            continue
+
+        try:
+            result, dead_atk, dead_blk, score = _simulate_assignment(
+                attackers,
+                blockers,
+                assignment,
+                game_state,
+                provoke_map,
+            )
+        except ValueError:
+            continue
+
+        # Reject any blocks that fail to at least trade.
+        for blk_idx, choice in enumerate(assignment):
+            if choice is None:
+                continue
+            died_blk = blk_idx in dead_blk
+            died_atk = choice in dead_atk
+            if not died_atk:
+                valid = False
+                break
+            if died_blk and _creature_value(blockers[blk_idx]) > _creature_value(
+                attackers[choice]
+            ):
+                valid = False
+                break
+        if not valid:
+            continue
+
+        val_diff = -score[1]
+        cnt_diff = -score[2]
+        if (val_diff, cnt_diff) > best_score:
+            best_score = (val_diff, cnt_diff)
+            best_assignment = tuple(assignment)
+            best_numeric = score
+
+    return best_assignment, best_numeric
 
 
-def _pair_value_diff(attacker: CombatCreature, blocker: CombatCreature) -> float:
-    """Return attacker value minus blocker value for the combat pair."""
+def _best_survival_assignment(
+    attackers: Sequence[CombatCreature],
+    blockers: Sequence[CombatCreature],
+    base_assignment: Sequence[Optional[int]],
+    game_state: Optional[GameState],
+    provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
+) -> Tuple[Optional[Tuple[Optional[int], ...]], tuple[int, float, int, int, int, int]]:
+    """Try to prevent lethal damage with chump blocks."""
+
+    remain_indices = [i for i, a in enumerate(base_assignment) if a is None]
+    if not remain_indices:
+        return None, (0, 0.0, 0, 0, 0, 0)
+
+    provoked: dict[CombatCreature, CombatCreature] = {}
+    if provoke_map:
+        for atk, blk in provoke_map.items():
+            if (
+                atk in attackers
+                and blk in blockers
+                and blk in [blockers[i] for i in remain_indices]
+            ):
+                provoked[blk] = atk
+
+    options: list[list[int | None]] = []
+    for idx in remain_indices:
+        blk = blockers[idx]
+        forced = provoked.get(blk)
+        if forced is not None and can_block(forced, blk):
+            options.append([attackers.index(forced)])
+        else:
+            options.append(list(range(len(attackers))) + [None])
+
+    best_assignment: Optional[Tuple[Optional[int], ...]] = None
+    best_score = (float("inf"), float("inf"))
+    best_numeric: tuple[int, float, int, int, int, int] = (0, 0.0, 0, 0, 0, 0)
+
+    base_list = list(base_assignment)
+
+    for combo in product(*options):
+        ass = base_list[:]
+        for idx, choice in zip(remain_indices, combo):
+            ass[idx] = choice
+
+        counts: dict[int, int] = {}
+        for choice in ass:
+            if choice is not None:
+                counts[choice] = counts.get(choice, 0) + 1
+        valid = True
+        for atk_idx, atk in enumerate(attackers):
+            cnt = counts.get(atk_idx, 0)
+            if atk.menace:
+                if cnt not in (0, 2):
+                    valid = False
+                    break
+            elif cnt > 1:
+                valid = False
+                break
+        if not valid:
+            continue
+
+        try:
+            result, dead_atk, dead_blk, score = _simulate_assignment(
+                attackers,
+                blockers,
+                ass,
+                game_state,
+                provoke_map,
+            )
+        except ValueError:
+            continue
+
+        if score[0] != 0:
+            continue
+
+        defender = blockers[0].controller if blockers else "B"
+        def_val = sum(
+            blocker_value(c)
+            for c in result.creatures_destroyed
+            if c.controller == defender
+        )
+        def_cnt = sum(1 for c in result.creatures_destroyed if c.controller == defender)
+
+        if (def_val, def_cnt) < best_score:
+            best_score = (def_val, def_cnt)
+            best_assignment = tuple(ass)
+            best_numeric = score
+
+    return best_assignment, best_numeric
+
+
+def _simulate_assignment(
+    attackers: Sequence[CombatCreature],
+    blockers: Sequence[CombatCreature],
+    assignment: Sequence[Optional[int]],
+    game_state: Optional[GameState],
+    provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
+) -> tuple["CombatResult", set[int], set[int], tuple[int, float, int, int, int, int],]:
+    """Return simulation result and sets of dead attacker/blocker indices."""
 
     from copy import deepcopy
 
-    atk = deepcopy(attacker)
-    blk = deepcopy(blocker)
-    blk.blocking = atk
-    atk.blocked_by.append(blk)
-    sim = CombatSimulator([atk], [blk])
+    atk_copy = deepcopy(list(attackers))
+    blk_copy = deepcopy(list(blockers))
+    atk_map = {id(c): i for i, c in enumerate(atk_copy)}
+    blk_map = {id(c): i for i, c in enumerate(blk_copy)}
+
+    for blk_idx, choice in enumerate(assignment):
+        if choice is not None:
+            blk_copy[blk_idx].blocking = atk_copy[choice]
+            atk_copy[choice].blocked_by.append(blk_copy[blk_idx])
+
+    prov_copies: dict[CombatCreature, CombatCreature] = {}
+    if provoke_map:
+        for atk, blk in provoke_map.items():
+            if atk in attackers and blk in blockers:
+                a_copy = atk_copy[attackers.index(atk)]
+                b_copy = blk_copy[blockers.index(blk)]
+                prov_copies[a_copy] = b_copy
+
+    sim = CombatSimulator(
+        atk_copy,
+        blk_copy,
+        game_state=deepcopy(game_state) if game_state else None,
+        provoke_map=prov_copies or None,
+    )
     result = sim.simulate()
-    score = score_combat_result(result, attacker.controller, blocker.controller)
-    # ``score[1]`` is defender value minus attacker value; invert for our metric
-    return -score[1]
+    attacker_player = atk_copy[0].controller if atk_copy else "attacker"
+    defender = blk_copy[0].controller if blk_copy else "defender"
+    score = score_combat_result(result, attacker_player, defender)
 
+    dead_atk = {atk_map[id(c)] for c in result.creatures_destroyed if id(c) in atk_map}
+    dead_blk = {blk_map[id(c)] for c in result.creatures_destroyed if id(c) in blk_map}
 
-def _assign_favorable_trades(
-    attackers_sorted: Sequence[CombatCreature],
-    available: List[CombatCreature],
-) -> None:
-    """Block with favorable 1:1 trades when possible."""
-
-    chosen: set[CombatCreature] = set()
-    for blk in sorted(list(available), key=_creature_value, reverse=True):
-        best_atk: Optional[CombatCreature] = None
-        best_diff = float("-inf")
-        for atk in attackers_sorted:
-            if atk in chosen or not can_block(atk, blk):
-                continue
-            diff = _pair_value_diff(atk, blk)
-            if diff > best_diff:
-                best_diff = diff
-                best_atk = atk
-        if best_atk is not None and best_diff >= 0:
-            blk.blocking = best_atk
-            best_atk.blocked_by.append(blk)
-            chosen.add(best_atk)
-            available.remove(blk)
-
-
-def _perform_chump_blocks(
-    attackers: Sequence[CombatCreature],
-    available: List[CombatCreature],
-    life: int,
-    poison: int,
-) -> None:
-    """Chump block attackers if lethal damage would be dealt."""
-
-    def remaining_threat() -> tuple[int, int]:
-        dmg = 0
-        psn = 0
-        for a in attackers:
-            if not a.blocked_by:
-                dmg += a.effective_power()
-                psn += (a.effective_power() if a.infect else 0) + a.toxic
-        return dmg, psn
-
-    for atk in sorted(
-        [a for a in attackers if not a.blocked_by],
-        key=lambda a: a.effective_power(),
-        reverse=True,
-    ):
-        if not available:
-            break
-        dmg, psn = remaining_threat()
-        if life <= dmg or poison + psn >= POISON_LOSS_THRESHOLD:
-            choices = [b for b in available if can_block(atk, b)]
-            if not choices:
-                continue
-            blk = min(choices, key=_creature_value)
-            blk.blocking = atk
-            atk.blocked_by.append(blk)
-            available.remove(blk)
+    return result, dead_atk, dead_blk, score
 
 
 def decide_optimal_blocks(
@@ -233,21 +352,32 @@ def decide_simple_blocks(
     game_state: Optional[GameState] = None,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
 ) -> None:
-    """Assign blocks using a simple non-searching heuristic."""
+    """Assign blocks using a two-stage heuristic search."""
 
     _reset_block_assignments(attackers, blockers)
 
     if not blockers:
         return
 
-    defender = blockers[0].controller
-    life = game_state.players[defender].life if game_state else DEFAULT_STARTING_LIFE
-    poison = game_state.players[defender].poison if game_state else 0
+    best_ass, best_score = _best_value_trade_assignment(
+        attackers, blockers, game_state, provoke_map
+    )
 
-    available = list(blockers)
-    _apply_provoke_assignments(attackers, available, provoke_map)
+    result, *_ = _simulate_assignment(
+        attackers, blockers, best_ass, game_state, provoke_map
+    )
 
-    attackers_sorted = sorted(attackers, key=_creature_value, reverse=True)
-    _assign_favorable_trades(attackers_sorted, available)
+    if best_score[0] != 0:
+        second_ass, _ = _best_survival_assignment(
+            attackers, blockers, best_ass, game_state, provoke_map
+        )
+        if second_ass is not None:
+            best_ass = second_ass
 
-    _perform_chump_blocks(attackers, available, life, poison)
+    _reset_block_assignments(attackers, blockers)
+    for blk_idx, choice in enumerate(best_ass):
+        if choice is not None:
+            blk = blockers[blk_idx]
+            atk = attackers[choice]
+            blk.blocking = atk
+            atk.blocked_by.append(blk)

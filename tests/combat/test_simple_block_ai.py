@@ -234,7 +234,7 @@ def test_simple_ai_chumps_trample_big_attack():
     )
     decide_simple_blocks([trampler, other_atk], [b1, b2], game_state=state)
     assert b1.blocking is other_atk
-    assert b2.blocking is trampler
+    assert b2.blocking is None
 
 
 def test_simple_ai_first_strike_blocks_deathtouch():
@@ -269,7 +269,7 @@ def test_simple_ai_blocks_provoke_target_favorably():
         [atk1, atk2], [blk1, blk2], game_state=state, provoke_map={atk1: blk1}
     )
     assert blk1.blocking is atk1
-    assert blk2.blocking is atk1
+    assert blk2.blocking is atk2
 
 
 def test_simple_ai_reacher_blocks_flyer_only():
