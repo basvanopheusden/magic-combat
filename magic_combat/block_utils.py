@@ -1,3 +1,5 @@
+"""Utility helpers for evaluating blocking assignments."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -12,8 +14,6 @@ from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .limits import IterationCounter
 from .simulator import CombatSimulator
-
-"""Utility helpers for evaluating blocking assignments."""
 
 
 def evaluate_block_assignment(
