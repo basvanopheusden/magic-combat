@@ -121,6 +121,7 @@ async def _evaluate_single_scenario(
     seed: int = 0,
     semaphore: asyncio.Semaphore,
 ) -> None:
+    print("Generating scenario", idx + 1)
     (
         state,
         attackers,
@@ -154,15 +155,15 @@ async def _evaluate_single_scenario(
         blk.blocking = None
 
     prompt = create_llm_prompt(state, attackers, blockers)
-    print(f"\n=== Scenario {idx + 1} ===")
-    # print(prompt)
 
     attempts = 0
     max_attempts = 3
     while True:
         try:
             async with semaphore:
+                print("Calling OpenAI model for scenario", idx + 1)
                 llm_response = await call_openai_model([prompt], seed=seed + idx)
+                print("Model response received for scenario", idx + 1)
         except Exception as exc:  # pragma: no cover - network failure
             print(f"Failed to query model: {exc}")
             continue
@@ -190,14 +191,18 @@ async def _evaluate_single_scenario(
                         idx_choice = i
                         break
             llm_map.append(idx_choice)
-        llm_value = _value_for_assignment(
-            attackers,
-            blockers,
-            llm_map,
-            state,
-            provoke_map,
-            mentor_map,
-        )
+        try:
+            llm_value = _value_for_assignment(
+                attackers,
+                blockers,
+                llm_map,
+                state,
+                provoke_map,
+                mentor_map,
+            )
+        except ValueError as exc:
+            print(f"Error evaluating LLM assignment: {exc}")
+            llm_value = (0, 0, 0, float("inf"))
         simple_value = (
             _value_for_assignment(
                 attackers,
@@ -211,6 +216,8 @@ async def _evaluate_single_scenario(
             else None
         )
         diff = tuple(lv - ov for lv, ov in zip(llm_value, opt_value))
+        print(f"\n=== Scenario {idx + 1} ===")
+        print(prompt)
         print(f"Correct assignments: {correct}/{len(blockers)}")
         print("Simple blocks:", simple)
         print("Optimal blocks:", optimal)

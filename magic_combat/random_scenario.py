@@ -356,7 +356,7 @@ def generate_random_scenario(
     stats: Dict[str, object] | None = None,
     *,
     generated_cards: bool = False,
-    max_iterations: int = int(1e6),
+    max_iterations: int = int(1e4),
     unique_optimal: bool = False,
     seed: int | None = None,
 ) -> Tuple[

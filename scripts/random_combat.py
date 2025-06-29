@@ -91,7 +91,7 @@ def main() -> None:
     parser.add_argument(
         "--max-iterations",
         type=int,
-        default=int(1e6),
+        default=int(1e4),
         help="Maximum combat simulations per scenario",
     )
     parser.add_argument(

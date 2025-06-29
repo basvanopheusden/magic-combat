@@ -267,7 +267,7 @@ def decide_optimal_blocks(
     game_state: Optional[GameState] = None,
     *,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
-    max_iterations: int = int(1e6),
+    max_iterations: int = int(1e4),
 ) -> Tuple[int, int]:
     """Assign blockers to attackers using a heuristic evaluation.
 
@@ -361,7 +361,7 @@ def decide_simple_blocks(
     blockers: List[CombatCreature],
     game_state: Optional[GameState] = None,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
-    max_iterations: int = int(1e6),
+    max_iterations: int = int(1e4),
 ) -> None:
     """Assign blocks using a two-stage heuristic search."""
 
