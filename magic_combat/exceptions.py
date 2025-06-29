@@ -19,3 +19,7 @@ class InvalidBlockScenarioError(MagicCombatError):
 
 class IterationLimitError(MagicCombatError, RuntimeError):
     """Raised when a search exceeds the configured iteration limit."""
+
+
+class CardDataError(MagicCombatError, ValueError):
+    """Raised when card data is missing or unusable."""

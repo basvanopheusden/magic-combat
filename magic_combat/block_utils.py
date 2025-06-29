@@ -8,7 +8,6 @@ from typing import Tuple
 
 from .creature import CombatCreature
 from .damage import OptimalDamageStrategy
-from .damage import score_combat_result
 from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .limits import IterationCounter
@@ -70,5 +69,5 @@ def evaluate_block_assignment(
     ass_key = tuple(
         len(attackers) if choice is None else choice for choice in assignment
     )
-    score = score_combat_result(result, attacker_player, defender) + (ass_key,)
+    score = result.score(attacker_player, defender) + (ass_key,)
     return score

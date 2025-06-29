@@ -69,31 +69,9 @@ def score_combat_result(
     attacker_player: str,
     defender: str,
 ) -> Tuple[int, float, int, int, int, int]:
-    """Return a scoring tuple evaluating combat from the defender's perspective."""
+    """Wrapper calling :meth:`CombatResult.score` for backward compatibility."""
 
-    lost = 1 if defender in getattr(result, "players_lost", []) else 0
-
-    att_val = sum(
-        blocker_value(c)
-        for c in result.creatures_destroyed
-        if c.controller == attacker_player
-    )
-    def_val = sum(
-        blocker_value(c) for c in result.creatures_destroyed if c.controller == defender
-    )
-    val_diff = def_val - att_val
-
-    att_cnt = sum(
-        1 for c in result.creatures_destroyed if c.controller == attacker_player
-    )
-    def_cnt = sum(1 for c in result.creatures_destroyed if c.controller == defender)
-    cnt_diff = def_cnt - att_cnt
-
-    mana_total = sum(c.mana_value for c in result.creatures_destroyed)
-    life_lost = result.damage_to_players.get(defender, 0)
-    poison = result.poison_counters.get(defender, 0)
-
-    return (lost, val_diff, cnt_diff, -mana_total, life_lost, poison)
+    return result.score(attacker_player, defender)
 
 
 class DamageAssignmentStrategy:
@@ -153,7 +131,7 @@ class OptimalDamageStrategy(DamageAssignmentStrategy):
             attacker_player = attacker.controller
             defender = blockers[0].controller
             key = tuple(index_map[id(b)] for b in perm)
-            score = score_combat_result(result, attacker_player, defender) + (key,)
+            score = result.score(attacker_player, defender) + (key,)
             if best_score is None or score > best_score:
                 best_score = score
                 best_order = list(perm)

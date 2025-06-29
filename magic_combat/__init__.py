@@ -13,6 +13,7 @@ from .creature import Color
 from .creature import CombatCreature
 from .damage import DamageAssignmentStrategy
 from .damage import OptimalDamageStrategy
+from .exceptions import CardDataError
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
 from .exceptions import IterationLimitError
@@ -78,6 +79,7 @@ __all__ = [
     "IllegalBlockError",
     "InvalidBlockScenarioError",
     "IterationLimitError",
+    "CardDataError",
     "UnparsableLLMOutputError",
     "parse_block_assignments",
     "create_llm_prompt",

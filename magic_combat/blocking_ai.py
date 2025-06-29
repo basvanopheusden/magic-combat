@@ -11,7 +11,6 @@ from typing import Tuple
 from .block_utils import evaluate_block_assignment
 from .creature import CombatCreature
 from .damage import blocker_value
-from .damage import score_combat_result
 from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .limits import IterationCounter
@@ -90,6 +89,8 @@ def _best_value_trade_assignment(
                 game_state,
                 provoke_map,
                 counter,
+                include_life=False,
+                include_poison=False,
             )
         except IllegalBlockError:
             continue
@@ -220,6 +221,13 @@ def _simulate_assignment(
     game_state: Optional[GameState],
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
     counter: IterationCounter | None = None,
+    *,
+    include_life: bool = True,
+    include_poison: bool = True,
+    include_mana: bool = True,
+    include_value: bool = True,
+    include_count: bool = True,
+    include_loss: bool = True,
 ) -> tuple[CombatResult, set[int], set[int], tuple[int, float, int, int, int, int]]:
     """Return simulation result and sets of dead attacker/blocker indices."""
 
@@ -254,7 +262,16 @@ def _simulate_assignment(
     result = sim.simulate()
     attacker_player = atk_copy[0].controller if atk_copy else "attacker"
     defender = blk_copy[0].controller if blk_copy else "defender"
-    score = score_combat_result(result, attacker_player, defender)
+    score = result.score(
+        attacker_player,
+        defender,
+        include_life=include_life,
+        include_poison=include_poison,
+        include_mana=include_mana,
+        include_value=include_value,
+        include_count=include_count,
+        include_loss=include_loss,
+    )
 
     dead_atk = {atk_map[id(c)] for c in result.creatures_destroyed if id(c) in atk_map}
     dead_blk = {blk_map[id(c)] for c in result.creatures_destroyed if id(c) in blk_map}
