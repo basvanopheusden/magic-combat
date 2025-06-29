@@ -7,8 +7,9 @@ from typing import Optional
 import numpy as np
 import openai
 
-from magic_combat import CombatResult, IllegalBlockError
+from magic_combat import CombatResult
 from magic_combat import CombatSimulator
+from magic_combat import IllegalBlockError
 from magic_combat import build_value_map
 from magic_combat import compute_card_statistics
 from magic_combat import generate_random_scenario

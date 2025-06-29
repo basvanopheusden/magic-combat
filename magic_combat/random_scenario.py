@@ -324,7 +324,7 @@ def _score_optimal_result(
         mentor_map=mentor_copies or None,
     )
     result = sim.simulate()
-    score =  result.score("A", "B")
+    score = result.score("A", "B")
     return score[4], score[5], score[2], score[1]
 
 

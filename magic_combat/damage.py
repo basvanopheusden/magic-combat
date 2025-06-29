@@ -1,14 +1,9 @@
 """Damage assignment ordering strategies."""
 
-from typing import TYPE_CHECKING
 from typing import List
-from typing import Tuple
 
 from .creature import CombatCreature
 from .limits import IterationCounter
-
-if TYPE_CHECKING:  # pragma: no cover - used for type checking only
-    from .simulator import CombatResult
 
 # Keyword sets used for estimating combat value of a creature
 _POSITIVE_KEYWORDS = [
