@@ -6,13 +6,15 @@ import json
 import random
 from pathlib import Path
 from typing import List
-from typing import Optional
 
 import numpy as np
 
 from magic_combat import build_value_map
+from magic_combat import creature_to_dict
+from magic_combat import encode_map
 from magic_combat import generate_random_scenario
 from magic_combat import load_cards
+from magic_combat import state_to_dict
 from magic_combat.constants import SNAPSHOT_VERSION
 
 
@@ -50,16 +52,28 @@ def main() -> None:
     snapshots: List[dict[str, object]] = []
     for i in range(args.num):
         seed = args.seed + i
-        res = generate_random_scenario(cards, values, seed=seed)
-        optimal_assignment: List[Optional[int]] = list(res[5])
-        simple_assignment = list(res[6]) if res[6] is not None else None
-        combat_value = list(res[7])
+        (
+            state,
+            attackers,
+            blockers,
+            provoke_map,
+            mentor_map,
+            opt_map,
+            simple_map,
+            combat_value,
+        ) = generate_random_scenario(cards, values, seed=seed)
+
         snapshot: dict[str, object] = {
             "version": SNAPSHOT_VERSION,
             "seed": seed,
-            "optimal_assignment": optimal_assignment,
-            "simple_assignment": simple_assignment,
-            "combat_value": combat_value,
+            "attackers": [creature_to_dict(c) for c in attackers],
+            "blockers": [creature_to_dict(c) for c in blockers],
+            "state": state_to_dict(state),
+            "provoke_map": encode_map(provoke_map, attackers, blockers),
+            "mentor_map": encode_map(mentor_map, attackers, attackers),
+            "optimal_assignment": list(opt_map),
+            "simple_assignment": list(simple_map) if simple_map is not None else None,
+            "combat_value": list(combat_value),
         }
         snapshots.append(snapshot)
         print(snapshot)
