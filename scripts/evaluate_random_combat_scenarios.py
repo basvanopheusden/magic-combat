@@ -71,6 +71,8 @@ async def call_openai_model_single_prompt(
     if cache is not None:
         cached = cache.get(prompt, model, seed, temperature)
     if cached is not None:
+        short = prompt.splitlines()[0][:30]
+        print(f"Using cached LLM response for: {short}...")
         return cached
 
     response = await client.chat.completions.create(
@@ -120,6 +122,7 @@ async def _evaluate_single_scenario(
     *,
     seed: int = 0,
     semaphore: asyncio.Semaphore,
+    cache: Optional[LLMCache] = None,
 ) -> None:
     print("Generating scenario", idx + 1)
     (
@@ -163,7 +166,11 @@ async def _evaluate_single_scenario(
             async with semaphore:
                 print("Calling OpenAI model for scenario", idx + 1)
                 llm_response = await call_openai_model(
-                    [prompt], seed=seed + idx, model="o3-2025-04-16", temperature=1.0
+                    [prompt],
+                    seed=seed + idx,
+                    model="o3-2025-04-16",
+                    temperature=1.0,
+                    cache=cache,
                 )
                 print("Model response received for scenario", idx + 1)
         except Exception as exc:  # pragma: no cover - network failure
@@ -237,6 +244,7 @@ async def evaluate_random_scenarios(
     cards_path: str,
     *,
     seed: int = 0,
+    cache: Optional[LLMCache] = None,
 ) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -255,6 +263,7 @@ async def evaluate_random_scenarios(
                 values,
                 seed=seed,
                 semaphore=semaphore,
+                cache=cache,
             )
         )
         for idx in range(n)
@@ -275,9 +284,16 @@ def main() -> None:
     parser.add_argument(
         "--seed", type=int, default=0, help="Random seed controlling sampling"
     )
+    parser.add_argument(
+        "--cache",
+        help="Path to JSONL cache file for LLM responses",
+    )
     args = parser.parse_args()
 
-    asyncio.run(evaluate_random_scenarios(args.n, args.cards, seed=args.seed))
+    cache = LLMCache(args.cache) if args.cache else None
+    asyncio.run(
+        evaluate_random_scenarios(args.n, args.cards, seed=args.seed, cache=cache)
+    )
 
 
 if __name__ == "__main__":
