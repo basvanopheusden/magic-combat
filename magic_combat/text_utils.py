@@ -28,4 +28,10 @@ def summarize_creature(
         color_info = f" [{joined}]"
     elif include_colors:
         color_info = " [Colorless]"
-    return f"{creature}{color_info}{extras} -- {describe_abilities(creature)}"
+
+    stats = f"{creature.name}"
+    if creature.mana_cost:
+        stats += f" {creature.mana_cost}"
+    stats += f" ({creature.power}/{creature.toughness})"
+
+    return f"{stats}{color_info}{extras} -- {describe_abilities(creature)}"

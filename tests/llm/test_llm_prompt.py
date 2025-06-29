@@ -65,6 +65,20 @@ def test_create_prompt_contents():
     assert "Guard" in prompt
 
 
+def test_prompt_includes_mana_cost():
+    atk = CombatCreature("Zombie", 3, 3, "A", mana_cost="{2}{B}")
+    blk = CombatCreature("Cleric", 1, 4, "B", mana_cost="{1}{W}")
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=20, creatures=[blk]),
+        }
+    )
+    prompt = create_llm_prompt(state, [atk], [blk])
+    assert "{2}{B}" in prompt
+    assert "{1}{W}" in prompt
+
+
 def test_prompt_includes_colors_when_relevant():
     """CR 702.13b: Intimidate checks color of potential blockers."""
     atk = CombatCreature("Rogue", 2, 2, "A", intimidate=True, colors={Color.GREEN})
