@@ -328,7 +328,7 @@ def _compute_combat_results(
     Tuple[Optional[int], ...],
     Tuple[int, int, int, float],
 ]:
-    """Return block assignments and combat outcome for ``attackers`` and ``blockers``."""
+    """Return block assignments and outcome for ``attackers`` and ``blockers``."""
 
     simple_assignment, optimal_assignment = _determine_block_assignments(
         attackers,
