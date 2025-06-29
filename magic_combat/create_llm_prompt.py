@@ -20,7 +20,7 @@ def summarize_creature(creature: CombatCreature) -> str:
         extra.append(f"{creature.damage_marked} dmg")
     if creature.tapped:
         extra.append("tapped")
-    extras = f" [{' ,'.join(extra)}]" if extra else ""
+    extras = f" [{', '.join(extra)}]" if extra else ""
     return f"{creature}{extras} -- {describe_abilities(creature)}"
 
 
