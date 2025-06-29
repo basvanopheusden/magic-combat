@@ -16,7 +16,7 @@ from magic_combat import load_cards
 from magic_combat.constants import SNAPSHOT_VERSION
 
 
-def _dump_snapshot(data: List[dict], path: Path) -> None:
+def _dump_snapshot(data: List[dict[str, object]], path: Path) -> None:
     """Write snapshot data to ``path`` in JSON format."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as fh:
@@ -47,7 +47,7 @@ def main() -> None:
     cards = load_cards(args.cards)
     values = build_value_map(cards)
 
-    snapshots: List[dict] = []
+    snapshots: List[dict[str, object]] = []
     for i in range(args.num):
         seed = args.seed + i
         res = generate_random_scenario(cards, values, seed=seed)

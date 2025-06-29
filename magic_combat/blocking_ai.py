@@ -181,8 +181,10 @@ def decide_optimal_blocks(
             options.append(list(range(len(attackers))) + [None])
 
     best: Optional[Tuple[Optional[int], ...]] = None
-    best_score: Optional[tuple] = None
-    best_score_numeric: Optional[tuple] = None
+    best_score: Optional[
+        Tuple[int, float, int, int, int, int, Tuple[Optional[int], ...]]
+    ] = None
+    best_score_numeric: Optional[Tuple[int, float, int, int, int, int]] = None
     optimal_count = 0
 
     for assignment in product(*options):

@@ -64,33 +64,6 @@ def blocker_value(blocker: CombatCreature) -> float:
     return blocker.power + blocker.toughness + positive / 2
 
 
-def _select_kill_indices(
-    power: int, costs: List[float], values: List[float]
-) -> List[int]:
-    """Return indices of blockers that should be destroyed first."""
-
-    dp: List[Tuple[int, float, List[int]]] = [(0, 0.0, []) for _ in range(power + 1)]
-    for i, cost in enumerate(costs):
-        if cost == float("inf") or cost > power:
-            continue
-        int_cost = int(cost)
-        for w in range(power, int_cost - 1, -1):
-            prev_cnt, prev_val, prev_set = dp[w - int_cost]
-            cand_cnt = prev_cnt + 1
-            cand_val = prev_val + values[i]
-            curr_cnt, curr_val, _ = dp[w]
-            if cand_cnt > curr_cnt or (cand_cnt == curr_cnt and cand_val > curr_val):
-                dp[w] = (cand_cnt, cand_val, prev_set + [i])
-
-    best = dp[0]
-    for w in range(1, power + 1):
-        cnt, val, _ = dp[w]
-        if cnt > best[0] or (cnt == best[0] and val > best[1]):
-            best = dp[w]
-
-    return best[2]
-
-
 def score_combat_result(
     result: "CombatResult",
     attacker_player: str,
