@@ -13,7 +13,21 @@ def main():
             toughness=2,
             controller="Player A",
             double_strike=True,
-        )
+        ),
+        CombatCreature(
+            name="Attacker 2",
+            power=3,
+            toughness=3,
+            controller="Player A",
+            flying=True,
+        ),
+        CombatCreature(
+            name="Attacker 3",
+            power=1,
+            toughness=1,
+            controller="Player A",
+            trample=True,
+        ),
     ]
     blockers = [
         CombatCreature(
@@ -35,6 +49,7 @@ def main():
             "Player B": PlayerState(life=20, creatures=blockers, poison=0),
         }
     )
+    print(game_state)
     decide_simple_blocks(
         attackers=attackers,
         blockers=blockers,
@@ -43,10 +58,9 @@ def main():
     )
     for attacker in attackers:
         print("----")
-        print(summarize_creature(attacker))
+        print("attacker:", summarize_creature(attacker))
         for creature in attacker.blocked_by:
-            print(summarize_creature(creature))
-    print(game_state)
+            print("\tblocked by:", summarize_creature(creature))
 
 
 if __name__ == "__main__":
