@@ -5,6 +5,7 @@ from magic_combat import GameState
 from magic_combat import PlayerState
 from magic_combat.create_llm_prompt import create_llm_prompt
 from magic_combat.create_llm_prompt import parse_block_assignments
+from magic_combat.llm_cache import LLMCache
 from magic_combat.llm_cache import MockLLMCache
 from scripts.evaluate_random_combat_scenarios import call_openai_model
 
@@ -126,3 +127,19 @@ def test_llm_cache_miss(monkeypatch):
     assert res4 != ""
     # Four distinct entries due to parameter differences
     assert len(cache.entries) == 4
+
+
+def test_llm_cache_file_hit(monkeypatch, tmp_path):
+    dummy = DummyClient()
+    monkeypatch.setattr("openai.AsyncOpenAI", lambda: dummy)
+    cache_path = tmp_path / "cache.jsonl"
+    cache = LLMCache(str(cache_path))
+    res1 = asyncio.run(
+        call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache)
+    )
+    cache2 = LLMCache(str(cache_path))
+    res2 = asyncio.run(
+        call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache2)
+    )
+    assert res1 == res2
+    assert dummy.chat.completions.calls == 1
