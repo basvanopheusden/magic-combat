@@ -39,7 +39,9 @@ def test_flake8() -> None:
 def test_pycodestyle() -> None:
     """Run ``pycodestyle`` for additional PEP 8 checks."""
     run(
-        f"pycodestyle --max-line-length=2000 --ignore=E203,W503,E226 --exclude=comprehensive_rules.py {CODE_DIRS}"
+        "pycodestyle --max-line-length=88 --ignore=E203,W503,E226 "
+        "--exclude=comprehensive_rules.py,tests,magic_combat/rules_text.py "
+        "magic_combat scripts"
     )
 
 

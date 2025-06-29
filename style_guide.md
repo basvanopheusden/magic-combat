@@ -5,7 +5,7 @@ requirements to ensure consistency across the code base.
 
 ## General Formatting
 - Indent using **4 spaces**, never tabs.
-- Limit lines to **79 characters**.
+- Limit lines to **88 characters**.
 - Use meaningful variable and function names.
 - Include module, class and function docstrings using the **Google** style.
 

@@ -44,7 +44,9 @@ def create_llm_prompt(
     rules_text = get_relevant_rules_text(list(attackers) + list(blockers))
 
     prompt = f"""You are a component of a Magic: The Gathering playing AI.
-Your task is to decide the best blocks for the defending player given a set of attackers, a set of candidate blockers, and the current game state.
+Your task is to decide the best blocks for the defending player
+given a set of attackers, a set of candidate blockers, and the current
+game state.
 
 The current game state is as follows:
 {game_state}
@@ -57,12 +59,15 @@ The blockers are:
 
 {rules_text}
 
-Please analyze the combat situation and provide a detailed explanation of the best blocking strategy for the defending player.
+Please analyze the combat situation and provide a detailed explanation
+of the best blocking strategy for the defending player.
 The criteria for the best blocking strategy are as follows:
 1. Avoid losing the game.
 2. Maximize the difference in total creature value destroyed (attacker minus defender).
-Value is defined as the sum of the power and toughness of the creatures plus 0.5 times the number of abilities they have.
-Skip defender in this calculation (it's worth 0), and count double strike twice (it's worth 1 instead of 0.5).
+Value is defined as the sum of the power and toughness of the creatures
+plus 0.5 times the number of abilities they have.
+Skip defender in this calculation (it's worth 0), and count double
+strike twice (it's worth 1 instead of 0.5).
 3. Maximize the difference in number of creatures destroyed.
 4. Maximize the total mana value of creatures lost.
 5. Minimize life lost.
@@ -79,7 +84,9 @@ line below the heading. For example:
 - Wall of Omens -> Llanowar Elves
 Follow this format exactly with no additional commentary or formatting inside
 the block assignments section.
-Finally, add a markdown section called "Combat Outcome", which contains the life total of both players after combat, any creatures that were destroyed, and any poison counters gained.
+Finally, add a markdown section called "Combat Outcome", which contains
+the life total of both players after combat, any creatures that were
+destroyed, and any poison counters gained.
 Do so in a format like this:
 #Combat Outcome
 Player 1 Life: 20
