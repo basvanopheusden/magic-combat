@@ -354,8 +354,11 @@ def decide_simple_blocks(
     blockers: List[CombatCreature],
     game_state: Optional[GameState] = None,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
+    max_iterations: int = int(1e6),
 ) -> None:
     """Assign blocks using a two-stage heuristic search."""
+
+    counter = IterationCounter(max_iterations)
 
     _reset_block_assignments(attackers, blockers)
 

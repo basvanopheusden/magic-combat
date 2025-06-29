@@ -1,7 +1,7 @@
 class IterationCounter:
     """Track the number of simulated combats and enforce a maximum."""
 
-    def __init__(self, max_iterations: int = int(1e6)) -> None:
+    def __init__(self, max_iterations: int = int(1e5)) -> None:
         self.max_iterations = max_iterations
         self.count = 0
 

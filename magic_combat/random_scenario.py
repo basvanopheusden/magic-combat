@@ -239,6 +239,7 @@ def _determine_block_assignments(
             simple_blk,
             game_state=simple_state,
             provoke_map=provoke_map,
+            max_iterations=max_iterations,
         )
         sim_check = CombatSimulator(simple_atk, simple_blk, game_state=simple_state)
         sim_check.validate_blocking()

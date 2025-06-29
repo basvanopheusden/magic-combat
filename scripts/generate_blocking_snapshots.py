@@ -54,15 +54,15 @@ def main() -> None:
         optimal_assignment: List[Optional[int]] = list(res[5])
         simple_assignment = list(res[6]) if res[6] is not None else None
         combat_value = list(res[7])
-        snapshots.append(
-            {
+        snapshot = {
                 "version": SNAPSHOT_VERSION,
                 "seed": seed,
                 "optimal_assignment": optimal_assignment,
                 "simple_assignment": simple_assignment,
                 "combat_value": combat_value,
             }
-        )
+        snapshots.append(snapshot)
+        print(snapshot)
 
     _dump_snapshot(snapshots, Path(args.output))
 
