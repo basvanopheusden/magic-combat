@@ -13,6 +13,7 @@ from .creature import Color
 from .creature import CombatCreature
 from .damage import DamageAssignmentStrategy
 from .damage import OptimalDamageStrategy
+from .exceptions import CardDataError
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
 from .exceptions import UnparsableLLMOutputError
@@ -76,6 +77,7 @@ __all__ = [
     "apply_blocker_bushido",
     "IllegalBlockError",
     "InvalidBlockScenarioError",
+    "CardDataError",
     "UnparsableLLMOutputError",
     "parse_block_assignments",
     "create_llm_prompt",

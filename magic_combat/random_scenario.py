@@ -19,6 +19,7 @@ from .blocking_ai import decide_simple_blocks
 from .creature import CombatCreature
 from .damage import blocker_value
 from .damage import score_combat_result
+from .exceptions import CardDataError
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
 from .exceptions import MagicCombatError
@@ -49,7 +50,7 @@ def ensure_cards(path: str) -> list[dict[str, Any]]:
         try:
             cards = fetch_french_vanilla_cards()
         except Exception as exc:  # pragma: no cover - network failure
-            raise SystemExit(f"Failed to download card data: {exc}")
+            raise CardDataError(f"Failed to download card data: {exc}") from exc
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         save_cards(cards, path)
     return load_cards(path)
@@ -65,7 +66,7 @@ def build_value_map(cards: Iterable[dict[str, Any]]) -> Dict[int, float]:
             continue
         values[idx] = blocker_value(creature)
     if not values:
-        raise ValueError("No usable creatures found in card data")
+        raise CardDataError("No usable creatures found in card data")
     return values
 
 
@@ -81,7 +82,7 @@ def sample_balanced(
     rng = rng if rng is not None else random.Random()
     idxs = list(values.keys())
     if n_att + n_blk > len(idxs):
-        raise ValueError("Not enough cards to sample from")
+        raise CardDataError("Not enough cards to sample from")
 
     best: Tuple[List[int], List[int]] | None = None
     best_diff = float("inf")
