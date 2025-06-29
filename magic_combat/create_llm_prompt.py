@@ -94,8 +94,12 @@ strike twice (it's worth 1 instead of 0.5).
 6. Minimize poison counters gained.
 Each criterion should only be considered after the previous one resulted in a tie.
 
-Please provide your analysis followed by **exactly two** markdown sections.
-The first section must be called "Block Assignments". Each line in this section
+Please provide your analysis in **exactly three** markdown sections.
+The first section must be called "Analysis" and should contain a detailed explanation
+of the scenario, relevant factors in your decision-making, and the rationale
+for your blocking choices. Make sure to touch on any relevant abilities of the
+creatures involved, such as flying, trample, or protection.
+The second section must be called "Block Assignments". Each line in this section
 should contain the name of the blocking creature, an arrow ("->"), and the name
 of the attacker it blocks. If no blocks can be made, write ``None`` on a single
 line below the heading. For example:
