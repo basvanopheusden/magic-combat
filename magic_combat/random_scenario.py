@@ -350,6 +350,71 @@ def _compute_combat_results(
     return simple_assignment, optimal_assignment, combat_value
 
 
+def _attempt_random_scenario(
+    cards: list[dict[str, Any]],
+    values: Dict[int, float],
+    stats: Dict[str, object] | None,
+    generated_cards: bool,
+    rng: random.Random,
+    np_rng: np.random.Generator,
+    max_iterations: int,
+    unique_optimal: bool,
+) -> Tuple[
+    GameState,
+    list[CombatCreature],
+    list[CombatCreature],
+    dict[CombatCreature, CombatCreature],
+    dict[CombatCreature, CombatCreature],
+    Tuple[Optional[int], ...],
+    Tuple[Optional[int], ...] | None,
+    Tuple[int, int, int, float],
+]:
+    """Attempt to create a single random combat scenario."""
+
+    attackers, blockers = _sample_creatures(
+        cards,
+        values,
+        stats,
+        generated_cards=generated_cards,
+        rng=rng,
+        np_rng=np_rng,
+    )
+
+    state = _build_gamestate(attackers, blockers, rng)
+    provoke_map, mentor_map = _generate_interactions(attackers, blockers, rng)
+
+    (
+        simple_assignment,
+        optimal_assignment,
+        combat_value,
+    ) = _compute_combat_results(
+        attackers,
+        blockers,
+        state,
+        provoke_map,
+        mentor_map,
+        max_iterations=max_iterations,
+        unique_optimal=unique_optimal,
+    )
+
+    start_state = copy.deepcopy(state)
+    for atk in attackers:
+        atk.blocked_by.clear()
+    for blk in blockers:
+        blk.blocking = None
+
+    return (
+        start_state,
+        attackers,
+        blockers,
+        provoke_map,
+        mentor_map,
+        optimal_assignment,
+        simple_assignment,
+        combat_value,
+    )
+
+
 def generate_random_scenario(
     cards: list[dict[str, Any]],
     values: Dict[int, float],
@@ -391,49 +456,15 @@ def generate_random_scenario(
         if attempts > 100:
             raise RuntimeError("Unable to generate valid scenario")
         try:
-            attackers, blockers = _sample_creatures(
+            return _attempt_random_scenario(
                 cards,
                 values,
                 stats,
-                generated_cards=generated_cards,
-                rng=rng,
-                np_rng=np_rng,
-            )
-        except ValueError:
-            continue
-
-        state = _build_gamestate(attackers, blockers, rng)
-        provoke_map, mentor_map = _generate_interactions(attackers, blockers, rng)
-
-        try:
-            (
-                simple_assignment,
-                optimal_assignment,
-                combat_value,
-            ) = _compute_combat_results(
-                attackers,
-                blockers,
-                state,
-                provoke_map,
-                mentor_map,
-                max_iterations=max_iterations,
-                unique_optimal=unique_optimal,
+                generated_cards,
+                rng,
+                np_rng,
+                max_iterations,
+                unique_optimal,
             )
         except (ValueError, RuntimeError):
             continue
-
-        start_state = copy.deepcopy(state)
-        for atk in attackers:
-            atk.blocked_by.clear()
-        for blk in blockers:
-            blk.blocking = None
-        return (
-            start_state,
-            attackers,
-            blockers,
-            provoke_map,
-            mentor_map,
-            optimal_assignment,
-            simple_assignment,
-            combat_value,
-        )

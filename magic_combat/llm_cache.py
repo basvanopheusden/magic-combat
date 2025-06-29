@@ -11,7 +11,7 @@ class LLMCache:
         self.path = Path(path)
         self.entries: list[dict[str, object]] = []
         if self.path.exists():
-            with self.path.open() as f:
+            with self.path.open(encoding="utf8") as f:
                 for line in f:
                     line = line.strip()
                     if line:
@@ -46,7 +46,7 @@ class LLMCache:
             "response": response,
         }
         self.entries.append(entry)
-        with self.path.open("a") as f:
+        with self.path.open("a", encoding="utf8") as f:
             f.write(json.dumps(entry) + "\n")
 
 
