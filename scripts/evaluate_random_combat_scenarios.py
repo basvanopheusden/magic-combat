@@ -15,12 +15,12 @@ from magic_combat import generate_random_scenario
 from magic_combat import load_cards
 from magic_combat.create_llm_prompt import create_llm_prompt
 from magic_combat.create_llm_prompt import parse_block_assignments
-from magic_combat.create_llm_prompt import summarize_creature
 from magic_combat.creature import CombatCreature
 from magic_combat.exceptions import UnparsableLLMOutputError
 from magic_combat.gamestate import GameState
 from magic_combat.gamestate import PlayerState
 from magic_combat.llm_cache import LLMCache
+from magic_combat.text_utils import summarize_creature
 
 
 def _simulate_assignment(
