@@ -19,6 +19,8 @@ from .blocking_ai import decide_simple_blocks
 from .creature import CombatCreature
 from .damage import blocker_value
 from .damage import score_combat_result
+from .exceptions import IllegalBlockError
+from .exceptions import InvalidBlockScenarioError
 from .gamestate import GameState
 from .gamestate import PlayerState
 from .random_creature import assign_random_counters
@@ -245,7 +247,7 @@ def _determine_block_assignments(
         sim_check.validate_blocking()
         atk_map = {id(a): i for i, a in enumerate(simple_atk)}
         simple_assignment = tuple(atk_map.get(id(b.blocking), None) for b in simple_blk)
-    except ValueError:
+    except IllegalBlockError:
         simple_assignment = None
 
     _, opt_count = decide_optimal_blocks(
@@ -256,13 +258,13 @@ def _determine_block_assignments(
         max_iterations=max_iterations,
     )
     if unique_optimal and opt_count != 1:
-        raise RuntimeError("non unique optimal blocks")
+        raise InvalidBlockScenarioError("non unique optimal blocks")
 
     opt_map = {id(a): i for i, a in enumerate(attackers)}
     optimal_assignment = tuple(opt_map.get(id(b.blocking), None) for b in blockers)
 
     if simple_assignment is not None and simple_assignment == optimal_assignment:
-        raise RuntimeError("simple blocks equal optimal")
+        raise InvalidBlockScenarioError("simple blocks equal optimal")
 
     return simple_assignment, optimal_assignment
 
@@ -466,5 +468,5 @@ def generate_random_scenario(
                 max_iterations,
                 unique_optimal,
             )
-        except (ValueError, RuntimeError):
+        except (IllegalBlockError, InvalidBlockScenarioError):
             continue

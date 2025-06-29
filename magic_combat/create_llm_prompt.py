@@ -145,5 +145,7 @@ def parse_block_assignments(
         else:
             invalid = True
     if not seen_assignment:
-        raise ValueError("No block assignments found")
+        from .exceptions import UnparsableLLMOutputError
+
+        raise UnparsableLLMOutputError("No block assignments found")
     return pairs, invalid

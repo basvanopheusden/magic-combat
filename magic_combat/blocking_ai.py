@@ -12,6 +12,7 @@ from .block_utils import evaluate_block_assignment
 from .creature import CombatCreature
 from .damage import blocker_value
 from .damage import score_combat_result
+from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .limits import IterationCounter
 from .simulator import CombatResult
@@ -90,7 +91,7 @@ def _best_value_trade_assignment(
                 provoke_map,
                 counter,
             )
-        except ValueError:
+        except IllegalBlockError:
             continue
 
         # Reject any blocks that fail to at least trade.
@@ -190,7 +191,7 @@ def _best_survival_assignment(
                 provoke_map,
                 counter,
             )
-        except ValueError:
+        except IllegalBlockError:
             continue
 
         if score[0] != 0:
