@@ -76,7 +76,6 @@ async def call_openai_model_single_prompt(
     response = await client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=1500,
         temperature=temperature,
     )
     raw = response.choices[0].message.content or ""
@@ -163,7 +162,9 @@ async def _evaluate_single_scenario(
         try:
             async with semaphore:
                 print("Calling OpenAI model for scenario", idx + 1)
-                llm_response = await call_openai_model([prompt], seed=seed + idx)
+                llm_response = await call_openai_model(
+                    [prompt], seed=seed + idx, model="o3-2025-04-16", temperature=1.0
+                )
                 print("Model response received for scenario", idx + 1)
         except Exception as exc:  # pragma: no cover - network failure
             print(f"Failed to query model: {exc}")

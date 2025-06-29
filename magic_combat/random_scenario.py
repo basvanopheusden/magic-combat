@@ -21,6 +21,7 @@ from .damage import blocker_value
 from .damage import score_combat_result
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
+from .exceptions import MagicCombatError
 from .gamestate import GameState
 from .gamestate import PlayerState
 from .random_creature import assign_random_counters
@@ -103,8 +104,8 @@ def sample_balanced(
             return att_idx, blk_idx
 
     if best is None:
-        raise ValueError("Failed to sample creatures")
-    raise ValueError("Unable to generate balanced creature sets")
+        raise MagicCombatError("Failed to sample creatures")
+    raise MagicCombatError("Unable to generate balanced creature sets")
 
 
 def generate_balanced_creatures(
@@ -468,5 +469,5 @@ def generate_random_scenario(
                 max_iterations,
                 unique_optimal,
             )
-        except (IllegalBlockError, InvalidBlockScenarioError):
+        except (MagicCombatError, IllegalBlockError, InvalidBlockScenarioError):
             continue
