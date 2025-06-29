@@ -68,7 +68,7 @@ def _value_for_assignment(
         mentor_map,
     )
     score = result.score("A", "B")
-    return (score[4], score[5], score[2], score[1])
+    return score[4], score[5], score[2], score[1]
 
 
 def _format_value(value: tuple[float, float, float, float]) -> str:
@@ -288,14 +288,34 @@ async def _evaluate_single_scenario(
         else:
             simple_value = None
             simple_result = None
-        opt_result = _simulate_assignment(
-            attackers,
-            blockers,
-            list(opt_map),
-            state,
-            provoke_map,
-            mentor_map,
-        )
+        try:
+            opt_result = _simulate_assignment(
+                attackers,
+                blockers,
+                list(opt_map),
+                state,
+                provoke_map,
+                mentor_map,
+            )
+        except IllegalBlockError as exc:
+            print(f"Error evaluating optimal assignment: {exc}")
+
+            print("Initial game state:")
+            all_creatures = state.players["A"].creatures + state.players["B"].creatures
+            include_colors = any(
+                c.fear or c.intimidate or c.protection_colors for c in all_creatures
+            )
+            _print_player_state(
+                "Player A", state.players["A"], include_colors=include_colors
+            )
+            _print_player_state(
+                "Player B", state.players["B"], include_colors=include_colors
+            )
+            print("\nOptimal blocks:", optimal)
+            print("Optimal value:", _format_value(opt_value))
+
+            raise exc
+
         diff: tuple[float, float, float, float] = (
             llm_value[0] - opt_value[0],
             llm_value[1] - opt_value[1],
