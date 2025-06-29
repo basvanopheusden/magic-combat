@@ -7,7 +7,7 @@ from typing import Optional
 import numpy as np
 import openai
 
-from magic_combat import CombatResult
+from magic_combat import CombatResult, IllegalBlockError
 from magic_combat import CombatSimulator
 from magic_combat import build_value_map
 from magic_combat import compute_card_statistics
@@ -263,7 +263,7 @@ async def _evaluate_single_scenario(
                 provoke_map,
                 mentor_map,
             )
-        except ValueError as exc:
+        except IllegalBlockError as exc:
             print(f"Error evaluating LLM assignment: {exc}")
             llm_value = (0, 0, 0, float("inf"))
             llm_result = CombatResult({}, [], {})

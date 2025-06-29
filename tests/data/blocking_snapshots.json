@@ -1,0 +1,184 @@
+[
+  {
+    "version": "2",
+    "seed": 42,
+    "optimal_assignment": [
+      null,
+      null,
+      null,
+      1
+    ],
+    "simple_assignment": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "combat_value": [
+      5,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 43,
+    "optimal_assignment": [
+      0,
+      0
+    ],
+    "simple_assignment": [
+      null,
+      null
+    ],
+    "combat_value": [
+      3,
+      0,
+      1,
+      3.5
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 44,
+    "optimal_assignment": [
+      0,
+      0
+    ],
+    "simple_assignment": [
+      null,
+      0
+    ],
+    "combat_value": [
+      4,
+      2,
+      -1,
+      -5.0
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 45,
+    "optimal_assignment": [
+      null,
+      1,
+      1
+    ],
+    "simple_assignment": [
+      null,
+      null,
+      null
+    ],
+    "combat_value": [
+      3,
+      0,
+      0,
+      -2.5
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 46,
+    "optimal_assignment": [
+      0,
+      0,
+      0
+    ],
+    "simple_assignment": [
+      null,
+      null,
+      1
+    ],
+    "combat_value": [
+      5,
+      2,
+      1,
+      1.0
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 47,
+    "optimal_assignment": [
+      0
+    ],
+    "simple_assignment": null,
+    "combat_value": [
+      2,
+      2,
+      -1,
+      -4.5
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 48,
+    "optimal_assignment": [
+      0,
+      0
+    ],
+    "simple_assignment": [
+      0,
+      null
+    ],
+    "combat_value": [
+      0,
+      0,
+      -1,
+      -4.0
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 49,
+    "optimal_assignment": [
+      0
+    ],
+    "simple_assignment": [
+      null
+    ],
+    "combat_value": [
+      0,
+      0,
+      0,
+      -1.0
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 50,
+    "optimal_assignment": [
+      0
+    ],
+    "simple_assignment": [
+      null
+    ],
+    "combat_value": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "version": "2",
+    "seed": 51,
+    "optimal_assignment": [
+      null,
+      3,
+      2
+    ],
+    "simple_assignment": [
+      null,
+      2,
+      null
+    ],
+    "combat_value": [
+      4,
+      2,
+      -2,
+      -12.0
+    ]
+  }
+]
