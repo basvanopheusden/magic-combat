@@ -412,3 +412,18 @@ def test_ai_optimal_count_ignores_tiebreaker():
     )
     _, opt = decide_optimal_blocks([a1, a2], [b1, b2], game_state=state)
     assert opt == 2
+
+
+def test_ai_ignores_tapped_blocker():
+    """CR 509.1a: The chosen creatures must be untapped."""
+
+    atk = CombatCreature("Bear", 2, 2, "A")
+    blk = CombatCreature("Exhausted", 2, 2, "B", tapped=True)
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk]),
+            "B": PlayerState(life=1, creatures=[blk]),
+        }
+    )
+    decide_optimal_blocks([atk], [blk], game_state=state)
+    assert blk.blocking is None
