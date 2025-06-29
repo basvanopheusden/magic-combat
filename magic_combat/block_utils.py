@@ -9,6 +9,7 @@ from typing import Tuple
 from .creature import CombatCreature
 from .damage import OptimalDamageStrategy
 from .damage import score_combat_result
+from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .limits import IterationCounter
 from .simulator import CombatSimulator
@@ -50,7 +51,7 @@ def evaluate_block_assignment(
     try:
         counter.increment()
         result = sim.simulate()
-    except ValueError:
+    except IllegalBlockError:
         ass_key = tuple(
             len(attackers) if choice is None else choice for choice in assignment
         )

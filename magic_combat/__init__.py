@@ -10,6 +10,9 @@ from .creature import Color
 from .creature import CombatCreature
 from .damage import DamageAssignmentStrategy
 from .damage import OptimalDamageStrategy
+from .exceptions import IllegalBlockError
+from .exceptions import InvalidBlockScenarioError
+from .exceptions import UnparsableLLMOutputError
 from .gamestate import GameState
 from .gamestate import PlayerState
 from .gamestate import has_player_lost
@@ -74,6 +77,9 @@ __all__ = [
     "damage_player",
     "apply_attacker_blocking_bonuses",
     "apply_blocker_bushido",
+    "IllegalBlockError",
+    "InvalidBlockScenarioError",
+    "UnparsableLLMOutputError",
     "parse_block_assignments",
     "create_llm_prompt",
     "LLMCache",

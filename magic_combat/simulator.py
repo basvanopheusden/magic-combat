@@ -11,6 +11,7 @@ from .combat_utils import damage_player
 from .creature import CombatCreature
 from .damage import DamageAssignmentStrategy
 from .damage import OptimalDamageStrategy
+from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .gamestate import has_player_lost
 from .utils import can_block
@@ -90,7 +91,7 @@ class CombatSimulator:
 
         for attacker in attackers:
             if attacker.defender:
-                raise ValueError("Defender creatures can't attack")
+                raise IllegalBlockError("Defender creatures can't attack")
 
     def _get_defending_player(self) -> str:
         """Return the name of the defending player."""
@@ -117,32 +118,32 @@ class CombatSimulator:
         """Validate basic blocker assignments and duplicates."""
         for blocker in self.defenders:
             if blocker.blocking is not None and blocker.blocking not in self.attackers:
-                raise ValueError("Blocker assigned to unknown attacker")
+                raise IllegalBlockError("Blocker assigned to unknown attacker")
 
         for attacker in self.attackers:
             for blocker in attacker.blocked_by:
                 if blocker.blocking is not attacker:
-                    raise ValueError("Inconsistent blocking assignments")
+                    raise IllegalBlockError("Inconsistent blocking assignments")
 
         for attacker in self.attackers:
             seen_ids: set[int] = set()
             for blocker in attacker.blocked_by:
                 bid = id(blocker)
                 if bid in seen_ids:
-                    raise ValueError("Blocker listed multiple times")
+                    raise IllegalBlockError("Blocker listed multiple times")
                 seen_ids.add(bid)
 
     def _check_unblockable(self) -> None:
         """Ensure unblockable creatures haven't been blocked."""
         for attacker in self.attackers:
             if attacker.unblockable and attacker.blocked_by:
-                raise ValueError("Unblockable creature was blocked")
+                raise IllegalBlockError("Unblockable creature was blocked")
 
     def _check_menace(self) -> None:
         """Validate menace blocking requirements."""
         for attacker in self.attackers:
             if attacker.menace and 0 < len(attacker.blocked_by) < 2:
-                raise ValueError("Menace creature blocked by fewer than two")
+                raise IllegalBlockError("Menace creature blocked by fewer than two")
 
     def _check_evasion(self) -> None:
         """Check evasion abilities like flying, shadow, and skulk."""
@@ -151,29 +152,31 @@ class CombatSimulator:
         for attacker in self.attackers:
             for blocker in attacker.blocked_by:
                 if not can_block(attacker, blocker):
-                    raise ValueError("Illegal block according to keyword abilities")
+                    raise IllegalBlockError(
+                        "Illegal block according to keyword abilities"
+                    )
 
     def _check_provoke(self) -> None:
         """Verify provoke targets are blocking as required."""
         for attacker, target in self.provoke_map.items():
             if attacker not in self.attackers:
-                raise ValueError("Provoke attacker not in combat")
+                raise IllegalBlockError("Provoke attacker not in combat")
             if target not in self.defenders:
-                raise ValueError("Provoke target not defending creature")
+                raise IllegalBlockError("Provoke target not defending creature")
             if can_block(attacker, target) and target.blocking is not attacker:
-                raise ValueError("Provoke target failed to block")
+                raise IllegalBlockError("Provoke target failed to block")
 
     def _check_mentor(self) -> None:
         """Validate mentor targets before applying counters."""
         for mentor, target in self.mentor_map.items():
             if mentor not in self.attackers:
-                raise ValueError("Mentor creature not attacking")
+                raise IllegalBlockError("Mentor creature not attacking")
             if not mentor.mentor:
-                raise ValueError("Mentor map key lacks mentor ability")
+                raise IllegalBlockError("Mentor map key lacks mentor ability")
             if target not in self.attackers:
-                raise ValueError("Mentor target not attacking")
+                raise IllegalBlockError("Mentor target not attacking")
             if target.effective_power() >= mentor.effective_power():
-                raise ValueError("Mentor target not lower power")
+                raise IllegalBlockError("Mentor target not lower power")
 
     def validate_blocking(self):
         """Ensure blocking assignments are legal for this simplified simulator."""

@@ -16,6 +16,7 @@ from magic_combat.create_llm_prompt import create_llm_prompt
 from magic_combat.create_llm_prompt import parse_block_assignments
 from magic_combat.creature import CombatCreature
 from magic_combat.damage import score_combat_result
+from magic_combat.exceptions import UnparsableLLMOutputError
 from magic_combat.gamestate import GameState
 from magic_combat.llm_cache import LLMCache
 
@@ -169,7 +170,7 @@ async def _evaluate_single_scenario(
             continue
         try:
             parsed, invalid = parse_block_assignments(llm_response, blockers, attackers)
-        except ValueError:
+        except UnparsableLLMOutputError:
             attempts += 1
             if attempts > max_attempts:
                 print("Unparseable response; giving up")
