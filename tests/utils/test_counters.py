@@ -94,7 +94,6 @@ def test_persist_returns_clean_and_untapped():
     atk = CombatCreature("Crusher", 5, 5, "A")
     blk = CombatCreature("Spirit", 3, 3, "B", persist=True)
     blk.plus1_counters = 2
-    blk.tapped = True
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     sim.simulate()

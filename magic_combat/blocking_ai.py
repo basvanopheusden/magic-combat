@@ -53,6 +53,9 @@ def _best_value_trade_assignment(
 
     options: list[list[int | None]] = []
     for blk in blockers:
+        if blk.tapped:
+            options.append([None])
+            continue
         forced = provoked.get(blk)
         if forced is not None and can_block(forced, blk):
             options.append([attackers.index(forced)])
@@ -149,6 +152,9 @@ def _best_survival_assignment(
     options: list[list[int | None]] = []
     for idx in remain_indices:
         blk = blockers[idx]
+        if blk.tapped:
+            options.append([None])
+            continue
         forced = provoked.get(blk)
         if forced is not None and can_block(forced, blk):
             options.append([attackers.index(forced)])
@@ -319,6 +325,9 @@ def decide_optimal_blocks(
 
     options: List[List[int | None]] = []
     for blk in blockers:
+        if blk.tapped:
+            options.append([None])
+            continue
         forced = provoked.get(blk)
         if forced is not None and can_block(forced, blk):
             options.append([attackers.index(forced)])

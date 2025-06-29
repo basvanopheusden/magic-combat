@@ -220,6 +220,13 @@ class CombatSimulator:
             if can_block(attacker, target) and target.blocking is not attacker:
                 raise IllegalBlockError("Provoke target failed to block")
 
+    def _check_tapped_blockers(self) -> None:
+        """Ensure no tapped creatures are declared as blockers."""
+
+        for blocker in self.defenders:
+            if blocker.blocking is not None and blocker.tapped:
+                raise IllegalBlockError("Tapped creature can't block")
+
     def _check_mentor(self) -> None:
         """Validate mentor targets before applying counters."""
         for mentor, target in self.mentor_map.items():
@@ -238,6 +245,7 @@ class CombatSimulator:
         self._check_unblockable()
         self._check_menace()
         self._check_evasion()
+        self._check_tapped_blockers()
         self._check_provoke()
 
     def apply_precombat_triggers(self):
