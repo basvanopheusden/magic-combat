@@ -13,6 +13,7 @@ from .damage import optimal_damage_order
 from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .limits import IterationCounter
+from .simulator import CombatResult
 from .simulator import CombatSimulator
 
 
@@ -22,11 +23,8 @@ def evaluate_block_assignment(
     counter: IterationCounter,
     provoke_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
     damage_order: Optional[dict[CombatCreature, tuple[CombatCreature, ...]]] = None,
-) -> Tuple[
-    Tuple[int, float, int, int, int, int, Tuple[Optional[int], ...]],
-    Optional[GameState],
-]:
-    """Simulate combat for ``assignment`` and return the score and new state."""
+) -> Tuple[Optional[CombatResult], Optional[GameState]]:
+    """Simulate combat for ``assignment`` and return the result and new state."""
     orig_atks = list(state.players["A"].creatures)
     orig_blks = list(state.players["B"].creatures)
     state_copy = deepcopy(state)
@@ -74,21 +72,6 @@ def evaluate_block_assignment(
         counter.increment()
         result = sim.simulate()
     except IllegalBlockError:
-        ass_key = tuple(
-            len(atks) if choice is None else choice for choice in assignment
-        )
-        return (
-            1,
-            float("inf"),
-            -len(atks) - len(blks),
-            -(10**9),
-            10**9,
-            10**9,
-            ass_key,
-        ), None
+        return None, None
 
-    defender = "B"
-    attacker_player = "A"
-    ass_key = tuple(len(atks) if choice is None else choice for choice in assignment)
-    score = result.score(attacker_player, defender) + (ass_key,)
-    return score, sim.game_state
+    return result, sim.game_state
