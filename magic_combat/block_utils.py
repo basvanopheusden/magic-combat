@@ -5,7 +5,6 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Dict
 from typing import Optional
-from typing import Sequence
 from typing import Tuple
 
 from .creature import CombatCreature
@@ -18,7 +17,7 @@ from .simulator import CombatSimulator
 
 
 def evaluate_block_assignment(
-    assignment: Sequence[Optional[int]],
+    assignment: Dict[CombatCreature, CombatCreature],
     state: GameState,
     counter: IterationCounter,
     provoke_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
@@ -32,10 +31,10 @@ def evaluate_block_assignment(
     blks = list(state_copy.players["B"].creatures)
     atk_map = {orig: copy for orig, copy in zip(orig_atks, atks)}
     blk_map = {orig: copy for orig, copy in zip(orig_blks, blks)}
-    for idx, choice in enumerate(assignment):
-        if choice is not None:
-            blk = blks[idx]
-            atk = atks[choice]
+    for blk_orig, atk_orig in assignment.items():
+        if blk_orig in blk_map and atk_orig in atk_map:
+            blk = blk_map[blk_orig]
+            atk = atk_map[atk_orig]
             blk.blocking = atk
             atk.blocked_by.append(blk)
 
