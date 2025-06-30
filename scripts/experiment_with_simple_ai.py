@@ -36,15 +36,19 @@ def main():
         game_state=game_state,
         provoke_map={},
     )
-    assignment = [attackers.index(b.blocking) if b.blocking else None for b in blockers]
+    block_map = {blk: blk.blocking for blk in blockers if blk.blocking is not None}
     iteration_counter = IterationCounter(max_iterations=1000)
     result, _ = evaluate_block_assignment(
-        assignment=assignment,
+        assignment=block_map,
         state=game_state,
         counter=iteration_counter,  # No iteration counter needed for this example
     )
     assert result is not None
-    score = result.score("A", "B") + (tuple(assignment),)
+    assignment_tuple = tuple(
+        attackers.index(blk.blocking) if blk.blocking is not None else None
+        for blk in blockers
+    )
+    score = result.score("A", "B") + (assignment_tuple,)
     for attacker in attackers:
         print("----")
         print("attacker:", summarize_creature(attacker))

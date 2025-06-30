@@ -26,7 +26,10 @@ def _compute_best_assignment(atk, blk, state):
     best = None
     best_score = None
     for ass in product(*options):
-        result, _ = evaluate_block_assignment(ass, state, counter)
+        block_map = {
+            blk[i]: atk[choice] for i, choice in enumerate(ass) if choice is not None
+        }
+        result, _ = evaluate_block_assignment(block_map, state, counter)
         if result is None:
             continue
         score = result.score("A", "B") + (

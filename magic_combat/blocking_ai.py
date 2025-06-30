@@ -315,13 +315,16 @@ def _minimax_blocks(
         worst_for_defender: tuple[
             int, float, int, int, int, int, tuple[Optional[int], ...]
         ] | None = None
-        # Attacker chooses ordering to maximize the score
-        block_map: dict[CombatCreature, list[CombatCreature]] = {
-            atk: [] for atk in attackers
+        # Convert the tuple assignment into a mapping once
+        block_dict = {
+            blockers[blk_idx]: attackers[choice]
+            for blk_idx, choice in enumerate(assignment)
+            if choice is not None
         }
-        for blk_idx, choice in enumerate(assignment):
-            if choice is not None:
-                block_map[attackers[choice]].append(blockers[blk_idx])
+        # Attacker chooses ordering to maximize the score
+        block_map: dict[CombatCreature, list[CombatCreature]] = {}
+        for blk, atk in block_dict.items():
+            block_map.setdefault(atk, []).append(blk)
 
         order_options = []
         atk_keys = []
@@ -334,7 +337,7 @@ def _minimax_blocks(
         for orders in order_iter:
             damage_order = {atk_keys[i]: orders[i] for i in range(len(orders))}
             result, _ = evaluate_block_assignment(
-                assignment,
+                block_dict,
                 game_state,
                 counter,
                 provoke_map,

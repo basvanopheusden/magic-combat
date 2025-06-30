@@ -14,7 +14,9 @@ def test_evaluate_block_assignment_simple():
             "B": PlayerState(life=20, creatures=[blk]),
         }
     )
-    result, new_state = evaluate_block_assignment([0], state, IterationCounter(10))
+    result, new_state = evaluate_block_assignment(
+        {blk: atk}, state, IterationCounter(10)
+    )
     assert result is not None
     score = result.score("A", "B") + ((0,),)
     assert score == (0, 0.0, 0, 0, 0, 0, (0,))
