@@ -36,7 +36,8 @@ def _score_from_states(
 
 
 def test_persist_undying_state_value():
-    """CR 702.77a & 702.92a: Persist and undying return creatures that died without counters."""
+    """CR 702.77a & 702.92a: Persist and undying return creatures
+    that died without counters."""
     atk = CombatCreature("Phoenix", 2, 2, "A", undying=True, mana_cost="{2}{R}")
     blk = CombatCreature("Spirit", 2, 2, "B", persist=True, mana_cost="{2}{W}")
     link_block(atk, blk)
@@ -58,9 +59,7 @@ def test_persist_undying_state_value():
     # Reset blocking on the original objects before evaluation
     atk.blocked_by.clear()
     blk.blocking = None
-    score, end_state = evaluate_block_assignment(
-        [atk], [blk], [0], start, IterationCounter(10)
-    )
+    score, end_state = evaluate_block_assignment([0], start, IterationCounter(10))
     assert _score_from_states(start, end_state, "A", "B") == expected
     assert score == expected + ((0,),)
     assert end_state is not None
@@ -73,7 +72,8 @@ def test_persist_undying_state_value():
 
 
 def test_lifelink_infect_state_changes():
-    """CR 702.90b & 702.15a: Infect deals poison counters and lifelink gains that much life."""
+    """CR 702.90b & 702.15a: Infect deals poison counters and
+    lifelink gains that much life."""
     atk = CombatCreature("Infecter", 2, 2, "A", infect=True, lifelink=True)
     defender = CombatCreature("Dummy", 0, 1, "B")
     start = GameState(
@@ -91,8 +91,6 @@ def test_lifelink_infect_state_changes():
     result = sim.simulate()
     expected = _score_from_states(start, state_for_sim, "A", "B")
     assert result.score("A", "B") == expected
-    score, end_state = evaluate_block_assignment(
-        [atk], [defender], [None], start, IterationCounter(10)
-    )
+    score, end_state = evaluate_block_assignment([None], start, IterationCounter(10))
     assert _score_from_states(start, end_state, "A", "B") == expected
     assert score == expected + ((1,),)

@@ -246,8 +246,6 @@ def _determine_block_assignments(
     simple_state = copy.deepcopy(state)
     try:
         decide_simple_blocks(
-            simple_atk,
-            simple_blk,
             game_state=simple_state,
             provoke_map=provoke_map,
             max_iterations=max_iterations,
@@ -260,8 +258,6 @@ def _determine_block_assignments(
         simple_assignment = None
 
     _, opt_count = decide_optimal_blocks(
-        attackers,
-        blockers,
         game_state=state,
         provoke_map=provoke_map,
         max_iterations=max_iterations,

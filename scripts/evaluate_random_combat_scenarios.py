@@ -206,7 +206,7 @@ async def _evaluate_single_scenario(
     for blk in blockers:
         blk.blocking = None
 
-    prompt = create_llm_prompt(state, attackers, blockers)
+    prompt = create_llm_prompt(state)
 
     attempts = 0
     max_attempts = 3

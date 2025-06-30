@@ -26,7 +26,7 @@ def _compute_best_assignment(atk, blk, state):
     best = None
     best_score = None
     for ass in product(*options):
-        score, _ = evaluate_block_assignment(atk, blk, ass, state, counter)
+        score, _ = evaluate_block_assignment(ass, state, counter)
         if best_score is None or score < best_score:
             best_score = score
             best = ass
@@ -50,7 +50,7 @@ def test_random_card_blocks_optimal(seed):
         }
     )
     expected = _compute_best_assignment(attackers, blockers, state)
-    decide_optimal_blocks(attackers, blockers, game_state=state)
+    decide_optimal_blocks(game_state=state)
     chosen = tuple(
         attackers.index(b.blocking) if b.blocking is not None else None
         for b in blockers
