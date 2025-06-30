@@ -231,7 +231,14 @@ class CombatCreature:
 
 
 def creature_value(creature: CombatCreature) -> float:
-    """Heuristic combat value for tie-breaking."""
+    """Heuristic combat value for tie-breaking.
+
+    The value is computed as the sum of the creature's effective power and
+    toughness plus half the number of keyword abilities it has. Double strike is
+    counted twice. Creatures with the ``defender`` ability incur a ``-0.5``
+    penalty. If a creature with persist has a -1/-1 counter it loses ``0.5`` and
+    a creature with undying that has a +1/+1 counter loses ``2.5``.
+    """
 
     positive = sum(1 for attr in _POSITIVE_KEYWORDS if getattr(creature, attr, False))
     if creature.double_strike:
@@ -244,4 +251,6 @@ def creature_value(creature: CombatCreature) -> float:
         value -= 0.5
     if creature.undying and creature.plus1_counters:
         value -= 2.5
+    if creature.defender:
+        value -= 0.5
     return value
