@@ -333,13 +333,30 @@ def _minimax_blocks(
         order_iter = product(*order_options) if order_options else [tuple()]
         for orders in order_iter:
             damage_order = {atk_keys[i]: orders[i] for i in range(len(orders))}
-            score, _ = evaluate_block_assignment(
+            result, _ = evaluate_block_assignment(
                 assignment,
                 game_state,
                 counter,
                 provoke_map,
                 damage_order,
             )
+            ass_key = tuple(len(attackers) if c is None else c for c in assignment)
+            if result is None:
+                score = (
+                    1,
+                    float("inf"),
+                    -len(attackers) - len(blockers),
+                    -(10**9),
+                    10**9,
+                    10**9,
+                    ass_key,
+                )
+            else:
+                score = result.score(
+                    attackers[0].controller if attackers else "A",
+                    blockers[0].controller if blockers else "B",
+                ) + (ass_key,)
+
             numeric = score[:-1]
             if worst_for_defender is None or numeric > worst_for_defender[:-1]:
                 worst_for_defender = score

@@ -38,11 +38,13 @@ def main():
     )
     assignment = [attackers.index(b.blocking) if b.blocking else None for b in blockers]
     iteration_counter = IterationCounter(max_iterations=1000)
-    score, _ = evaluate_block_assignment(
+    result, _ = evaluate_block_assignment(
         assignment=assignment,
         state=game_state,
         counter=iteration_counter,  # No iteration counter needed for this example
     )
+    assert result is not None
+    score = result.score("A", "B") + (tuple(assignment),)
     for attacker in attackers:
         print("----")
         print("attacker:", summarize_creature(attacker))

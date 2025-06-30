@@ -53,14 +53,16 @@ def test_persist_undying_state_value():
         [state_for_sim.players["B"].creatures[0]],
         game_state=state_for_sim,
     )
-    result = sim.simulate()
+    sim_result = sim.simulate()
     expected = _score_from_states(start, state_for_sim, "A", "B")
-    assert result.score("A", "B") == expected
+    assert sim_result.score("A", "B") == expected
     # Reset blocking on the original objects before evaluation
     atk.blocked_by.clear()
     blk.blocking = None
-    score, end_state = evaluate_block_assignment([0], start, IterationCounter(10))
+    eval_result, end_state = evaluate_block_assignment([0], start, IterationCounter(10))
+    assert eval_result is not None
     assert _score_from_states(start, end_state, "A", "B") == expected
+    score = eval_result.score("A", "B") + ((0,),)
     assert score == expected + ((0,),)
     assert end_state is not None
     p_creature = end_state.players["A"].creatures[0]
@@ -88,9 +90,13 @@ def test_lifelink_infect_state_changes():
         [state_for_sim.players["B"].creatures[0]],
         game_state=state_for_sim,
     )
-    result = sim.simulate()
+    sim_result = sim.simulate()
     expected = _score_from_states(start, state_for_sim, "A", "B")
-    assert result.score("A", "B") == expected
-    score, end_state = evaluate_block_assignment([None], start, IterationCounter(10))
+    assert sim_result.score("A", "B") == expected
+    eval_result, end_state = evaluate_block_assignment(
+        [None], start, IterationCounter(10)
+    )
+    assert eval_result is not None
     assert _score_from_states(start, end_state, "A", "B") == expected
+    score = eval_result.score("A", "B") + ((1,),)
     assert score == expected + ((1,),)
