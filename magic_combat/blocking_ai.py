@@ -351,7 +351,16 @@ def decide_optimal_blocks(
 
     best: Optional[Tuple[Optional[int], ...]] = None
     best_score: Optional[
-        Tuple[int, float, int, int, int, int, Tuple[Optional[int], ...]]
+        Tuple[
+            int,
+            float,
+            int,
+            int,
+            int,
+            int,
+            Tuple[Optional[int], ...],
+            GameState | None,
+        ]
     ] = None
     best_score_numeric: Optional[Tuple[int, float, int, int, int, int]] = None
     optimal_count = 0
@@ -365,8 +374,9 @@ def decide_optimal_blocks(
             counter,
             provoke_map,
         )
-        numeric = score[:-1]
-        if best_score is None or score < best_score:
+        compare_score = score[:-1]
+        numeric = compare_score[:-1]
+        if best_score is None or compare_score < best_score[:-1]:
             # Update the chosen assignment whenever we find a strictly better
             # score. Only reset ``optimal_count`` if the numeric portion of the
             # score actually improved; otherwise we simply update the stored

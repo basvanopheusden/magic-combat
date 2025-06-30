@@ -15,4 +15,8 @@ def test_evaluate_block_assignment_simple():
         }
     )
     score = evaluate_block_assignment([atk], [blk], [0], state, IterationCounter(10))
-    assert score == (0, 0.0, 0, 0, 0, 0, (0,))
+    numeric = score[:-2]
+    new_state = score[-1]
+    assert numeric == (0, 0.0, 0, 0, 0, 0)
+    assert score[-2] == (0,)
+    assert isinstance(new_state, GameState)

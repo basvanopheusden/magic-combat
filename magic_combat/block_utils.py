@@ -23,8 +23,17 @@ def evaluate_block_assignment(
     state: Optional[GameState],
     counter: IterationCounter,
     provoke_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
-) -> Tuple[int, float, int, int, int, int, Tuple[Optional[int], ...]]:
-    """Simulate combat for ``assignment`` and return a scoring tuple."""
+) -> Tuple[
+    int,
+    float,
+    int,
+    int,
+    int,
+    int,
+    Tuple[Optional[int], ...],
+    Optional[GameState],
+]:
+    """Simulate combat for ``assignment`` and return a scoring tuple and state."""
     atks = deepcopy(list(attackers))
     blks = deepcopy(list(blockers))
     for idx, choice in enumerate(assignment):
@@ -62,6 +71,7 @@ def evaluate_block_assignment(
             10**9,
             10**9,
             ass_key,
+            sim.game_state,
         )
 
     defender = blks[0].controller if blks else "defender"
@@ -69,5 +79,6 @@ def evaluate_block_assignment(
     ass_key = tuple(
         len(attackers) if choice is None else choice for choice in assignment
     )
-    score = result.score(attacker_player, defender) + (ass_key,)
+    new_state = sim.game_state
+    score = result.score(attacker_player, defender) + (ass_key, new_state)
     return score
