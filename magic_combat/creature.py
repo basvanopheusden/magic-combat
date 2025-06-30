@@ -229,19 +229,18 @@ class CombatCreature:
         self.temp_power = 0
         self.temp_toughness = 0
 
+    def creature_value(self) -> float:
+        """Heuristic combat value for tie-breaking."""
 
-def creature_value(creature: CombatCreature) -> float:
-    """Heuristic combat value for tie-breaking."""
+        positive = sum(1 for attr in _POSITIVE_KEYWORDS if getattr(self, attr, False))
+        if self.double_strike:
+            # Count double strike twice so it contributes 1 point instead of 0.5.
+            positive += 1
+        positive += sum(getattr(self, attr, 0) for attr in _STACKABLE_KEYWORDS)
 
-    positive = sum(1 for attr in _POSITIVE_KEYWORDS if getattr(creature, attr, False))
-    if creature.double_strike:
-        # Count double strike twice so it contributes 1 point instead of 0.5.
-        positive += 1
-    positive += sum(getattr(creature, attr, 0) for attr in _STACKABLE_KEYWORDS)
-
-    value = creature.effective_power() + creature.effective_toughness() + positive / 2
-    if creature.persist and creature.minus1_counters:
-        value -= 0.5
-    if creature.undying and creature.plus1_counters:
-        value -= 2.5
-    return value
+        value = self.effective_power() + self.effective_toughness() + positive / 2
+        if self.persist and self.minus1_counters:
+            value -= 0.5
+        if self.undying and self.plus1_counters:
+            value -= 2.5
+        return value
