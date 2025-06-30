@@ -9,7 +9,6 @@ from typing import Optional
 from .combat_utils import damage_creature
 from .combat_utils import damage_player
 from .creature import CombatCreature
-from .creature import creature_value
 from .damage import DamageAssignmentStrategy
 from .damage import OptimalDamageStrategy
 from .exceptions import IllegalBlockError
@@ -92,12 +91,12 @@ class CombatResult:
             lost = 0
 
         att_val = sum(
-            creature_value(c)
+            c.creature_value()
             for c in self.creatures_destroyed
             if c.controller == attacker_player
         )
         def_val = sum(
-            creature_value(c)
+            c.creature_value()
             for c in self.creatures_destroyed
             if c.controller == defender
         )
