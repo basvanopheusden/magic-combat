@@ -4,7 +4,7 @@ from magic_combat import PlayerState
 from magic_combat import decide_optimal_blocks
 from magic_combat.block_utils import evaluate_block_assignment
 from magic_combat.limits import IterationCounter
-from scripts.random_combat import summarize_creature
+from magic_combat.text_utils import summarize_creature
 
 
 def main():

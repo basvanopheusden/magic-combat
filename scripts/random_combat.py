@@ -14,31 +14,9 @@ from magic_combat import build_value_map
 from magic_combat import compute_card_statistics
 from magic_combat import ensure_cards
 from magic_combat import generate_random_scenario
-from magic_combat.abilities import BOOL_NAMES as _BOOL_ABILITIES
-from magic_combat.abilities import INT_NAMES as _INT_ABILITIES
 from magic_combat.creature import CombatCreature
 from magic_combat.exceptions import CardDataError
 from magic_combat.text_utils import summarize_creature
-
-# Ability name mappings for pretty printing come from ``magic_combat.abilities``
-
-
-def describe_abilities(creature: CombatCreature) -> str:
-    """Return a comma-separated string of the creature's keyword abilities."""
-    parts: List[str] = []
-    for attr, name in _BOOL_ABILITIES.items():
-        if getattr(creature, attr, False):
-            parts.append(name)
-    for attr, name in _INT_ABILITIES.items():
-        val = getattr(creature, attr, 0)
-        if val:
-            parts.append(f"{name} {val}")
-    if creature.protection_colors:
-        colors = ", ".join(c.name.capitalize() for c in creature.protection_colors)
-        parts.append(f"Protection from {colors}")
-    if creature.artifact:
-        parts.append("Artifact")
-    return ", ".join(parts) if parts else "none"
 
 
 def print_player_state(

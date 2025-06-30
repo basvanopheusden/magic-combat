@@ -102,9 +102,11 @@ print(creature)
 The :mod:`magic_combat.utils` module provides helpers for applying combat
 bonuses programmatically. ``apply_attacker_blocking_bonuses`` grants bushido,
 rampage and flanking bonuses to an attacker, while ``apply_blocker_bushido``
-handles bushido on a blocker.  ``magic_combat.combat_utils`` exposes
+handles bushido on a blocker. ``magic_combat.combat_utils`` exposes
 ``damage_creature`` and ``damage_player`` for applying damage outside of the
-``CombatSimulator`` class.
+``CombatSimulator`` class. The :mod:`magic_combat.rules_text` module also
+provides ``describe_abilities`` for generating a comma-separated list of a
+creature's keyword abilities.
 
 ## Using the OpenAI scripts
 
