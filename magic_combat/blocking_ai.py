@@ -357,7 +357,7 @@ def decide_optimal_blocks(
     optimal_count = 0
 
     for assignment in product(*options):
-        score = evaluate_block_assignment(
+        score, _ = evaluate_block_assignment(
             attackers,
             blockers,
             assignment,

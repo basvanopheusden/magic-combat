@@ -58,7 +58,7 @@ def _compute_best_assignment(atk, blk, state):
     best = None
     best_score = None
     for ass in product(*options):
-        score = evaluate_block_assignment(atk, blk, ass, state, counter)
+        score, _ = evaluate_block_assignment(atk, blk, ass, state, counter)
         if best_score is None or score < best_score:
             best_score = score
             best = ass
