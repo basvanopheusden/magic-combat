@@ -24,10 +24,27 @@ def evaluate_block_assignment(
     counter: IterationCounter,
     provoke_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
     damage_order: Optional[dict[CombatCreature, tuple[CombatCreature, ...]]] = None,
-) -> Tuple[int, float, int, int, int, int, Tuple[Optional[int], ...]]:
-    """Simulate combat for ``assignment`` and return a scoring tuple."""
-    atks = deepcopy(list(attackers))
-    blks = deepcopy(list(blockers))
+) -> Tuple[
+    Tuple[int, float, int, int, int, int, Tuple[Optional[int], ...]],
+    Optional[GameState],
+]:
+    """Simulate combat for ``assignment`` and return the score and new state."""
+    if state is not None:
+        state_copy = deepcopy(state)
+        orig_to_copy_atk: Dict[CombatCreature, CombatCreature] = {}
+        for atk in attackers:
+            idx = state.players[atk.controller].creatures.index(atk)
+            orig_to_copy_atk[atk] = state_copy.players[atk.controller].creatures[idx]
+        orig_to_copy_blk: Dict[CombatCreature, CombatCreature] = {}
+        for blk in blockers:
+            idx = state.players[blk.controller].creatures.index(blk)
+            orig_to_copy_blk[blk] = state_copy.players[blk.controller].creatures[idx]
+        atks = [orig_to_copy_atk[a] for a in attackers]
+        blks = [orig_to_copy_blk[b] for b in blockers]
+    else:
+        state_copy = None
+        atks = deepcopy(list(attackers))
+        blks = deepcopy(list(blockers))
     for idx, choice in enumerate(assignment):
         if choice is not None:
             blk = blks[idx]
@@ -62,7 +79,7 @@ def evaluate_block_assignment(
     sim = CombatSimulator(
         atks,
         blks,
-        game_state=deepcopy(state),
+        game_state=state_copy,
         damage_order_map=order_map,
         provoke_map=prov_copies or None,
     )
@@ -81,7 +98,7 @@ def evaluate_block_assignment(
             10**9,
             10**9,
             ass_key,
-        )
+        ), None
 
     defender = blks[0].controller if blks else "defender"
     attacker_player = atks[0].controller if atks else "attacker"
@@ -89,4 +106,4 @@ def evaluate_block_assignment(
         len(attackers) if choice is None else choice for choice in assignment
     )
     score = result.score(attacker_player, defender) + (ass_key,)
-    return score
+    return score, sim.game_state
