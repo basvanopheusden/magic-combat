@@ -63,7 +63,11 @@ def _best_value_trade_assignment(
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
     counter: IterationCounter | None = None,
 ) -> tuple[Tuple[Optional[int], ...], tuple[int, float, int, int, int, int]]:
-    """Search simple blocks focusing on favorable trades."""
+    """Search simple blocks focusing on favorable trades.
+
+    This routine maximizes creature value traded first, then creature count,
+    and finally the total mana value destroyed.
+    """
 
     provoked: dict[CombatCreature, CombatCreature] = {}
     if provoke_map:
@@ -83,7 +87,7 @@ def _best_value_trade_assignment(
             options.append(list(range(len(attackers))) + [None])
 
     best_assignment: Tuple[Optional[int], ...] = tuple(None for _ in blockers)
-    best_score = (float("-inf"), float("-inf"))
+    best_score = (float("-inf"), float("-inf"), float("-inf"))
     best_numeric: tuple[int, float, int, int, int, int] = (0, 0.0, 0, 0, 0, 0)
 
     for assignment in product(*options):
@@ -137,8 +141,9 @@ def _best_value_trade_assignment(
 
         val_diff = -score[1]
         cnt_diff = -score[2]
-        if (val_diff, cnt_diff) > best_score:
-            best_score = (val_diff, cnt_diff)
+        mana_diff = -score[3]
+        if (val_diff, cnt_diff, mana_diff) > best_score:
+            best_score = (val_diff, cnt_diff, mana_diff)
             best_assignment = tuple(assignment)
             best_numeric = score
 

@@ -288,11 +288,15 @@ def _score_optimal_result(
     optimal_assignment: Tuple[Optional[int], ...],
     provoke_map: dict[CombatCreature, CombatCreature],
     mentor_map: dict[CombatCreature, CombatCreature],
-) -> Tuple[int, int, int, float]:
+) -> Tuple[int, int, int, float, int]:
     """Simulate combat using ``optimal_assignment`` and return its value."""
 
     atk_copy = copy.deepcopy(attackers)
     blk_copy = copy.deepcopy(blockers)
+    for a in atk_copy:
+        a.blocked_by.clear()
+    for b in blk_copy:
+        b.blocking = None
     state_copy = copy.deepcopy(state)
     prov_copies: dict[CombatCreature, CombatCreature] = {}
     if provoke_map:
@@ -325,7 +329,7 @@ def _score_optimal_result(
     )
     result = sim.simulate()
     score = result.score("A", "B")
-    return score[4], score[5], score[2], score[1]
+    return score[4], score[5], score[2], score[1], score[3]
 
 
 def _compute_combat_results(
@@ -340,7 +344,7 @@ def _compute_combat_results(
 ) -> Tuple[
     Tuple[Optional[int], ...] | None,
     Tuple[Optional[int], ...],
-    Tuple[int, int, int, float],
+    Tuple[int, int, int, float, int],
 ]:
     """Return block assignments and outcome for ``attackers`` and ``blockers``."""
 
@@ -381,7 +385,7 @@ def _attempt_random_scenario(
     dict[CombatCreature, CombatCreature],
     Tuple[Optional[int], ...],
     Tuple[Optional[int], ...] | None,
-    Tuple[int, int, int, float],
+    Tuple[int, int, int, float, int],
 ]:
     """Attempt to create a single random combat scenario."""
 
@@ -446,7 +450,7 @@ def generate_random_scenario(
     dict[CombatCreature, CombatCreature],
     Tuple[Optional[int], ...],
     Tuple[Optional[int], ...] | None,
-    Tuple[int, int, int, float],
+    Tuple[int, int, int, float, int],
 ]:
     """Return a non-trivial random combat scenario.
 
@@ -456,7 +460,8 @@ def generate_random_scenario(
     attacker interactions and should be supplied when simulating combat. The
     optimal and simple block assignments are returned as tuples of attacker
     indices, along with a summary tuple of life lost, poison counters, number of
-    creatures destroyed and value difference for the optimal blocks.
+    creatures destroyed, value difference, and mana value difference for the
+    optimal blocks.
     """
 
     rng = random.Random(seed) if seed is not None else random.Random()
