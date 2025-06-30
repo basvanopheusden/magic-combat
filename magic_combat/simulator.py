@@ -5,12 +5,12 @@ from dataclasses import field
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 from .combat_utils import damage_creature
 from .combat_utils import damage_player
 from .creature import CombatCreature
-from .damage import DamageAssignmentStrategy
-from .damage import OptimalDamageStrategy
+from .damage import optimal_damage_order
 from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .gamestate import has_player_lost
@@ -144,7 +144,9 @@ class CombatSimulator:
         self,
         attackers: List[CombatCreature],
         defenders: List[CombatCreature],
-        strategy: Optional[DamageAssignmentStrategy] = None,
+        damage_order_map: Optional[
+            Dict[CombatCreature, Tuple[CombatCreature, ...]]
+        ] = None,
         game_state: Optional["GameState"] = None,
         provoke_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
         mentor_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
@@ -158,7 +160,9 @@ class CombatSimulator:
         self.poison_counters: Dict[str, int] = dict[str, int]()
         self.lifegain: Dict[str, int] = dict[str, int]()
         self._lifegain_applied: Dict[str, int] = dict[str, int]()
-        self.assignment_strategy = strategy or OptimalDamageStrategy()
+        self.damage_order_map: Dict[CombatCreature, Tuple[CombatCreature, ...]] = (
+            damage_order_map or {}
+        )
         self.game_state = game_state
         self.provoke_map: Dict[CombatCreature, CombatCreature] = (
             provoke_map or dict[CombatCreature, CombatCreature]()
@@ -457,7 +461,9 @@ class CombatSimulator:
     ) -> None:
         """Deal attacker's damage to its blockers and excess to the player."""
         blockers = blockers if blockers is not None else attacker.blocked_by
-        ordered = self.assignment_strategy.order_blockers(attacker, blockers)
+        ordered = list(
+            self.damage_order_map.get(attacker, tuple())
+        ) or optimal_damage_order(attacker, blockers)
         remaining = attacker.effective_power()
         for blocker in ordered:
             lethal = 1 if attacker.deathtouch else blocker.effective_toughness()

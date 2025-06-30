@@ -10,6 +10,7 @@ from typing import Tuple
 
 from .block_utils import evaluate_block_assignment
 from .creature import CombatCreature
+from .damage import damage_order_permutations
 from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .limits import IterationCounter
@@ -300,6 +301,76 @@ def _simulate_assignment(
     return result, dead_atk, dead_blk, score
 
 
+def _minimax_blocks(
+    attackers: Sequence[CombatCreature],
+    blockers: Sequence[CombatCreature],
+    options: Sequence[Sequence[int | None]],
+    game_state: Optional[GameState],
+    counter: IterationCounter,
+    provoke_map: Optional[dict[CombatCreature, CombatCreature]],
+) -> tuple[
+    tuple[Optional[int], ...] | None, tuple[int, float, int, int, int, int] | None, int
+]:
+    best: tuple[Optional[int], ...] | None = None
+    best_score: tuple[
+        int, float, int, int, int, int, tuple[Optional[int], ...]
+    ] | None = None
+    optimal_count = 0
+
+    for assignment in product(*options):
+        worst_for_defender: tuple[
+            int, float, int, int, int, int, tuple[Optional[int], ...]
+        ] | None = None
+        # Attacker chooses ordering to maximize the score
+        block_map: dict[CombatCreature, list[CombatCreature]] = {
+            atk: [] for atk in attackers
+        }
+        for blk_idx, choice in enumerate(assignment):
+            if choice is not None:
+                block_map[attackers[choice]].append(blockers[blk_idx])
+
+        order_options = []
+        atk_keys = []
+        for atk, blks in block_map.items():
+            if len(blks) > 1:
+                atk_keys.append(atk)
+                order_options.append(list(damage_order_permutations(atk, blks)))
+
+        order_iter = product(*order_options) if order_options else [tuple()]
+        for orders in order_iter:
+            damage_order = {atk_keys[i]: orders[i] for i in range(len(orders))}
+            score = evaluate_block_assignment(
+                attackers,
+                blockers,
+                assignment,
+                game_state,
+                counter,
+                provoke_map,
+                damage_order,
+            )
+            numeric = score[:-1]
+            if worst_for_defender is None or numeric > worst_for_defender[:-1]:
+                worst_for_defender = score
+            elif numeric == worst_for_defender[:-1] and score > worst_for_defender:
+                worst_for_defender = score
+
+        if worst_for_defender is None:
+            continue
+
+        numeric = worst_for_defender[:-1]
+        if best_score is None or numeric < best_score[:-1]:
+            best_score = worst_for_defender
+            best = tuple(assignment)
+            optimal_count = 1
+        elif numeric == best_score[:-1]:
+            optimal_count += 1
+            if worst_for_defender < best_score:
+                best_score = worst_for_defender
+                best = tuple(assignment)
+
+    return best, best_score[:-1] if best_score else None, optimal_count
+
+
 def decide_optimal_blocks(
     attackers: List[CombatCreature],
     blockers: List[CombatCreature],
@@ -308,24 +379,7 @@ def decide_optimal_blocks(
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
     max_iterations: int = int(1e4),
 ) -> Tuple[int, int]:
-    """Assign blockers to attackers using a heuristic evaluation.
-
-    This function enumerates all legal block configurations and chooses the one
-    with the best outcome according to the following priorities:
-
-    1. Avoid losing the game.
-    2. Maximize the difference in total creature value destroyed (attacker minus
-       defender).
-    3. Maximize the difference in number of creatures destroyed.
-    4. Maximize the total mana value of creatures lost.
-    5. Minimize life lost.
-    6. Minimize poison counters gained.
-    7. Use a deterministic ordering to break any remaining ties.
-
-    The function returns a tuple ``(iterations, optimal_count)``. ``optimal_count``
-    counts how many blocking assignments are tied on criteria 1–6,
-    before applying the deterministic ordering in step 7.
-    """
+    """Assign blockers to attackers using a minimax search over block assignments."""
 
     if not blockers:
         return 0, 1
@@ -349,41 +403,14 @@ def decide_optimal_blocks(
         else:
             options.append(list(range(len(attackers))) + [None])
 
-    best: Optional[Tuple[Optional[int], ...]] = None
-    best_score: Optional[
-        Tuple[int, float, int, int, int, int, Tuple[Optional[int], ...]]
-    ] = None
-    best_score_numeric: Optional[Tuple[int, float, int, int, int, int]] = None
-    optimal_count = 0
-
-    for assignment in product(*options):
-        score = evaluate_block_assignment(
-            attackers,
-            blockers,
-            assignment,
-            game_state,
-            counter,
-            provoke_map,
-        )
-        numeric = score[:-1]
-        if best_score is None or score < best_score:
-            # Update the chosen assignment whenever we find a strictly better
-            # score. Only reset ``optimal_count`` if the numeric portion of the
-            # score actually improved; otherwise we simply update the stored
-            # best score so the deterministic tiebreaker picks this assignment.
-            if best_score is None:
-                optimal_count = 1
-            elif best_score_numeric is not None and numeric < best_score_numeric:
-                optimal_count = 1
-            best_score = score
-            best_score_numeric = numeric
-            best = tuple(assignment)
-        elif best_score_numeric is not None:
-            if numeric == best_score_numeric:
-                # ``optimal_count`` should include all assignments that are
-                # tied on the numeric criteria. Ignore the deterministic
-                # tiebreaker when counting optimal results.
-                optimal_count += 1
+    best, _best_score, optimal_count = _minimax_blocks(
+        attackers,
+        blockers,
+        options,
+        game_state,
+        counter,
+        provoke_map,
+    )
 
     # Apply the chosen assignment to the real objects
     _reset_block_assignments(attackers, blockers)
