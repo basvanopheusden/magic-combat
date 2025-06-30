@@ -40,7 +40,7 @@ def main():
     )
     assignment = [attackers.index(b.blocking) if b.blocking else None for b in blockers]
     iteration_counter = IterationCounter(max_iterations=1000)
-    score = evaluate_block_assignment(
+    score, _ = evaluate_block_assignment(
         attackers=attackers,
         blockers=blockers,
         assignment=assignment,

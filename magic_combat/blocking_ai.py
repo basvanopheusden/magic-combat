@@ -339,7 +339,7 @@ def _minimax_blocks(
         order_iter = product(*order_options) if order_options else [tuple()]
         for orders in order_iter:
             damage_order = {atk_keys[i]: orders[i] for i in range(len(orders))}
-            score = evaluate_block_assignment(
+            score, _ = evaluate_block_assignment(
                 attackers,
                 blockers,
                 assignment,
