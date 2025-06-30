@@ -11,8 +11,7 @@ from .create_llm_prompt import create_llm_prompt
 from .create_llm_prompt import parse_block_assignments
 from .creature import Color
 from .creature import CombatCreature
-from .damage import DamageAssignmentStrategy
-from .damage import OptimalDamageStrategy
+from .damage import optimal_damage_order
 from .exceptions import CardDataError
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
@@ -59,8 +58,7 @@ __all__ = [
     "Color",
     "CombatResult",
     "CombatSimulator",
-    "DamageAssignmentStrategy",
-    "OptimalDamageStrategy",
+    "optimal_damage_order",
     "decide_optimal_blocks",
     "decide_simple_blocks",
     "GameState",

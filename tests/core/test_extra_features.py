@@ -4,8 +4,7 @@ import pytest
 from magic_combat import Color
 from magic_combat import CombatCreature
 from magic_combat import CombatSimulator
-from magic_combat import DamageAssignmentStrategy
-from magic_combat import OptimalDamageStrategy
+from magic_combat import optimal_damage_order
 
 
 def test_string_representation():
@@ -47,53 +46,39 @@ def test_destroyed_by_damage():
     assert creature.is_destroyed_by_damage()
 
 
-def test_damage_assignment_strategy_identity():
-    """CR 510.2: Damage assignment order matters only if multiple blockers are present."""
-    strat = DamageAssignmentStrategy()
-    a = CombatCreature("A", 2, 2, "A")
-    b1 = CombatCreature("B1", 1, 1, "B")
-    b2 = CombatCreature("B2", 1, 1, "B")
-    ordered = strat.order_blockers(a, [b1, b2])
-    assert ordered == [b1, b2]
-
-
 def test_most_creatures_killed_strategy_sorts():
     """CR 510.2: Attackers may order blockers to maximize kills."""
-    strat = OptimalDamageStrategy()
     a = CombatCreature("A", 3, 3, "A")
     b1 = CombatCreature("Wall", 0, 4, "B")
     b2 = CombatCreature("Goblin", 1, 1, "B")
-    ordered = strat.order_blockers(a, [b1, b2])
+    ordered = optimal_damage_order(a, [b1, b2])
     assert ordered == [b2, b1]
 
 
 def test_most_creatures_killed_prefers_value_on_tie():
     """CR 510.2: When only one kill is possible, the most valuable dies."""
-    strat = OptimalDamageStrategy()
     attacker = CombatCreature("Attacker", 5, 5, "A")
     weak = CombatCreature("Weak", 2, 2, "B")
     big = CombatCreature("Big", 4, 4, "B")
-    ordered = strat.order_blockers(attacker, [weak, big])
+    ordered = optimal_damage_order(attacker, [weak, big])
     assert ordered[0] is big
 
 
 def test_indestructible_blocker_goes_last():
     """CR 702.12b: Indestructible creatures can't be destroyed by damage."""
-    strat = OptimalDamageStrategy()
     attacker = CombatCreature("Attacker", 3, 3, "A")
     ind = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
     norm = CombatCreature("Target", 2, 2, "B")
-    ordered = strat.order_blockers(attacker, [ind, norm])
+    ordered = optimal_damage_order(attacker, [ind, norm])
     assert ordered[-1] is ind
 
 
 def test_wither_can_target_indestructible_first():
     """CR 702.90a & 702.12b: Wither counters can kill indestructible blockers."""
-    strat = OptimalDamageStrategy()
     attacker = CombatCreature("Attacker", 2, 2, "A", wither=True)
     ind = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
     small = CombatCreature("Small", 1, 1, "B")
-    ordered = strat.order_blockers(attacker, [ind, small])
+    ordered = optimal_damage_order(attacker, [ind, small])
     assert ordered[0] is ind
 
 
