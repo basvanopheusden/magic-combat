@@ -1,7 +1,9 @@
 from magic_combat import CombatCreature
 from magic_combat import GameState
 from magic_combat import PlayerState
-from magic_combat import decide_simple_blocks
+from magic_combat import decide_optimal_blocks
+from magic_combat.block_utils import evaluate_block_assignment
+from magic_combat.limits import IterationCounter
 from scripts.random_combat import summarize_creature
 
 
@@ -12,33 +14,13 @@ def main():
             power=2,
             toughness=2,
             controller="Player A",
-            double_strike=True,
-        ),
-        CombatCreature(
-            name="Attacker 2",
-            power=3,
-            toughness=3,
-            controller="Player A",
-            flying=True,
-        ),
-        CombatCreature(
-            name="Attacker 3",
-            power=1,
-            toughness=1,
-            controller="Player A",
-            trample=True,
+            persist=True,
         ),
     ]
     blockers = [
         CombatCreature(
             name="Blocker 1",
             power=2,
-            toughness=3,
-            controller="Player B",
-        ),
-        CombatCreature(
-            name="Blocker 2",
-            power=3,
             toughness=3,
             controller="Player B",
         ),
@@ -50,17 +32,28 @@ def main():
         }
     )
     print(game_state)
-    decide_simple_blocks(
+    decide_optimal_blocks(
         attackers=attackers,
         blockers=blockers,
         game_state=game_state,
         provoke_map={},
+    )
+    assignment = [attackers.index(b.blocking) if b.blocking else None for b in blockers]
+    iteration_counter = IterationCounter(max_iterations=1000)
+    score = evaluate_block_assignment(
+        attackers=attackers,
+        blockers=blockers,
+        assignment=assignment,
+        state=game_state,
+        counter=iteration_counter,  # No iteration counter needed for this example
     )
     for attacker in attackers:
         print("----")
         print("attacker:", summarize_creature(attacker))
         for creature in attacker.blocked_by:
             print("\tblocked by:", summarize_creature(creature))
+    print(score)
+    print(game_state)
 
 
 if __name__ == "__main__":
