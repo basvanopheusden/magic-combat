@@ -58,7 +58,7 @@ def _value_for_assignment(
     state: GameState,
     provoke_map: dict[CombatCreature, CombatCreature],
     mentor_map: dict[CombatCreature, CombatCreature],
-) -> tuple[int, int, int, float]:
+) -> tuple[int, int, int, float, int]:
     result = _simulate_assignment(
         attackers,
         blockers,
@@ -68,16 +68,17 @@ def _value_for_assignment(
         mentor_map,
     )
     score = result.score("A", "B")
-    return score[4], score[5], score[2], score[1]
+    return score[4], score[5], score[2], score[1], score[3]
 
 
-def _format_value(value: tuple[float, float, float, float]) -> str:
+def _format_value(value: tuple[float, float, float, float, int]) -> str:
     """Return a human-friendly string for ``value``."""
 
-    life, poison, creature_diff, value_diff = value
+    life, poison, creature_diff, value_diff, mana_diff = value
     return (
         f"life lost {life}, poison {poison}, "
-        f"creature diff {creature_diff}, value diff {value_diff}"
+        f"creature diff {creature_diff}, value diff {value_diff}, "
+        f"mana diff {mana_diff}"
     )
 
 
@@ -266,7 +267,7 @@ async def _evaluate_single_scenario(
             )
         except IllegalBlockError as exc:
             print(f"Error evaluating LLM assignment: {exc}")
-            llm_value = (0, 0, 0, float("inf"))
+            llm_value = (0, 0, 0, float("inf"), 0)
             llm_result = CombatResult({}, [], {})
         if simple_map is not None:
             simple_value = _value_for_assignment(
@@ -316,11 +317,12 @@ async def _evaluate_single_scenario(
 
             raise exc
 
-        diff: tuple[float, float, float, float] = (
+        diff: tuple[float, float, float, float, int] = (
             llm_value[0] - opt_value[0],
             llm_value[1] - opt_value[1],
             llm_value[2] - opt_value[2],
             llm_value[3] - opt_value[3],
+            llm_value[4] - opt_value[4],
         )
         print(f"\n=== Scenario {idx + 1} ===")
         print("Initial game state:")
