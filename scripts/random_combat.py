@@ -144,11 +144,11 @@ def main() -> None:
         print("Attackers:")
         for atk in start_state.players["A"].creatures:
             summary = summarize_creature(atk, include_colors=include_colors)
-            print(f"  {summary}, {atk.creature_value()}")
+            print(f"  {summary}, {atk.value()}")
         print("Blockers:")
         for blk in start_state.players["B"].creatures:
             summary = summarize_creature(blk, include_colors=include_colors)
-            print(f"  {summary}, {blk.creature_value()}")
+            print(f"  {summary}, {blk.value()}")
 
         prov_map_display = (
             {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None

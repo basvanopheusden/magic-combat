@@ -64,7 +64,7 @@ def build_value_map(cards: Iterable[dict[str, Any]]) -> Dict[int, float]:
             creature = card_to_creature(card, "A")
         except ValueError:
             continue
-        values[idx] = creature.creature_value()
+        values[idx] = creature.value()
     if not values:
         raise CardDataError("No usable creatures found in card data")
     return values
@@ -124,8 +124,8 @@ def generate_balanced_creatures(
             generate_random_creature(stats, controller="B") for _ in range(n_blk)
         ]
 
-        att_val = sum(c.creature_value() for c in attackers)
-        blk_val = sum(c.creature_value() for c in blockers)
+        att_val = sum(c.value() for c in attackers)
+        blk_val = sum(c.value() for c in blockers)
         avg = (att_val + blk_val) / 2 or 1
         diff = abs(att_val - blk_val) / avg
 

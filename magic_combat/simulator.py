@@ -91,14 +91,12 @@ class CombatResult:
             lost = 0
 
         att_val = sum(
-            c.creature_value()
+            c.value()
             for c in self.creatures_destroyed
             if c.controller == attacker_player
         )
         def_val = sum(
-            c.creature_value()
-            for c in self.creatures_destroyed
-            if c.controller == defender
+            c.value() for c in self.creatures_destroyed if c.controller == defender
         )
         val_diff = def_val - att_val if include_value else 0
 

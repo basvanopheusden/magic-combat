@@ -38,11 +38,6 @@ def _should_force_provoke(
     return True
 
 
-def _creature_value(creature: CombatCreature) -> float:
-    """Return a heuristic value for the creature."""
-    return creature.creature_value()
-
-
 def _reset_block_assignments(
     attackers: Sequence[CombatCreature],
     blockers: Sequence[CombatCreature],
@@ -126,9 +121,7 @@ def _best_value_trade_assignment(
             if not died_atk:
                 valid = False
                 break
-            if died_blk and _creature_value(blockers[blk_idx]) > _creature_value(
-                attackers[choice]
-            ):
+            if died_blk and blockers[blk_idx].value() > attackers[choice].value():
                 valid = False
                 break
         if not valid:
@@ -225,9 +218,7 @@ def _best_survival_assignment(
 
         defender = blockers[0].controller if blockers else "B"
         def_val = sum(
-            c.creature_value()
-            for c in result.creatures_destroyed
-            if c.controller == defender
+            c.value() for c in result.creatures_destroyed if c.controller == defender
         )
         def_cnt = sum(1 for c in result.creatures_destroyed if c.controller == defender)
 

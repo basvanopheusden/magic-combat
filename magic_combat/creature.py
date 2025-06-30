@@ -229,9 +229,7 @@ class CombatCreature:
         self.temp_power = 0
         self.temp_toughness = 0
 
-    return value
-
-    def creature_value(self) -> float:
+    def value(self) -> float:
         """Heuristic combat value for tie-breaking.
 
         The value is computed as the sum of the creature's effective power and
@@ -252,6 +250,6 @@ class CombatCreature:
             value -= 0.5
         if self.undying and self.plus1_counters:
             value -= 2.5
-        if creature.defender:
-            value -= 0.5            
+        if self.defender:
+            value -= 0.5
         return value
