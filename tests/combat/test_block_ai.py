@@ -21,7 +21,7 @@ def test_optimal_ai_respects_provoke():
             "B": PlayerState(life=20, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    decide_optimal_blocks(game_state=state, provoke_map={atk: blk})
     sim = CombatSimulator([atk], [blk], game_state=state, provoke_map={atk: blk})
     sim.validate_blocking()
     assert blk.blocking is atk
@@ -39,7 +39,7 @@ def test_optimal_ai_provoke_untaps_tapped_blocker():
         }
     )
     blk.tapped = False
-    decide_optimal_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    decide_optimal_blocks(game_state=state, provoke_map={atk: blk})
     sim = CombatSimulator([atk], [blk], game_state=state, provoke_map={atk: blk})
     sim.validate_blocking()
     assert blk.blocking is atk
@@ -55,7 +55,7 @@ def test_ai_blocks_to_prevent_lethal():
             "B": PlayerState(life=2, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([atk], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is atk
     assert atk.blocked_by == [blk]
     sim = CombatSimulator([atk], [blk], game_state=state)
@@ -75,7 +75,7 @@ def test_ai_prefers_best_value_trade():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2]),
         }
     )
-    decide_optimal_blocks([a1, a2], [b1, b2], game_state=state)
+    decide_optimal_blocks(game_state=state)
     # The heuristic keeps the Soldier back and has Knight trade with Goblin
     assert b2.blocking is None
     assert b1.blocking is a2
@@ -98,7 +98,7 @@ def test_ai_saves_creature_when_blocking_is_bad():
             "B": PlayerState(life=10, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([atk], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is None
 
 
@@ -112,7 +112,7 @@ def test_ai_chump_block_to_prevent_lethal():
             "B": PlayerState(life=5, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([atk], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is atk
 
 
@@ -127,7 +127,7 @@ def test_ai_selects_correct_blocker_with_multiple_attackers():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([a1, a2], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is a2
 
 
@@ -142,7 +142,7 @@ def test_ai_double_blocks_big_attacker_to_kill():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2]),
         }
     )
-    decide_optimal_blocks([atk], [b1, b2], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert b1.blocking is atk and b2.blocking is atk
 
 
@@ -158,7 +158,7 @@ def test_ai_double_blocks_first_striker():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2]),
         }
     )
-    decide_optimal_blocks([atk1, atk2], [b1, b2], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert b1.blocking is atk1 and b2.blocking is atk1
 
 
@@ -172,7 +172,7 @@ def test_ai_blocks_trample_to_prevent_lethal():
             "B": PlayerState(life=4, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([atk], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is atk
 
 
@@ -187,7 +187,7 @@ def test_ai_blocks_trample_with_two_when_needed():
             "B": PlayerState(life=1, creatures=[b1, b2]),
         }
     )
-    decide_optimal_blocks([atk], [b1, b2], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert b1.blocking is atk and b2.blocking is atk
 
 
@@ -202,7 +202,7 @@ def test_ai_blocks_menace_with_two_blockers():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2]),
         }
     )
-    decide_optimal_blocks([atk], [b1, b2], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert b1.blocking is atk and b2.blocking is atk
 
 
@@ -216,7 +216,7 @@ def test_optimal_ai_ignores_provoke_with_single_blocker():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    decide_optimal_blocks(game_state=state, provoke_map={atk: blk})
     assert blk.blocking is None
 
 
@@ -231,7 +231,7 @@ def test_ai_blocks_fear_with_correct_color():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[w, blk]),
         }
     )
-    decide_optimal_blocks([atk], [w, blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert w.blocking is None and blk.blocking is atk
 
 
@@ -246,7 +246,7 @@ def test_ai_blocks_infect_when_poison_would_be_lethal():
             "B": PlayerState(life=10, creatures=[blk], poison=9),
         }
     )
-    decide_optimal_blocks([atk, big], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is atk
 
 
@@ -261,7 +261,7 @@ def test_ai_blocks_flying_with_reach_creature():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[reacher]),
         }
     )
-    decide_optimal_blocks([flyer, ground], [reacher], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert reacher.blocking is flyer
 
 
@@ -278,7 +278,7 @@ def test_ai_spreads_blocks_for_max_value():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2, b3]),
         }
     )
-    decide_optimal_blocks([a1, a2], [b1, b2, b3], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert sum(blk.blocking is not None for blk in (b1, b2, b3)) >= 2
 
 
@@ -295,7 +295,7 @@ def test_ai_blocks_three_attackers_prioritize_biggest():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2]),
         }
     )
-    decide_optimal_blocks([a1, a2, a3], [b1, b2], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert b1.blocking is a2 and b2.blocking is a1
 
 
@@ -310,7 +310,7 @@ def test_ai_blocks_to_minimize_life_loss():
             "B": PlayerState(life=5, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([a1, a2], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is a2
 
 
@@ -324,7 +324,7 @@ def test_ai_no_block_when_survival_and_bad_trade():
             "B": PlayerState(life=10, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([atk], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is None
 
 
@@ -338,7 +338,7 @@ def test_ai_blocks_lifelink_attacker_to_stop_gain():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([atk], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is atk
 
 
@@ -354,7 +354,7 @@ def test_ai_deterministic_tiebreaker():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2]),
         }
     )
-    decide_optimal_blocks([a1, a2], [b1, b2], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert (b1.blocking, b2.blocking) == (a1, a2)
 
 
@@ -369,7 +369,7 @@ def test_ai_blocks_creature_with_first_strike_over_vanilla():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([a1, a2], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is a2
 
 
@@ -385,7 +385,7 @@ def test_ai_prefers_blocking_to_kill_more_mana():
             "B": PlayerState(life=4, creatures=[b1, b2]),
         }
     )
-    decide_optimal_blocks([a1, a2], [b1, b2], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert b1.blocking is a2 and b2.blocking is a1
 
 
@@ -403,7 +403,7 @@ def test_iteration_limit_triggers():
     from magic_combat import IterationLimitError
 
     with pytest.raises(IterationLimitError):
-        decide_optimal_blocks([atk], [b1, b2], game_state=state, max_iterations=1)
+        decide_optimal_blocks(game_state=state, max_iterations=1)
 
 
 def test_iteration_limit_allows_fast_run():
@@ -420,8 +420,6 @@ def test_iteration_limit_allows_fast_run():
     )
     start = time.perf_counter()
     decide_optimal_blocks(
-        [a1, a2],
-        [b1, b2],
         game_state=state,
         max_iterations=1000,
     )
@@ -441,7 +439,7 @@ def test_ai_optimal_count_ignores_tiebreaker():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2]),
         }
     )
-    _, opt = decide_optimal_blocks([a1, a2], [b1, b2], game_state=state)
+    _, opt = decide_optimal_blocks(game_state=state)
     assert opt == 2
 
 
@@ -456,5 +454,5 @@ def test_ai_ignores_tapped_blocker():
             "B": PlayerState(life=1, creatures=[blk]),
         }
     )
-    decide_optimal_blocks([atk], [blk], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk.blocking is None

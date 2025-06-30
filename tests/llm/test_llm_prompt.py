@@ -58,7 +58,7 @@ def test_create_prompt_contents():
             "B": PlayerState(life=20, creatures=[blk]),
         }
     )
-    prompt = create_llm_prompt(state, [atk], [blk])
+    prompt = create_llm_prompt(state)
     assert "The attackers are:" in prompt
     assert "Goblin" in prompt
     assert "The blockers are:" in prompt
@@ -74,7 +74,7 @@ def test_prompt_includes_mana_cost():
             "B": PlayerState(life=20, creatures=[blk]),
         }
     )
-    prompt = create_llm_prompt(state, [atk], [blk])
+    prompt = create_llm_prompt(state)
     assert "{2}{B}" in prompt
     assert "{1}{W}" in prompt
 
@@ -89,7 +89,7 @@ def test_prompt_includes_colors_when_relevant():
             "B": PlayerState(life=20, creatures=[blk]),
         }
     )
-    prompt = create_llm_prompt(state, [atk], [blk])
+    prompt = create_llm_prompt(state)
     assert "[Green]" in prompt
     assert "[Blue]" in prompt
 

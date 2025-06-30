@@ -13,7 +13,7 @@ def main():
             name="Attacker 1",
             power=2,
             toughness=2,
-            controller="Player A",
+            controller="A",
             persist=True,
         ),
     ]
@@ -22,27 +22,23 @@ def main():
             name="Blocker 1",
             power=2,
             toughness=3,
-            controller="Player B",
+            controller="B",
         ),
     ]
     game_state = GameState(
         players={
-            "Player A": PlayerState(life=20, creatures=attackers, poison=0),
-            "Player B": PlayerState(life=20, creatures=blockers, poison=0),
+            "A": PlayerState(life=20, creatures=attackers, poison=0),
+            "B": PlayerState(life=20, creatures=blockers, poison=0),
         }
     )
     print(game_state)
     decide_optimal_blocks(
-        attackers=attackers,
-        blockers=blockers,
         game_state=game_state,
         provoke_map={},
     )
     assignment = [attackers.index(b.blocking) if b.blocking else None for b in blockers]
     iteration_counter = IterationCounter(max_iterations=1000)
     score, _ = evaluate_block_assignment(
-        attackers=attackers,
-        blockers=blockers,
         assignment=assignment,
         state=game_state,
         counter=iteration_counter,  # No iteration counter needed for this example

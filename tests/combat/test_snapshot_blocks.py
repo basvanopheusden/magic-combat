@@ -38,8 +38,6 @@ def test_optimal_blocks_snapshots() -> None:
         provoke_map = decode_provoke(snap["provoke_map"], attackers, blockers)
         mentor_map = decode_mentor(snap["mentor_map"], attackers)
         decide_optimal_blocks(
-            attackers,
-            blockers,
             game_state=state,
             provoke_map=provoke_map,
         )

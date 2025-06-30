@@ -8,22 +8,18 @@ from .rules_text import get_relevant_rules_text
 from .text_utils import summarize_creature
 
 
-def create_llm_prompt(
-    game_state: GameState,
-    attackers: Iterable[CombatCreature],
-    blockers: Iterable[CombatCreature],
-) -> str:
+def create_llm_prompt(game_state: GameState) -> str:
     """Create a prompt instructing a language model to choose blocks.
 
     Args:
-        game_state: The current game state.
-        attackers: Creatures attacking this turn.
-        blockers: Creatures available to block.
+        game_state: The current game state with players ``A`` and ``B``.
 
     Returns:
         A formatted prompt for the model.
     """
-    all_creatures = list(attackers) + list(blockers)
+    attackers = list(game_state.players["A"].creatures)
+    blockers = list(game_state.players["B"].creatures)
+    all_creatures = attackers + blockers
     include_colors = any(
         c.fear or c.intimidate or c.protection_colors for c in all_creatures
     )

@@ -17,7 +17,7 @@ def test_simple_ai_skips_nonlethal_double_block():
             "B": PlayerState(life=20, creatures=[b1, b2]),
         }
     )
-    decide_simple_blocks([atk], [b1, b2], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert b1.blocking is None and b2.blocking is None
 
     atk_o = CombatCreature("Giant", 6, 6, "A")
@@ -29,7 +29,7 @@ def test_simple_ai_skips_nonlethal_double_block():
             "B": PlayerState(life=20, creatures=[c1, c2]),
         }
     )
-    decide_optimal_blocks([atk_o], [c1, c2], game_state=state_o)
+    decide_optimal_blocks(game_state=state_o)
     assert c1.blocking is atk_o and c2.blocking is atk_o
 
 
@@ -44,7 +44,7 @@ def test_simple_ai_chumps_instead_of_double_blocking_lethal():
             "B": PlayerState(life=6, creatures=[b1, b2]),
         }
     )
-    decide_simple_blocks([atk], [b1, b2], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert sum(blk.blocking is atk for blk in (b1, b2)) == 1
 
     atk_o = CombatCreature("Giant", 6, 6, "A")
@@ -56,7 +56,7 @@ def test_simple_ai_chumps_instead_of_double_blocking_lethal():
             "B": PlayerState(life=6, creatures=[c1, c2]),
         }
     )
-    decide_optimal_blocks([atk_o], [c1, c2], game_state=state_o)
+    decide_optimal_blocks(game_state=state_o)
     assert c1.blocking is atk_o and c2.blocking is atk_o
 
 
@@ -74,9 +74,7 @@ def test_simple_ai_single_blocks_when_double_block_survives():
             "B": PlayerState(life=5, creatures=[big_blk, small_blk]),
         }
     )
-    decide_simple_blocks(
-        [big_atk, small_atk], [big_blk, small_blk], game_state=state_simple
-    )
+    decide_simple_blocks(game_state=state_simple)
     assert big_blk.blocking is small_atk
     assert small_blk.blocking is big_atk
 
@@ -92,9 +90,7 @@ def test_simple_ai_single_blocks_when_double_block_survives():
             "B": PlayerState(life=5, creatures=[big_blk2, small_blk2]),
         }
     )
-    decide_optimal_blocks(
-        [big_atk2, small_atk2], [big_blk2, small_blk2], game_state=state_opt
-    )
+    decide_optimal_blocks(game_state=state_opt)
     assert big_blk2.blocking is big_atk2 and small_blk2.blocking is big_atk2
 
 
@@ -112,11 +108,7 @@ def test_simple_ai_blocks_lifelink_instead_of_killing_bigger():
             "B": PlayerState(life=10, creatures=[blk1, blk2]),
         }
     )
-    decide_simple_blocks(
-        [lifelink_atk, big_atk],
-        [blk1, blk2],
-        game_state=state_simple,
-    )
+    decide_simple_blocks(game_state=state_simple)
     assert blk1.blocking is lifelink_atk and blk2.blocking is None
 
     lifelink_atk2 = CombatCreature("Priest", 5, 5, "A", lifelink=True)
@@ -131,9 +123,7 @@ def test_simple_ai_blocks_lifelink_instead_of_killing_bigger():
             "B": PlayerState(life=10, creatures=[blk1o, blk2o]),
         }
     )
-    decide_optimal_blocks(
-        [lifelink_atk2, big_atk2], [blk1o, blk2o], game_state=state_opt
-    )
+    decide_optimal_blocks(game_state=state_opt)
     assert blk1o.blocking is big_atk2 and blk2o.blocking is big_atk2
 
 
@@ -149,7 +139,7 @@ def test_simple_vs_optimal_chump_block() -> None:
             "B": PlayerState(life=20, creatures=[g1, g2]),
         }
     )
-    decide_simple_blocks([big, small], [g1, g2], game_state=state)
+    decide_simple_blocks(game_state=state)
     simple = [blk.blocking for blk in (g1, g2)]
 
     atk2 = [CombatCreature("Brute", 5, 5, "A"), CombatCreature("Scout", 2, 2, "A")]
@@ -160,7 +150,7 @@ def test_simple_vs_optimal_chump_block() -> None:
             "B": PlayerState(life=20, creatures=blk2),
         }
     )
-    decide_optimal_blocks(atk2, blk2, game_state=state2)
+    decide_optimal_blocks(game_state=state2)
     optimal = [blk.blocking for blk in blk2]
 
     assert [b.name if b else None for b in simple] == ["Scout", None]
@@ -179,7 +169,7 @@ def test_simple_vs_optimal_poison() -> None:
             "B": PlayerState(life=20, creatures=[b1, b2], poison=8),
         }
     )
-    decide_simple_blocks([infect, big], [b1, b2], game_state=state)
+    decide_simple_blocks(game_state=state)
     simple = [blk.blocking for blk in (b1, b2)]
 
     atk2 = [
@@ -193,7 +183,7 @@ def test_simple_vs_optimal_poison() -> None:
             "B": PlayerState(life=20, creatures=blk2, poison=8),
         }
     )
-    decide_optimal_blocks(atk2, blk2, game_state=state2)
+    decide_optimal_blocks(game_state=state2)
     optimal = [blk.blocking for blk in blk2]
 
     assert [b.name if b else None for b in simple] == ["Carrier", None]
@@ -212,7 +202,7 @@ def test_simple_vs_optimal_indestructible() -> None:
             "B": PlayerState(life=20, creatures=[g1, g2]),
         }
     )
-    decide_simple_blocks([titan, small], [g1, g2], game_state=state)
+    decide_simple_blocks(game_state=state)
     simple = [blk.blocking for blk in (g1, g2)]
 
     atk2 = [
@@ -226,7 +216,7 @@ def test_simple_vs_optimal_indestructible() -> None:
             "B": PlayerState(life=20, creatures=blk2),
         }
     )
-    decide_optimal_blocks(atk2, blk2, game_state=state2)
+    decide_optimal_blocks(game_state=state2)
     optimal = [blk.blocking for blk in blk2]
 
     assert [b.name if b else None for b in simple] == ["Warrior", None]
@@ -245,7 +235,7 @@ def test_simple_ai_single_blocks_when_double_is_better():
             "B": PlayerState(life=20, creatures=[blk1, blk2]),
         }
     )
-    decide_simple_blocks([big_atk, small_atk], [blk1, blk2], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert blk1.blocking is small_atk and blk2.blocking is None
 
     for atk in (big_atk, small_atk):
@@ -253,7 +243,7 @@ def test_simple_ai_single_blocks_when_double_is_better():
     blk1.blocking = None
     blk2.blocking = None
 
-    decide_optimal_blocks([big_atk, small_atk], [blk1, blk2], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk1.blocking is big_atk and blk2.blocking is big_atk
 
 
@@ -269,7 +259,7 @@ def test_simple_ai_leaves_both_attackers_unblocked():
             "B": PlayerState(life=20, creatures=[blk1, blk2]),
         }
     )
-    decide_simple_blocks([atk1, atk2], [blk1, blk2], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert blk1.blocking is None and blk2.blocking is None
 
     for atk in (atk1, atk2):
@@ -277,5 +267,5 @@ def test_simple_ai_leaves_both_attackers_unblocked():
     blk1.blocking = None
     blk2.blocking = None
 
-    decide_optimal_blocks([atk1, atk2], [blk1, blk2], game_state=state)
+    decide_optimal_blocks(game_state=state)
     assert blk1.blocking is atk1 and blk2.blocking is atk1

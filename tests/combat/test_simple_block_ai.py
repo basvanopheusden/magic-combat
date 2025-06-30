@@ -19,7 +19,7 @@ def test_simple_ai_respects_provoke():
             "B": PlayerState(life=20, creatures=[blk]),
         }
     )
-    decide_simple_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    decide_simple_blocks(game_state=state, provoke_map={atk: blk})
     sim = CombatSimulator([atk], [blk], game_state=state, provoke_map={atk: blk})
     sim.validate_blocking()
     assert blk.blocking is atk
@@ -37,7 +37,7 @@ def test_simple_ai_provoke_untaps_tapped_blocker():
         }
     )
     blk.tapped = False
-    decide_simple_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    decide_simple_blocks(game_state=state, provoke_map={atk: blk})
     sim = CombatSimulator([atk], [blk], game_state=state, provoke_map={atk: blk})
     sim.validate_blocking()
     assert blk.blocking is atk
@@ -55,7 +55,7 @@ def test_simple_ai_blocks_best_trade():
             "B": PlayerState(life=20, creatures=[b1, b2]),
         }
     )
-    decide_simple_blocks([a1, a2], [b1, b2], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert b1.blocking is a2
     assert b2.blocking is None
 
@@ -71,7 +71,7 @@ def test_simple_ai_uses_deathtouch_block():
             "B": PlayerState(life=20, creatures=[deathtouch_blk, vanilla_blk]),
         }
     )
-    decide_simple_blocks([giant], [deathtouch_blk, vanilla_blk], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert deathtouch_blk.blocking is giant
     assert vanilla_blk.blocking is None
 
@@ -88,7 +88,7 @@ def test_simple_ai_blocks_first_striker_with_first_strike():
             "B": PlayerState(life=20, creatures=[fs_blk, other_blk]),
         }
     )
-    decide_simple_blocks([fs_atk, vanilla_atk], [fs_blk, other_blk], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert fs_blk.blocking is fs_atk
 
 
@@ -103,7 +103,7 @@ def test_simple_ai_blocks_lifelink_attacker():
             "B": PlayerState(life=20, creatures=[blk]),
         }
     )
-    decide_simple_blocks([lifelink_atk, vanilla_atk], [blk], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert blk.blocking is lifelink_atk
 
 
@@ -117,7 +117,7 @@ def test_simple_ai_skips_indestructible_bad_trade():
             "B": PlayerState(life=20, creatures=[blk]),
         }
     )
-    decide_simple_blocks([indestructible_atk], [blk], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert blk.blocking is None
 
 
@@ -133,7 +133,7 @@ def test_simple_ai_blocks_flyer_with_reach():
             "B": PlayerState(life=20, creatures=[reacher, other_blk]),
         }
     )
-    decide_simple_blocks([flyer, ground], [reacher, other_blk], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert reacher.blocking is flyer
 
 
@@ -148,7 +148,7 @@ def test_simple_ai_blocks_double_strike_first():
             "B": PlayerState(life=20, creatures=[blk]),
         }
     )
-    decide_simple_blocks([ds_atk, vanilla_atk], [blk], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert blk.blocking is vanilla_atk
 
 
@@ -164,7 +164,7 @@ def test_simple_ai_trade_instead_of_chump_when_safe():
             "B": PlayerState(life=20, creatures=[big_blk, chump]),
         }
     )
-    decide_simple_blocks([big_atk, small_atk], [big_blk, chump], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert big_blk.blocking is small_atk
     assert chump.blocking is None
 
@@ -181,7 +181,7 @@ def test_simple_ai_chump_to_prevent_lethal():
             "B": PlayerState(life=2, creatures=[big_blk, chump]),
         }
     )
-    decide_simple_blocks([big_atk, small_atk], [big_blk, chump], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert big_blk.blocking is small_atk
     assert chump.blocking is big_atk
 
@@ -198,7 +198,7 @@ def test_simple_ai_lets_infect_kill_when_value_trade():
             "B": PlayerState(life=20, creatures=[b1, b2], poison=9),
         }
     )
-    decide_simple_blocks([infect, big], [b1, b2], game_state=state)
+    decide_simple_blocks(game_state=state)
     sim = CombatSimulator([infect, big], [b1, b2], game_state=state)
     result = sim.simulate()
     assert b1.blocking is infect
@@ -217,7 +217,7 @@ def test_simple_ai_trade_and_die_from_second_attacker():
             "B": PlayerState(life=6, creatures=[blk]),
         }
     )
-    decide_simple_blocks([a1, a2], [blk], game_state=state)
+    decide_simple_blocks(game_state=state)
     sim = CombatSimulator([a1, a2], [blk], game_state=state)
     result = sim.simulate()
     assert blk.blocking in (a1, a2)
@@ -236,7 +236,7 @@ def test_simple_ai_block_lifelink_then_chump_other_attacker():
             "B": PlayerState(life=4, creatures=[big_blk, chump]),
         }
     )
-    decide_simple_blocks([lifelink_atk, other_atk], [big_blk, chump], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert big_blk.blocking is lifelink_atk
     assert chump.blocking is other_atk
 
@@ -253,7 +253,7 @@ def test_simple_ai_chumps_trample_big_attack():
             "B": PlayerState(life=5, creatures=[b1, b2]),
         }
     )
-    decide_simple_blocks([trampler, other_atk], [b1, b2], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert b1.blocking is other_atk
     assert b2.blocking is None
 
@@ -269,7 +269,7 @@ def test_simple_ai_first_strike_blocks_deathtouch():
             "B": PlayerState(life=20, creatures=[fs_blk, vanilla_blk]),
         }
     )
-    decide_simple_blocks([dt_atk], [fs_blk, vanilla_blk], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert fs_blk.blocking is dt_atk
     assert vanilla_blk.blocking is None
 
@@ -286,9 +286,7 @@ def test_simple_ai_blocks_provoke_target_favorably():
             "B": PlayerState(life=20, creatures=[blk1, blk2]),
         }
     )
-    decide_simple_blocks(
-        [atk1, atk2], [blk1, blk2], game_state=state, provoke_map={atk1: blk1}
-    )
+    decide_simple_blocks(game_state=state, provoke_map={atk1: blk1})
     assert blk1.blocking is atk1
     assert blk2.blocking is atk2
 
@@ -303,7 +301,7 @@ def test_simple_ai_ignores_provoke_with_single_blocker():
             "B": PlayerState(life=20, creatures=[blk]),
         }
     )
-    decide_simple_blocks([atk], [blk], game_state=state, provoke_map={atk: blk})
+    decide_simple_blocks(game_state=state, provoke_map={atk: blk})
     assert blk.blocking is None
 
 
@@ -318,7 +316,7 @@ def test_simple_ai_reacher_blocks_flyer_only():
             "B": PlayerState(life=20, creatures=[reacher]),
         }
     )
-    decide_simple_blocks([flyer, ground], [reacher], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert reacher.blocking is ground
 
 
@@ -336,7 +334,7 @@ def test_simple_ai_iteration_limit_triggers():
     from magic_combat import IterationLimitError
 
     with pytest.raises(IterationLimitError):
-        decide_simple_blocks([atk], [b1, b2], game_state=state, max_iterations=1)
+        decide_simple_blocks(game_state=state, max_iterations=1)
 
 
 def test_simple_ai_iteration_limit_allows_fast_run():
@@ -353,8 +351,6 @@ def test_simple_ai_iteration_limit_allows_fast_run():
     )
     start = time.perf_counter()
     decide_simple_blocks(
-        [a1, a2],
-        [b1, b2],
         game_state=state,
         max_iterations=1000,
     )
@@ -373,5 +369,5 @@ def test_simple_ai_ignores_tapped_blocker():
             "B": PlayerState(life=1, creatures=[blk]),
         }
     )
-    decide_simple_blocks([atk], [blk], game_state=state)
+    decide_simple_blocks(game_state=state)
     assert blk.blocking is None
