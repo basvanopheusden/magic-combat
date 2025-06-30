@@ -60,8 +60,8 @@ The criteria for the best blocking strategy are as follows:
 2. Maximize the difference in total creature value destroyed (attacker minus defender).
 Value is defined as the sum of the power and toughness of the creatures
 plus 0.5 times the number of abilities they have.
-Skip defender in this calculation (it's worth 0), and count double
-strike twice (it's worth 1 instead of 0.5).
+A creature with defender incurs a -0.5 penalty in this calculation, and
+double strike is counted twice (it's worth 1 instead of 0.5).
 3. Maximize the difference in number of creatures destroyed.
 4. Maximize the total mana value of creatures lost.
 5. Minimize life lost.
