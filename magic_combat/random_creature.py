@@ -20,15 +20,15 @@ from .creature import CombatCreature
 from .scryfall_loader import cards_to_creatures
 
 # Probability thresholds for assigning +1/+1 or -1/-1 counters
-PLUS1_PROB = 0.1
-MINUS1_PROB = 0.2
+PLUS_ONE_PROB = 0.1
+MINUS_ONE_PROB = 0.2
 
 # Default probability used when randomly tapping creatures
 DEFAULT_TAP_PROB = 0.3
 
 __all__ = [
-    "PLUS1_PROB",
-    "MINUS1_PROB",
+    "PLUS_ONE_PROB",
+    "MINUS_ONE_PROB",
     "DEFAULT_TAP_PROB",
     "compute_card_statistics",
     "generate_random_creature",
@@ -151,9 +151,9 @@ def assign_random_counters(
     rng = rng if rng is not None else random.Random()
     for cr in creatures:
         roll = rng.random()
-        if roll < PLUS1_PROB:
+        if roll < PLUS_ONE_PROB:
             cr.plus1_counters = rng.randint(1, 2)
-        elif roll < MINUS1_PROB:
+        elif roll < MINUS_ONE_PROB:
             max_minus = min(2, cr.toughness)
             if max_minus > 0:
                 cr.minus1_counters = rng.randint(1, max_minus)
@@ -163,9 +163,18 @@ def assign_random_tapped(
     creatures: Iterable[CombatCreature],
     *,
     rng: random.Random | None = None,
-    prob: float = DEFAULT_TAP_PROB,
+    tap_probability: float = DEFAULT_TAP_PROB,
 ) -> None:
     """Randomly tap creatures without vigilance.
+
+    Parameters
+    ----------
+    creatures:
+        The creatures that may become tapped.
+    rng:
+        Optional random number generator for reproducible tests.
+    tap_probability:
+        Chance for a non-vigilant creature to start tapped.
 
     CR 302.2 states that tapped creatures can't attack or block. Vigilance
     (CR 702.21b) keeps a creature from tapping when it attacks, so vigilant
@@ -176,5 +185,5 @@ def assign_random_tapped(
     for cr in creatures:
         if cr.vigilance:
             cr.tapped = False
-        elif rng.random() < prob:
+        elif rng.random() < tap_probability:
             cr.tapped = True

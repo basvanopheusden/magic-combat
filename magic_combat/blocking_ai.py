@@ -158,12 +158,12 @@ def _best_survival_assignment(
     base_list = list(base_assignment)
 
     for combo in product(*options):
-        ass = base_list[:]
+        candidate_assignment = base_list[:]
         for idx, choice in zip(remain_indices, combo):
-            ass[idx] = choice
+            candidate_assignment[idx] = choice
 
         counts: dict[int, int] = {}
-        for choice in ass:
+        for choice in candidate_assignment:
             if choice is not None:
                 counts[choice] = counts.get(choice, 0) + 1
         valid = True
@@ -181,7 +181,7 @@ def _best_survival_assignment(
 
         try:
             result, _dead_atk, _dead_blk, score = _simulate_assignment(
-                ass,
+                candidate_assignment,
                 game_state,
                 provoke_map,
                 counter,
@@ -200,7 +200,7 @@ def _best_survival_assignment(
 
         if (def_val, def_cnt) < best_score:
             best_score = (def_val, def_cnt)
-            best_assignment = tuple(ass)
+            best_assignment = tuple(candidate_assignment)
             best_numeric = score
 
     return best_assignment, best_numeric

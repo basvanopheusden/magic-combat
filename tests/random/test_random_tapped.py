@@ -12,7 +12,7 @@ def test_assign_random_tapped_respects_vigilance():
         CombatCreature("B", 2, 2, "B", vigilance=True),
         CombatCreature("C", 2, 2, "B"),
     ]
-    assign_random_tapped(creatures, rng=rng, prob=1.0)
+    assign_random_tapped(creatures, rng=rng, tap_probability=1.0)
     assert creatures[0].tapped
     assert not creatures[1].tapped
     assert creatures[2].tapped
