@@ -4,7 +4,7 @@
   "typeCheckingMode": "strict",
   "useLibraryCodeForTypes": true,
 
-  "extraPaths": ["src", "magic_combat"],
+  "extraPaths": ["magic_combat"],
 
   "exclude": [
     "**/.git/**",
