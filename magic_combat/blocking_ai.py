@@ -20,6 +20,7 @@ from .gamestate import GameState
 from .limits import IterationCounter
 from .simulator import CombatResult
 from .simulator import CombatSimulator
+from .utils import check_non_negative
 
 ScoreVector: TypeAlias = tuple[int, float, int, int, int, int, tuple[int, ...]]
 
@@ -357,6 +358,8 @@ def decide_optimal_blocks(
     k: int = 1,
 ) -> Tuple[list[tuple[ScoreVector, tuple[Optional[int], ...]]], int,]:
     """Assign blockers to attackers using a minimax search over block assignments."""
+
+    check_non_negative(k, "k")
 
     attackers = list(game_state.players["A"].creatures)
     blockers = list(game_state.players["B"].creatures)
