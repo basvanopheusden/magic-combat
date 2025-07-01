@@ -9,6 +9,14 @@ damage assignment, keyword abilities and more.
 
 This project requires **Python 3.12**.
 
+## Installation
+
+Install the package from the repository root using ``pip``:
+
+```bash
+pip install .
+```
+
 ## Repository layout
 
 ```
