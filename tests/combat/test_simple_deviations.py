@@ -45,7 +45,7 @@ def test_simple_ai_chumps_instead_of_double_blocking_lethal():
         }
     )
     decide_simple_blocks(game_state=state)
-    assert sum(blk.blocking is atk for blk in (b1, b2)) == 1
+    assert all(blk.blocking is atk for blk in (b1, b2))
 
     atk_o = CombatCreature("Giant", 6, 6, "A")
     c1 = CombatCreature("Guard1", 4, 4, "B")

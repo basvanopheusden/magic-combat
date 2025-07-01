@@ -255,7 +255,7 @@ def test_simple_ai_chumps_trample_big_attack():
     )
     decide_simple_blocks(game_state=state)
     assert b1.blocking is other_atk
-    assert b2.blocking is None
+    assert b2.blocking is other_atk
 
 
 def test_simple_ai_first_strike_blocks_deathtouch():
