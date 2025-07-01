@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import heapq
 from itertools import product
+from typing import Iterable
 from typing import List
 from typing import Optional
 from typing import Sequence
@@ -295,9 +296,14 @@ def get_all_damage_orderings(
             atk_keys.append(atk)
             order_options.append(list(damage_order_permutations(atk, blks)))
 
-    orders_list = product(*order_options) if order_options else [tuple()]
+    if not order_options:
+        return [{}]
+
+    orders_iter: Iterable[tuple[tuple[CombatCreature, ...], ...]] = product(
+        *order_options
+    )
     return [
-        {atk_keys[i]: orders[i] for i in range(len(orders))} for orders in orders_list
+        {atk_keys[i]: orders[i] for i in range(len(orders))} for orders in orders_iter
     ]
 
 
