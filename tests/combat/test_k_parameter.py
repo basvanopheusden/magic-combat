@@ -33,6 +33,21 @@ def _tie_state() -> GameState:
     )
 
 
+def _triple_state() -> GameState:
+    a1 = CombatCreature("A1", 2, 2, "A")
+    a2 = CombatCreature("A2", 2, 2, "A")
+    a3 = CombatCreature("A3", 2, 2, "A")
+    b1 = CombatCreature("B1", 2, 2, "B")
+    b2 = CombatCreature("B2", 2, 2, "B")
+    b3 = CombatCreature("B3", 2, 2, "B")
+    return GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[a1, a2, a3]),
+            "B": PlayerState(life=20, creatures=[b1, b2, b3]),
+        }
+    )
+
+
 def test_negative_k_raises_error():
     """CR 509.1a: The defending player chooses how creatures block."""
     state = _simple_state()
@@ -117,3 +132,12 @@ def test_zero_k_returns_empty():
     state = _simple_state()
     assns, _ = decide_optimal_blocks(game_state=state, k=0)
     assert assns == []
+
+
+def test_optimal_count_ignores_k_and_tiebreaker_with_many():
+    """CR 509.1a: The defending player chooses how creatures block."""
+    state = _triple_state()
+    _, count2 = decide_optimal_blocks(game_state=state, k=2)
+    _, count4 = decide_optimal_blocks(game_state=_triple_state(), k=4)
+    assert count2 == 6
+    assert count2 == count4
