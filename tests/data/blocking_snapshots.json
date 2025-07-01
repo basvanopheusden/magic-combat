@@ -10,7 +10,9 @@
                 "controller": "A",
                 "mana_cost": "{1}{B}",
                 "oracle_text": "Frenzy 1\nInfect",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -67,7 +69,9 @@
                 "controller": "A",
                 "mana_cost": "{2}{B}",
                 "oracle_text": "Flying\nShadow\nSkulk",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -124,7 +128,9 @@
                 "controller": "A",
                 "mana_cost": "{4}{G}",
                 "oracle_text": "Trample\nMelee\nHorsemanship",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -173,7 +179,8 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
+            }
+        ],
         "blockers": [
             {
                 "name": "Storm Herald",
@@ -182,7 +189,9 @@
                 "controller": "B",
                 "mana_cost": "{3}{U}",
                 "oracle_text": "Flying\nFirst strike",
-                "colors": ["BLUE"],
+                "colors": [
+                    "BLUE"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -239,7 +248,9 @@
                 "controller": "B",
                 "mana_cost": "{3}{B}",
                 "oracle_text": "Persist\nDeathtouch",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -296,7 +307,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{R}",
                 "oracle_text": "Bushido 1\nMelee",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -345,13 +358,38 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
-        "state": {"life": {"A": 17, "B": 20}, "poison": {"A": 5, "B": 7}},
+            }
+        ],
+        "state": {
+            "life": {
+                "A": 17,
+                "B": 20
+            },
+            "poison": {
+                "A": 5,
+                "B": 7
+            }
+        },
         "provoke_map": {},
         "mentor_map": {},
-        "optimal_assignment": [null, 0, null],
-        "simple_assignment": [null, 0, null],
-        "combat_value": [6, 0, 0, -6.5, 2]},
+        "optimal_assignment": [
+            null,
+            0,
+            null
+        ],
+        "simple_assignment": [
+            null,
+            0,
+            null
+        ],
+        "combat_value": [
+            6,
+            0,
+            0,
+            -6.5,
+            2
+        ]
+    },
     {
         "version": "3",
         "seed": 43,
@@ -363,7 +401,9 @@
                 "controller": "A",
                 "mana_cost": "{4}{R}",
                 "oracle_text": "Trample\nDouble strike\nBattle cry",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -422,7 +462,9 @@
                 "controller": "B",
                 "mana_cost": "{1}{B}",
                 "oracle_text": "Toxic 2\nFlying",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -479,7 +521,9 @@
                 "controller": "B",
                 "mana_cost": "{3}{B}",
                 "oracle_text": "Undying\nIntimidate",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -528,13 +572,36 @@
                 "_minus1_counters": 1,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
-        "state": {"life": {"A": 7, "B": 5}, "poison": {"A": 1, "B": 6}},
+            }
+        ],
+        "state": {
+            "life": {
+                "A": 7,
+                "B": 5
+            },
+            "poison": {
+                "A": 1,
+                "B": 6
+            }
+        },
         "provoke_map": {},
         "mentor_map": {},
-        "optimal_assignment": [0, 0],
-        "simple_assignment": [null, null],
-        "combat_value": [4, 0, 1, 3.5, 2]},
+        "optimal_assignment": [
+            0,
+            0
+        ],
+        "simple_assignment": [
+            null,
+            null
+        ],
+        "combat_value": [
+            4,
+            0,
+            1,
+            2.0,
+            2
+        ]
+    },
     {
         "version": "3",
         "seed": 44,
@@ -546,7 +613,9 @@
                 "controller": "A",
                 "mana_cost": "{2}{U}",
                 "oracle_text": "Flying",
-                "colors": ["BLUE"],
+                "colors": [
+                    "BLUE"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -603,7 +672,9 @@
                 "controller": "A",
                 "mana_cost": "{1}{B}",
                 "oracle_text": "Toxic 2\nFlying",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -660,7 +731,9 @@
                 "controller": "A",
                 "mana_cost": "{2}{B}",
                 "oracle_text": "Undying",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -709,7 +782,8 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
+            }
+        ],
         "blockers": [
             {
                 "name": "Immortal Warrior",
@@ -718,7 +792,9 @@
                 "controller": "B",
                 "mana_cost": "{4}{B}",
                 "oracle_text": "Undying\nIndestructible\nDethrone",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -775,7 +851,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{W}",
                 "oracle_text": "Persist\nVigilance",
-                "colors": ["WHITE"],
+                "colors": [
+                    "WHITE"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -824,13 +902,36 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
-        "state": {"life": {"A": 1, "B": 12}, "poison": {"A": 1, "B": 6}},
+            }
+        ],
+        "state": {
+            "life": {
+                "A": 1,
+                "B": 12
+            },
+            "poison": {
+                "A": 1,
+                "B": 6
+            }
+        },
         "provoke_map": {},
         "mentor_map": {},
-        "optimal_assignment": [2, 2],
-        "simple_assignment": [null, null],
-        "combat_value": [4, 2, 0, 0, 0]},
+        "optimal_assignment": [
+            2,
+            2
+        ],
+        "simple_assignment": [
+            null,
+            null
+        ],
+        "combat_value": [
+            4,
+            2,
+            0,
+            -0.5,
+            0
+        ]
+    },
     {
         "version": "3",
         "seed": 45,
@@ -842,7 +943,9 @@
                 "controller": "A",
                 "mana_cost": "{3}{B}",
                 "oracle_text": "Undying\nIntimidate",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -899,7 +1002,9 @@
                 "controller": "A",
                 "mana_cost": "{3}{G}",
                 "oracle_text": "Reach\nDeathtouch",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": true,
@@ -948,7 +1053,8 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
+            }
+        ],
         "blockers": [
             {
                 "name": "Flank Knight",
@@ -957,7 +1063,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{W}",
                 "oracle_text": "First strike\nFlanking",
-                "colors": ["WHITE"],
+                "colors": [
+                    "WHITE"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1014,7 +1122,9 @@
                 "controller": "B",
                 "mana_cost": "{1}{G}",
                 "oracle_text": "Toxic 2",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1071,7 +1181,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{G}",
                 "oracle_text": "Toxic 2",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1128,7 +1240,9 @@
                 "controller": "B",
                 "mana_cost": "{3}{U}",
                 "oracle_text": "Flying\nFirst strike",
-                "colors": ["BLUE"],
+                "colors": [
+                    "BLUE"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -1177,13 +1291,40 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
-        "state": {"life": {"A": 2, "B": 17}, "poison": {"A": 5, "B": 6}},
+            }
+        ],
+        "state": {
+            "life": {
+                "A": 2,
+                "B": 17
+            },
+            "poison": {
+                "A": 5,
+                "B": 6
+            }
+        },
         "provoke_map": {},
         "mentor_map": {},
-        "optimal_assignment": [null, 1, 1, null],
-        "simple_assignment": [null, null, null, null],
-        "combat_value": [3, 0, 1, -1.0, 1]},
+        "optimal_assignment": [
+            null,
+            1,
+            1,
+            null
+        ],
+        "simple_assignment": [
+            null,
+            null,
+            null,
+            null
+        ],
+        "combat_value": [
+            3,
+            0,
+            1,
+            -1.0,
+            1
+        ]
+    },
     {
         "version": "3",
         "seed": 46,
@@ -1195,7 +1336,9 @@
                 "controller": "A",
                 "mana_cost": "{4}{R}",
                 "oracle_text": "Trample\nDouble strike\nBattle cry",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1252,7 +1395,9 @@
                 "controller": "A",
                 "mana_cost": "{1}{G}",
                 "oracle_text": "Toxic 2",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1301,7 +1446,8 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
+            }
+        ],
         "blockers": [
             {
                 "name": "Winged Drake",
@@ -1310,7 +1456,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{U}",
                 "oracle_text": "Flying",
-                "colors": ["BLUE"],
+                "colors": [
+                    "BLUE"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -1367,7 +1515,9 @@
                 "controller": "B",
                 "mana_cost": "{R}",
                 "oracle_text": "Frenzy 1",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1424,7 +1574,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{W}",
                 "oracle_text": "Bushido 1\nTraining",
-                "colors": ["WHITE"],
+                "colors": [
+                    "WHITE"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1473,13 +1625,38 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
-        "state": {"life": {"A": 8, "B": 15}, "poison": {"A": 4, "B": 2}},
+            }
+        ],
+        "state": {
+            "life": {
+                "A": 8,
+                "B": 15
+            },
+            "poison": {
+                "A": 4,
+                "B": 2
+            }
+        },
         "provoke_map": {},
         "mentor_map": {},
-        "optimal_assignment": [1, 1, null],
-        "simple_assignment": [null, null, null],
-        "combat_value": [4, 0, 1, -1.0, 2]},
+        "optimal_assignment": [
+            1,
+            1,
+            null
+        ],
+        "simple_assignment": [
+            null,
+            null,
+            null
+        ],
+        "combat_value": [
+            4,
+            0,
+            1,
+            -1.0,
+            2
+        ]
+    },
     {
         "version": "3",
         "seed": 47,
@@ -1491,7 +1668,9 @@
                 "controller": "A",
                 "mana_cost": "{2}{G}",
                 "oracle_text": "Reach\nTrample",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": true,
@@ -1548,7 +1727,9 @@
                 "controller": "A",
                 "mana_cost": "{1}{R}{R}",
                 "oracle_text": "Bushido 2",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1605,7 +1786,9 @@
                 "controller": "A",
                 "mana_cost": "{2}{R}",
                 "oracle_text": "Bushido 1\nMelee",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1654,7 +1837,8 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
+            }
+        ],
         "blockers": [
             {
                 "name": "Charging Rhino",
@@ -1663,7 +1847,9 @@
                 "controller": "B",
                 "mana_cost": "{3}{G}",
                 "oracle_text": "Trample",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1720,7 +1906,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{U}",
                 "oracle_text": "Frenzy 1\nFlying",
-                "colors": ["BLUE"],
+                "colors": [
+                    "BLUE"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -1777,7 +1965,9 @@
                 "controller": "B",
                 "mana_cost": "{3}{R}",
                 "oracle_text": "Trample\nMenace",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1826,13 +2016,38 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
-        "state": {"life": {"A": 18, "B": 1}, "poison": {"A": 0, "B": 0}},
+            }
+        ],
+        "state": {
+            "life": {
+                "A": 18,
+                "B": 1
+            },
+            "poison": {
+                "A": 0,
+                "B": 0
+            }
+        },
         "provoke_map": {},
         "mentor_map": {},
-        "optimal_assignment": [null, null, null],
-        "simple_assignment": [null, null, 0],
-        "combat_value": [8, 0, 0, 0, 0]},
+        "optimal_assignment": [
+            null,
+            null,
+            null
+        ],
+        "simple_assignment": [
+            null,
+            null,
+            0
+        ],
+        "combat_value": [
+            8,
+            0,
+            0,
+            0,
+            0
+        ]
+    },
     {
         "version": "3",
         "seed": 48,
@@ -1844,7 +2059,9 @@
                 "controller": "A",
                 "mana_cost": "{3}{W}",
                 "oracle_text": "Persist",
-                "colors": ["WHITE"],
+                "colors": [
+                    "WHITE"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1901,7 +2118,9 @@
                 "controller": "A",
                 "mana_cost": "{3}{R}",
                 "oracle_text": "Undying\nMenace",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -1958,7 +2177,9 @@
                 "controller": "A",
                 "mana_cost": "{2}{R}",
                 "oracle_text": "Bushido 1\nMelee",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2007,7 +2228,8 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
+            }
+        ],
         "blockers": [
             {
                 "name": "Poison Priest",
@@ -2016,7 +2238,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{G}",
                 "oracle_text": "Toxic 2\nLifelink\nExalted",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2073,7 +2297,9 @@
                 "controller": "B",
                 "mana_cost": "{1}{G}",
                 "oracle_text": "Toxic 2",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2130,7 +2356,9 @@
                 "controller": "B",
                 "mana_cost": "{1}{B}",
                 "oracle_text": "Toxic 2\nFlying",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -2187,7 +2415,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{G}",
                 "oracle_text": "Reach\nWither",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": true,
@@ -2236,13 +2466,40 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
-        "state": {"life": {"A": 20, "B": 17}, "poison": {"A": 7, "B": 7}},
+            }
+        ],
+        "state": {
+            "life": {
+                "A": 20,
+                "B": 17
+            },
+            "poison": {
+                "A": 7,
+                "B": 7
+            }
+        },
         "provoke_map": {},
         "mentor_map": {},
-        "optimal_assignment": [2, null, 2, 0],
-        "simple_assignment": [null, null, null, 0],
-        "combat_value": [-1, 0, -1, -1.0, -4]},
+        "optimal_assignment": [
+            0,
+            2,
+            2,
+            null
+        ],
+        "simple_assignment": [
+            null,
+            null,
+            null,
+            0
+        ],
+        "combat_value": [
+            -1,
+            0,
+            1,
+            -3.0,
+            1
+        ]
+    },
     {
         "version": "3",
         "seed": 49,
@@ -2254,7 +2511,9 @@
                 "controller": "A",
                 "mana_cost": "{2}{G}",
                 "oracle_text": "Toxic 2\nLifelink\nExalted",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2311,7 +2570,9 @@
                 "controller": "A",
                 "mana_cost": "{1}{B}",
                 "oracle_text": "Menace\nLifelink",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2368,7 +2629,9 @@
                 "controller": "A",
                 "mana_cost": "{1}{R}",
                 "oracle_text": "Menace",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2425,7 +2688,9 @@
                 "controller": "A",
                 "mana_cost": "{1}{B}",
                 "oracle_text": "Frenzy 1\nInfect",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2482,7 +2747,9 @@
                 "controller": "A",
                 "mana_cost": "{R}",
                 "oracle_text": "Frenzy 1",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2531,7 +2798,8 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
+            }
+        ],
         "blockers": [
             {
                 "name": "Bramble Archer",
@@ -2540,7 +2808,9 @@
                 "controller": "B",
                 "mana_cost": "{3}{G}",
                 "oracle_text": "Reach\nDeathtouch",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": true,
@@ -2597,7 +2867,9 @@
                 "controller": "B",
                 "mana_cost": "{4}{R}",
                 "oracle_text": "Trample\nDouble strike\nBattle cry",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2646,13 +2918,36 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
-        "state": {"life": {"A": 19, "B": 13}, "poison": {"A": 1, "B": 7}},
+            }
+        ],
+        "state": {
+            "life": {
+                "A": 19,
+                "B": 13
+            },
+            "poison": {
+                "A": 1,
+                "B": 7
+            }
+        },
         "provoke_map": {},
         "mentor_map": {},
-        "optimal_assignment": [3, 0],
-        "simple_assignment": [0, 3],
-        "combat_value": [8, 0, -2, -7.0, -5]},
+        "optimal_assignment": [
+            0,
+            3
+        ],
+        "simple_assignment": [
+            0,
+            3
+        ],
+        "combat_value": [
+            10,
+            0,
+            -2,
+            -7.0,
+            -5
+        ]
+    },
     {
         "version": "3",
         "seed": 50,
@@ -2664,7 +2959,9 @@
                 "controller": "A",
                 "mana_cost": "{2}{B}",
                 "oracle_text": "Undying",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2721,7 +3018,9 @@
                 "controller": "A",
                 "mana_cost": "{3}{U}",
                 "oracle_text": "Flying\nFirst strike",
-                "colors": ["BLUE"],
+                "colors": [
+                    "BLUE"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -2770,7 +3069,8 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
+            }
+        ],
         "blockers": [
             {
                 "name": "Tunnel Rogue",
@@ -2779,7 +3079,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{R}",
                 "oracle_text": "Menace\nProvoke",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2836,7 +3138,9 @@
                 "controller": "B",
                 "mana_cost": "{3}{U}",
                 "oracle_text": "Double strike",
-                "colors": ["BLUE"],
+                "colors": [
+                    "BLUE"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -2885,13 +3189,36 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
-        "state": {"life": {"A": 4, "B": 17}, "poison": {"A": 0, "B": 0}},
+            }
+        ],
+        "state": {
+            "life": {
+                "A": 4,
+                "B": 17
+            },
+            "poison": {
+                "A": 0,
+                "B": 0
+            }
+        },
         "provoke_map": {},
         "mentor_map": {},
-        "optimal_assignment": [0, 0],
-        "simple_assignment": [null, null],
-        "combat_value": [2, 0, 0, 0, 0]},
+        "optimal_assignment": [
+            null,
+            null
+        ],
+        "simple_assignment": [
+            null,
+            null
+        ],
+        "combat_value": [
+            4,
+            0,
+            0,
+            0,
+            0
+        ]
+    },
     {
         "version": "3",
         "seed": 51,
@@ -2903,7 +3230,9 @@
                 "controller": "A",
                 "mana_cost": "{1}{B}",
                 "oracle_text": "Toxic 2\nFlying",
-                "colors": ["BLACK"],
+                "colors": [
+                    "BLACK"
+                ],
                 "artifact": false,
                 "flying": true,
                 "reach": false,
@@ -2960,7 +3289,9 @@
                 "controller": "A",
                 "mana_cost": "{3}{W}",
                 "oracle_text": "Persist",
-                "colors": ["WHITE"],
+                "colors": [
+                    "WHITE"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -3017,7 +3348,9 @@
                 "controller": "A",
                 "mana_cost": "{1}{G}",
                 "oracle_text": "Toxic 2",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -3074,7 +3407,9 @@
                 "controller": "A",
                 "mana_cost": "{2}{R}",
                 "oracle_text": "Bushido 1\nMelee",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -3123,7 +3458,8 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
+            }
+        ],
         "blockers": [
             {
                 "name": "Toxic Lizard",
@@ -3132,7 +3468,9 @@
                 "controller": "B",
                 "mana_cost": "{2}{G}",
                 "oracle_text": "Toxic 2",
-                "colors": ["GREEN"],
+                "colors": [
+                    "GREEN"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -3189,7 +3527,9 @@
                 "controller": "B",
                 "mana_cost": "{4}{R}",
                 "oracle_text": "Trample\nDouble strike\nBattle cry",
-                "colors": ["RED"],
+                "colors": [
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -3246,7 +3586,11 @@
                 "controller": "B",
                 "mana_cost": "{2}{G/U}{R}",
                 "oracle_text": "Trample",
-                "colors": ["BLUE", "GREEN", "RED"],
+                "colors": [
+                    "BLUE",
+                    "GREEN",
+                    "RED"
+                ],
                 "artifact": false,
                 "flying": false,
                 "reach": false,
@@ -3295,10 +3639,36 @@
                 "_minus1_counters": 0,
                 "temp_power": 0,
                 "temp_toughness": 0
-            }],
-        "state": {"life": {"A": 17, "B": 12}, "poison": {"A": 1, "B": 4}},
+            }
+        ],
+        "state": {
+            "life": {
+                "A": 17,
+                "B": 12
+            },
+            "poison": {
+                "A": 1,
+                "B": 4
+            }
+        },
         "provoke_map": {},
         "mentor_map": {},
-        "optimal_assignment": [null, null, null],
-        "simple_assignment": [2, null, null],
-        "combat_value": [9, 4, 0, 0, 0]}]
+        "optimal_assignment": [
+            null,
+            null,
+            null
+        ],
+        "simple_assignment": [
+            2,
+            null,
+            null
+        ],
+        "combat_value": [
+            9,
+            4,
+            0,
+            0,
+            0
+        ]
+    }
+]

@@ -25,6 +25,9 @@ class CombatResult:
     damage_to_players: Dict[str, int]
     creatures_destroyed: List[CombatCreature]
     lifegain: Dict[str, int]
+    creature_value_deltas: Dict[CombatCreature, float] = field(
+        default_factory=dict[CombatCreature, float]
+    )
     poison_counters: Dict[str, int] = field(default_factory=dict[str, int])
     players_lost: List[str] = field(default_factory=list[str])
 
@@ -71,7 +74,17 @@ class CombatResult:
         def_val = sum(
             c.value() for c in self.creatures_destroyed if c.controller == defender
         )
-        return def_val - att_val
+        att_delta = sum(
+            delta
+            for c, delta in self.creature_value_deltas.items()
+            if c.controller == attacker_player
+        )
+        def_delta = sum(
+            delta
+            for c, delta in self.creature_value_deltas.items()
+            if c.controller == defender
+        )
+        return (def_val - att_val) + (att_delta - def_delta)
 
     def _score_count_diff(
         self, attacker_player: str, defender: str, include: bool
@@ -206,6 +219,9 @@ class CombatSimulator:
         self.poison_counters: Dict[str, int] = dict[str, int]()
         self.lifegain: Dict[str, int] = dict[str, int]()
         self._lifegain_applied: Dict[str, int] = dict[str, int]()
+        self._initial_values: Dict[CombatCreature, float] = dict[
+            CombatCreature, float
+        ]()
         self.damage_order_map: Dict[CombatCreature, Tuple[CombatCreature, ...]] = (
             damage_order_map or {}
         )
@@ -645,12 +661,21 @@ class CombatSimulator:
 
     def finalize(self) -> CombatResult:
         """Return the outcome of combat."""
+        deltas: dict[CombatCreature, float] = {}
+        for creature in self.all_creatures:
+            if creature in self.dead_creatures:
+                continue
+            start_val = self._initial_values.get(creature, creature.value())
+            delta = creature.value() - start_val
+            if delta:
+                deltas[creature] = delta
         return CombatResult(
             damage_to_players=self.player_damage,
             poison_counters=self.poison_counters,
             creatures_destroyed=self.dead_creatures,
             lifegain=self.lifegain,
             players_lost=self.players_lost,
+            creature_value_deltas=deltas,
         )
 
     def simulate(self) -> CombatResult:
@@ -659,6 +684,7 @@ class CombatSimulator:
         self.tap_attackers()
         self.validate_blocking()
         self.apply_precombat_triggers()
+        self._initial_values = {c: c.value() for c in self.all_creatures}
         self.check_lethal_damage()
         self._check_players_lost()
 

@@ -201,8 +201,8 @@ def test_simple_ai_lets_infect_kill_when_value_trade():
     decide_simple_blocks(game_state=state)
     sim = CombatSimulator([infect, big], [b1, b2], game_state=state)
     result = sim.simulate()
-    assert b1.blocking is infect
-    assert b2.blocking is None
+    assert b2.blocking is infect
+    assert b1.blocking is None
     assert result.players_lost == []
 
 
