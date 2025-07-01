@@ -456,3 +456,31 @@ def test_ai_ignores_tapped_blocker():
     )
     decide_optimal_blocks(game_state=state)
     assert blk.blocking is None
+
+
+def test_ai_blocks_persist_when_free():
+    """CR 702.77a & 509.1a: Optimal blocking kills a persist attacker if able."""
+    atk = CombatCreature("Spirit", 2, 2, "A", persist=True)
+    blk = CombatCreature("Giant", 3, 3, "B")
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
+        }
+    )
+    decide_optimal_blocks(game_state=state)
+    assert blk.blocking is atk
+
+
+def test_ai_blocks_undying_when_free():
+    """CR 702.92a & 509.1a: Optimal blocking kills an undying attacker if able."""
+    atk = CombatCreature("Phoenix", 2, 2, "A", undying=True)
+    blk = CombatCreature("Giant", 3, 3, "B")
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[atk]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk]),
+        }
+    )
+    decide_optimal_blocks(game_state=state)
+    assert blk.blocking is atk

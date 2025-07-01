@@ -59,3 +59,27 @@ def test_undying_returns_once(unused):
     result = sim.simulate()
     assert blk not in result.creatures_destroyed
     assert blk.plus1_counters == 1
+
+
+def test_persist_value_reduced_after_return():
+    """CR 702.77a: Persist returns with a -1/-1 counter reducing value."""
+    atk = CombatCreature("Bear", 3, 3, "A")
+    blk = CombatCreature("Ghost", 2, 2, "B", persist=True)
+    pre = blk.value()
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    sim.simulate()
+    assert blk.minus1_counters == 1
+    assert blk.value() < pre
+
+
+def test_undying_value_reduced_after_return():
+    """CR 702.92a: Undying returns with a +1/+1 counter reducing value."""
+    atk = CombatCreature("Bear", 3, 3, "A")
+    blk = CombatCreature("Phoenix", 2, 2, "B", undying=True)
+    pre = blk.value()
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    sim.simulate()
+    assert blk.plus1_counters == 1
+    assert blk.value() < pre
