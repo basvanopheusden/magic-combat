@@ -9,8 +9,8 @@ from magic_combat import GameState
 from magic_combat import PlayerState
 from magic_combat import decide_optimal_blocks
 from magic_combat.block_utils import evaluate_block_assignment
-from magic_combat.blocking_ai import can_block
 from magic_combat.limits import IterationCounter
+from magic_combat.utils import can_block
 from tests.conftest import link_block
 
 

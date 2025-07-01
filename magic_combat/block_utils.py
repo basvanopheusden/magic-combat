@@ -14,6 +14,7 @@ from .gamestate import GameState
 from .limits import IterationCounter
 from .simulator import CombatResult
 from .simulator import CombatSimulator
+from .utils import can_block
 
 
 def evaluate_block_assignment(
@@ -74,3 +75,33 @@ def evaluate_block_assignment(
         return None, None
 
     return result, sim.game_state
+
+
+def should_force_provoke(
+    attacker: CombatCreature,
+    blocker: CombatCreature,
+    game_state: GameState,
+) -> bool:
+    """Return ``True`` if ``blocker`` must block ``attacker``."""
+
+    if not can_block(attacker, blocker):
+        return False
+    blockers = list(game_state.players["B"].creatures)
+    if attacker.menace:
+        eligible = [
+            b
+            for b in blockers
+            if b is not blocker and not b.tapped and can_block(attacker, b)
+        ]
+        if not eligible:
+            return False
+    return True
+
+
+def reset_block_assignments(game_state: GameState) -> None:
+    """Clear ``blocked_by`` and ``blocking`` fields on all combatants."""
+
+    for atk in game_state.players["A"].creatures:
+        atk.blocked_by.clear()
+    for blk in game_state.players["B"].creatures:
+        blk.blocking = None

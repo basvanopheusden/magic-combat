@@ -5,6 +5,7 @@ from magic_combat import GameState
 from magic_combat import PlayerState
 from magic_combat import decide_optimal_blocks
 from magic_combat.block_utils import evaluate_block_assignment
+from magic_combat.block_utils import reset_block_assignments
 from magic_combat.limits import IterationCounter
 from magic_combat.text_utils import summarize_creature
 
@@ -49,6 +50,7 @@ def main() -> None:
         k=args.top_k,
     )
     print("Top assignments:", assignments)
+    reset_block_assignments(game_state)
     block_map = {blk: blk.blocking for blk in blockers if blk.blocking is not None}
     iteration_counter = IterationCounter(max_iterations=1000)
     result, _ = evaluate_block_assignment(

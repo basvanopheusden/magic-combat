@@ -10,8 +10,8 @@ from magic_combat import card_to_creature
 from magic_combat import decide_optimal_blocks
 from magic_combat import load_cards
 from magic_combat.block_utils import evaluate_block_assignment
-from magic_combat.blocking_ai import can_block
 from magic_combat.limits import IterationCounter
+from magic_combat.utils import can_block
 
 # Card data used when generating random blocking scenarios
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "example_test_cards.json"
