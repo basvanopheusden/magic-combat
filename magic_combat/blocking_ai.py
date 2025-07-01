@@ -8,6 +8,7 @@ from typing import List
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
+from typing import TypeAlias
 
 from .block_utils import evaluate_block_assignment
 from .creature import CombatCreature
@@ -18,6 +19,8 @@ from .limits import IterationCounter
 from .simulator import CombatResult
 from .simulator import CombatSimulator
 from .utils import can_block
+
+ScoreVector: TypeAlias = tuple[int, float, int, int, int, int, tuple[int, ...]]
 
 
 def _should_force_provoke(
@@ -296,6 +299,43 @@ def _simulate_assignment(
     return result, dead_atk, dead_blk, score
 
 
+def get_all_blocking_assignments(
+    options: Sequence[Sequence[int | None]],
+) -> list[tuple[Optional[int], ...]]:
+    """Return every combination of blocker assignments."""
+
+    return list(product(*options))
+
+
+def get_all_damage_orderings(
+    assignment: Sequence[Optional[int]],
+    attackers: Sequence[CombatCreature],
+    blockers: Sequence[CombatCreature],
+) -> list[dict[CombatCreature, tuple[CombatCreature, ...]]]:
+    """Return all possible damage orderings for ``assignment``."""
+
+    block_dict = {
+        blockers[blk_idx]: attackers[choice]
+        for blk_idx, choice in enumerate(assignment)
+        if choice is not None
+    }
+    block_map: dict[CombatCreature, list[CombatCreature]] = {}
+    for blk, atk in block_dict.items():
+        block_map.setdefault(atk, []).append(blk)
+
+    order_options: list[list[tuple[CombatCreature, ...]]] = []
+    atk_keys: list[CombatCreature] = []
+    for atk, blks in block_map.items():
+        if len(blks) > 1:
+            atk_keys.append(atk)
+            order_options.append(list(damage_order_permutations(atk, blks)))
+
+    orders_list = product(*order_options) if order_options else [tuple()]
+    return [
+        {atk_keys[i]: orders[i] for i in range(len(orders))} for orders in orders_list
+    ]
+
+
 def _minimax_blocks(
     options: Sequence[Sequence[int | None]],
     game_state: GameState,
@@ -314,31 +354,14 @@ def _minimax_blocks(
         ]
     ] = []
 
-    for assignment in product(*options):
-        worst_for_defender: tuple[
-            int, float, int, int, int, int, tuple[Optional[int], ...]
-        ] | None = None
-        # Convert the tuple assignment into a mapping once
+    for assignment in get_all_blocking_assignments(options):
+        scores_for_attacker: list[ScoreVector] = []
         block_dict = {
             blockers[blk_idx]: attackers[choice]
             for blk_idx, choice in enumerate(assignment)
             if choice is not None
         }
-        # Attacker chooses ordering to maximize the score
-        block_map: dict[CombatCreature, list[CombatCreature]] = {}
-        for blk, atk in block_dict.items():
-            block_map.setdefault(atk, []).append(blk)
-
-        order_options = []
-        atk_keys = []
-        for atk, blks in block_map.items():
-            if len(blks) > 1:
-                atk_keys.append(atk)
-                order_options.append(list(damage_order_permutations(atk, blks)))
-
-        order_iter = product(*order_options) if order_options else [tuple()]
-        for orders in order_iter:
-            damage_order = {atk_keys[i]: orders[i] for i in range(len(orders))}
+        for damage_order in get_all_damage_orderings(assignment, attackers, blockers):
             result, _ = evaluate_block_assignment(
                 block_dict,
                 game_state,
@@ -362,15 +385,12 @@ def _minimax_blocks(
                     attackers[0].controller if attackers else "A",
                     blockers[0].controller if blockers else "B",
                 ) + (ass_key,)
+            scores_for_attacker.append(score)
 
-            numeric = score[:-1]
-            if worst_for_defender is None or numeric > worst_for_defender[:-1]:
-                worst_for_defender = score
-            elif numeric == worst_for_defender[:-1] and score > worst_for_defender:
-                worst_for_defender = score
-
-        if worst_for_defender is None:
+        if not scores_for_attacker:
             continue
+
+        worst_for_defender = max(scores_for_attacker)
 
         numeric = worst_for_defender[:-1]
         key = tuple(len(attackers) if c is None else c for c in assignment)
@@ -382,7 +402,7 @@ def _minimax_blocks(
     best_numeric = min(r[0] for r in results)
     optimal_count = sum(1 for r in results if r[0] == best_numeric)
 
-    top = heapq.nsmallest(k, results, key=lambda x: (x[0], x[1]))
+    top = heapq.nsmallest(k, results)
     assignments = [r[2] for r in top]
     return assignments, optimal_count
 
