@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import heapq
 from itertools import product
 from typing import List
 from typing import Optional
@@ -300,16 +301,18 @@ def _minimax_blocks(
     game_state: GameState,
     counter: IterationCounter,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]],
-) -> tuple[
-    tuple[Optional[int], ...] | None, tuple[int, float, int, int, int, int] | None, int
-]:
+    *,
+    k: int,
+) -> tuple[list[tuple[Optional[int], ...]], int]:
     attackers = list(game_state.players["A"].creatures)
     blockers = list(game_state.players["B"].creatures)
-    best: tuple[Optional[int], ...] | None = None
-    best_score: tuple[
-        int, float, int, int, int, int, tuple[Optional[int], ...]
-    ] | None = None
-    optimal_count = 0
+    results: list[
+        tuple[
+            tuple[int, float, int, int, int, int],
+            tuple[int, ...],
+            tuple[Optional[int], ...],
+        ]
+    ] = []
 
     for assignment in product(*options):
         worst_for_defender: tuple[
@@ -370,17 +373,18 @@ def _minimax_blocks(
             continue
 
         numeric = worst_for_defender[:-1]
-        if best_score is None or numeric < best_score[:-1]:
-            best_score = worst_for_defender
-            best = tuple(assignment)
-            optimal_count = 1
-        elif numeric == best_score[:-1]:
-            optimal_count += 1
-            if worst_for_defender < best_score:
-                best_score = worst_for_defender
-                best = tuple(assignment)
+        key = tuple(len(attackers) if c is None else c for c in assignment)
+        results.append((numeric, key, tuple(assignment)))
 
-    return best, best_score[:-1] if best_score else None, optimal_count
+    if not results:
+        return [], 0
+
+    best_numeric = min(r[0] for r in results)
+    optimal_count = sum(1 for r in results if r[0] == best_numeric)
+
+    top = heapq.nsmallest(k, results, key=lambda x: (x[0], x[1]))
+    assignments = [r[2] for r in top]
+    return assignments, optimal_count
 
 
 def decide_optimal_blocks(
@@ -388,13 +392,14 @@ def decide_optimal_blocks(
     *,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
     max_iterations: int = int(1e4),
-) -> Tuple[int, int]:
+    k: int = 1,
+) -> Tuple[list[tuple[Optional[int], ...]], int]:
     """Assign blockers to attackers using a minimax search over block assignments."""
 
     attackers = list(game_state.players["A"].creatures)
     blockers = list(game_state.players["B"].creatures)
     if not blockers:
-        return 0, 1
+        return [], 1
 
     counter = IterationCounter(max_iterations)
 
@@ -415,15 +420,17 @@ def decide_optimal_blocks(
         else:
             options.append(list(range(len(attackers))) + [None])
 
-    best, _best_score, optimal_count = _minimax_blocks(
+    assignments, optimal_count = _minimax_blocks(
         options,
         game_state,
         counter,
         provoke_map,
+        k=k,
     )
 
     # Apply the chosen assignment to the real objects
     _reset_block_assignments(game_state)
+    best = assignments[0] if assignments else None
     if best is not None:
         for blk_idx, choice in enumerate(best):
             if choice is not None:
@@ -432,7 +439,7 @@ def decide_optimal_blocks(
                 blk.blocking = atk
                 atk.blocked_by.append(blk)
 
-    return counter.count, optimal_count
+    return assignments[:k], optimal_count
 
 
 def decide_simple_blocks(
