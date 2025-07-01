@@ -73,6 +73,18 @@ def test_persist_value_reduced_after_return():
     assert blk.value() < pre
 
 
+def test_persist_score_accounts_for_value_drop():
+    """CR 702.77a: Scoring includes persist creature's reduced value."""
+    atk = CombatCreature("Bear", 3, 3, "A")
+    blk = CombatCreature("Spirit", 2, 2, "B", persist=True)
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert blk.minus1_counters == 1
+    score = result.score("A", "B")
+    assert score[1] == pytest.approx(2.5)
+
+
 def test_undying_value_reduced_after_return():
     """CR 702.92a: Undying returns with a +1/+1 counter reducing value."""
     atk = CombatCreature("Bear", 3, 3, "A")

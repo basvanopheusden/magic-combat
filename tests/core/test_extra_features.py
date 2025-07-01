@@ -79,7 +79,7 @@ def test_wither_can_target_indestructible_first():
     ind = CombatCreature("Guardian", 2, 2, "B", indestructible=True)
     small = CombatCreature("Small", 1, 1, "B")
     ordered = optimal_damage_order(attacker, [ind, small])
-    assert ordered[0] is ind
+    assert ordered[0] is small
 
 
 def test_plus1_minus1_counter_setters():

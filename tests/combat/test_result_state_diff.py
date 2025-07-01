@@ -21,7 +21,23 @@ def _score_from_states(
     end_def_names = {c.name for c in end.players[defender].creatures}
     att_lost = [c for c in start_att if c.name not in end_att_names]
     def_lost = [c for c in start_def if c.name not in end_def_names]
-    val_diff = sum(c.value() for c in def_lost) - sum(c.value() for c in att_lost)
+    end_map = {
+        c.name: c
+        for c in end.players[attacker].creatures + end.players[defender].creatures
+    }
+    att_delta = sum(
+        end_map[c.name].value() - c.value()
+        for c in start_att
+        if c.name in end_att_names
+    )
+    def_delta = sum(
+        end_map[c.name].value() - c.value()
+        for c in start_def
+        if c.name in end_def_names
+    )
+    val_diff = (sum(c.value() for c in def_lost) - sum(c.value() for c in att_lost)) + (
+        att_delta - def_delta
+    )
     cnt_diff = len(def_lost) - len(att_lost)
     mana_diff = sum(c.mana_value for c in def_lost) - sum(
         c.mana_value for c in att_lost
