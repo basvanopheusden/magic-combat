@@ -308,17 +308,10 @@ def get_all_blocking_assignments(
 
 
 def get_all_damage_orderings(
-    assignment: Sequence[Optional[int]],
-    attackers: Sequence[CombatCreature],
-    blockers: Sequence[CombatCreature],
+    block_dict: dict[CombatCreature, CombatCreature],
 ) -> list[dict[CombatCreature, tuple[CombatCreature, ...]]]:
     """Return all possible damage orderings for ``assignment``."""
 
-    block_dict = {
-        blockers[blk_idx]: attackers[choice]
-        for blk_idx, choice in enumerate(assignment)
-        if choice is not None
-    }
     block_map: dict[CombatCreature, list[CombatCreature]] = {}
     for blk, atk in block_dict.items():
         block_map.setdefault(atk, []).append(blk)
@@ -346,22 +339,17 @@ def _minimax_blocks(
 ) -> tuple[list[tuple[Optional[int], ...]], int]:
     attackers = list(game_state.players["A"].creatures)
     blockers = list(game_state.players["B"].creatures)
-    results: list[
-        tuple[
-            tuple[int, float, int, int, int, int],
-            tuple[int, ...],
-            tuple[Optional[int], ...],
-        ]
-    ] = []
+    results: list[tuple[ScoreVector, tuple[Optional[int], ...]]] = []
 
     for assignment in get_all_blocking_assignments(options):
+        key = tuple(len(attackers) if c is None else c for c in assignment)
         scores_for_attacker: list[ScoreVector] = []
         block_dict = {
             blockers[blk_idx]: attackers[choice]
             for blk_idx, choice in enumerate(assignment)
             if choice is not None
         }
-        for damage_order in get_all_damage_orderings(assignment, attackers, blockers):
+        for damage_order in get_all_damage_orderings(block_dict):
             result, _ = evaluate_block_assignment(
                 block_dict,
                 game_state,
@@ -369,41 +357,25 @@ def _minimax_blocks(
                 provoke_map,
                 damage_order,
             )
-            ass_key = tuple(len(attackers) if c is None else c for c in assignment)
-            if result is None:
-                score = (
-                    1,
-                    float("inf"),
-                    -len(attackers) - len(blockers),
-                    -(10**9),
-                    10**9,
-                    10**9,
-                    ass_key,
-                )
-            else:
-                score = result.score(
-                    attackers[0].controller if attackers else "A",
-                    blockers[0].controller if blockers else "B",
-                ) + (ass_key,)
-            scores_for_attacker.append(score)
+            if result is not None:
+                score = result.score("A", "B") + (key,)
+                scores_for_attacker.append(score)
 
         if not scores_for_attacker:
             continue
 
         worst_for_defender = max(scores_for_attacker)
 
-        numeric = worst_for_defender[:-1]
-        key = tuple(len(attackers) if c is None else c for c in assignment)
-        results.append((numeric, key, tuple(assignment)))
+        results.append((worst_for_defender, tuple(assignment)))
 
     if not results:
         return [], 0
 
-    best_numeric = min(r[0] for r in results)
-    optimal_count = sum(1 for r in results if r[0] == best_numeric)
+    best_numeric = min(score[:-1] for score, _ in results)
+    optimal_count = sum(1 for score, _ in results if score[:-1] == best_numeric)
 
     top = heapq.nsmallest(k, results)
-    assignments = [r[2] for r in top]
+    assignments = [assignment for _, assignment in top]
     return assignments, optimal_count
 
 
