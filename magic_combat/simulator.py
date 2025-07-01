@@ -56,6 +56,77 @@ class CombatResult:
             parts.append("Players lost: " + ", ".join(self.players_lost))
         return "\n".join(parts) if parts else "No changes"
 
+    def _score_value_diff(
+        self, attacker_player: str, defender: str, include: bool
+    ) -> float:
+        """Return the difference in destroyed creature value."""
+
+        if not include:
+            return 0.0
+        att_val = sum(
+            c.value()
+            for c in self.creatures_destroyed
+            if c.controller == attacker_player
+        )
+        def_val = sum(
+            c.value() for c in self.creatures_destroyed if c.controller == defender
+        )
+        return def_val - att_val
+
+    def _score_count_diff(
+        self, attacker_player: str, defender: str, include: bool
+    ) -> int:
+        """Return the difference in creatures destroyed."""
+
+        if not include:
+            return 0
+        att_cnt = sum(
+            1 for c in self.creatures_destroyed if c.controller == attacker_player
+        )
+        def_cnt = sum(1 for c in self.creatures_destroyed if c.controller == defender)
+        return def_cnt - att_cnt
+
+    def _score_mana_component(
+        self, attacker_player: str, defender: str, include: bool
+    ) -> int:
+        """Return the difference in mana value destroyed."""
+
+        if not include:
+            return 0
+        att_mana = sum(
+            c.mana_value
+            for c in self.creatures_destroyed
+            if c.controller == attacker_player
+        )
+        def_mana = sum(
+            c.mana_value for c in self.creatures_destroyed if c.controller == defender
+        )
+        return def_mana - att_mana
+
+    def _score_life_component(
+        self, attacker_player: str, defender: str, include: bool
+    ) -> int:
+        """Return the life component of the score."""
+
+        if not include:
+            return 0
+        dmg_def = self.damage_to_players.get(defender, 0)
+        dmg_att = self.damage_to_players.get(attacker_player, 0)
+        gain_def = self.lifegain.get(defender, 0)
+        gain_att = self.lifegain.get(attacker_player, 0)
+        return (dmg_def - dmg_att) + (gain_att - gain_def)
+
+    def _score_poison_component(
+        self, attacker_player: str, defender: str, include: bool
+    ) -> int:
+        """Return the poison counter component of the score."""
+
+        if not include:
+            return 0
+        poison_def = self.poison_counters.get(defender, 0)
+        poison_att = self.poison_counters.get(attacker_player, 0)
+        return poison_def - poison_att
+
     def score(
         self,
         attacker_player: str,
@@ -90,42 +161,17 @@ class CombatResult:
         if not include_loss:
             lost = 0
 
-        att_val = sum(
-            c.value()
-            for c in self.creatures_destroyed
-            if c.controller == attacker_player
+        val_diff = self._score_value_diff(attacker_player, defender, include_value)
+        cnt_diff = self._score_count_diff(attacker_player, defender, include_count)
+        mana_component = self._score_mana_component(
+            attacker_player, defender, include_mana
         )
-        def_val = sum(
-            c.value() for c in self.creatures_destroyed if c.controller == defender
+        life_component = self._score_life_component(
+            attacker_player, defender, include_life
         )
-        val_diff = def_val - att_val if include_value else 0
-
-        att_cnt = sum(
-            1 for c in self.creatures_destroyed if c.controller == attacker_player
+        poison_component = self._score_poison_component(
+            attacker_player, defender, include_poison
         )
-        def_cnt = sum(1 for c in self.creatures_destroyed if c.controller == defender)
-        cnt_diff = def_cnt - att_cnt if include_count else 0
-
-        att_mana = sum(
-            c.mana_value
-            for c in self.creatures_destroyed
-            if c.controller == attacker_player
-        )
-        def_mana = sum(
-            c.mana_value for c in self.creatures_destroyed if c.controller == defender
-        )
-        mana_component = def_mana - att_mana if include_mana else 0
-
-        dmg_def = self.damage_to_players.get(defender, 0)
-        dmg_att = self.damage_to_players.get(attacker_player, 0)
-        gain_def = self.lifegain.get(defender, 0)
-        gain_att = self.lifegain.get(attacker_player, 0)
-        life_component = (
-            (dmg_def - dmg_att) + (gain_att - gain_def) if include_life else 0
-        )
-        poison_def = self.poison_counters.get(defender, 0)
-        poison_att = self.poison_counters.get(attacker_player, 0)
-        poison_component = poison_def - poison_att if include_poison else 0
 
         return (
             lost,
