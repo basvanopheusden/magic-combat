@@ -72,17 +72,12 @@ def main() -> None:
         counter=iteration_counter,  # No iteration counter needed for this example
     )
     assert result is not None
-    assignment_tuple = tuple(
-        attackers.index(blk.blocking) if blk.blocking is not None else None
-        for blk in blockers
-    )
-    score = result.score("A", "B") + (assignment_tuple,)
     for attacker in attackers:
         print("----")
         print("attacker:", summarize_creature(attacker))
         for creature in attacker.blocked_by:
             print("\tblocked by:", summarize_creature(creature))
-    print(score)
+    print(result.score("A", "B"))
     print(game_state)
 
 
