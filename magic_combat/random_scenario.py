@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import logging
 import os
 import random
 from typing import Any
@@ -264,14 +265,14 @@ def _determine_block_assignments(
         k=1,
     )
     if unique_optimal and opt_count != 1:
-        print("Invalid block scenario: multiple optimal blocks found")
+        logging.warning("Invalid block scenario: multiple optimal blocks found")
         raise InvalidBlockScenarioError("non unique optimal blocks")
 
     opt_map = {id(a): i for i, a in enumerate(attackers)}
     optimal_assignment = tuple(opt_map.get(id(b.blocking), None) for b in blockers)
 
     if simple_assignment is not None and simple_assignment == optimal_assignment:
-        print("Invalid block scenario: simple blocks equal optimal")
+        logging.warning("Invalid block scenario: simple blocks equal optimal")
         raise InvalidBlockScenarioError("simple blocks equal optimal")
 
     return simple_assignment, optimal_assignment
