@@ -49,7 +49,20 @@ def main() -> None:
         provoke_map={},
         k=args.top_k,
     )
-    print("Top assignments:", assignments)
+    for score, assignment in assignments:
+        print("----")
+        for blk_idx, choice in enumerate(assignment):
+            if choice is not None:
+                attacker = blockers[blk_idx]
+                blocker = attackers[choice]
+                print(
+                    f"{attacker.name} ({attacker.power}/{attacker.toughness}) "
+                    f"blocks {blocker.name} ({blocker.power}/{blocker.toughness})"
+                )
+            else:
+                print(f"{blockers[blk_idx].name} does not block")
+        print(score)
+
     reset_block_assignments(game_state)
     block_map = {blk: blk.blocking for blk in blockers if blk.blocking is not None}
     iteration_counter = IterationCounter(max_iterations=1000)
