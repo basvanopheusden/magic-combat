@@ -261,6 +261,7 @@ def _determine_block_assignments(
         game_state=state,
         provoke_map=provoke_map,
         max_iterations=max_iterations,
+        k=1,
     )
     if unique_optimal and opt_count != 1:
         print("Invalid block scenario: multiple optimal blocks found")

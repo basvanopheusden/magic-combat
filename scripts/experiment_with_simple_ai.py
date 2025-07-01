@@ -1,3 +1,5 @@
+import argparse
+
 from magic_combat import CombatCreature
 from magic_combat import GameState
 from magic_combat import PlayerState
@@ -7,7 +9,16 @@ from magic_combat.limits import IterationCounter
 from magic_combat.text_utils import summarize_creature
 
 
-def main():
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run simple blocking example")
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=1,
+        help="Number of top blocking assignments to compute",
+    )
+    args = parser.parse_args()
+
     attackers = [
         CombatCreature(
             name="Attacker 1",
@@ -32,10 +43,12 @@ def main():
         }
     )
     print(game_state)
-    decide_optimal_blocks(
+    assignments, _ = decide_optimal_blocks(
         game_state=game_state,
         provoke_map={},
+        k=args.top_k,
     )
+    print("Top assignments:", assignments)
     block_map = {blk: blk.blocking for blk in blockers if blk.blocking is not None}
     iteration_counter = IterationCounter(max_iterations=1000)
     result, _ = evaluate_block_assignment(

@@ -439,8 +439,9 @@ def test_ai_optimal_count_ignores_tiebreaker():
             "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[b1, b2]),
         }
     )
-    _, opt = decide_optimal_blocks(game_state=state)
+    assns, opt = decide_optimal_blocks(game_state=state, k=2)
     assert opt == 2
+    assert len(assns) >= 2
 
 
 def test_ai_ignores_tapped_blocker():
