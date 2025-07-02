@@ -21,6 +21,7 @@ from .utils import check_non_negative
 
 ScoreVector: TypeAlias = tuple[int, float, int, int, int, int, tuple[int, ...]]
 
+
 def _get_all_assignments(
     options: Sequence[Sequence[int | None]],
 ) -> list[tuple[Optional[int], ...]]:
@@ -250,7 +251,9 @@ def decide_simple_blocks(
     all_assignments = _get_all_assignments(block_options)
 
     minimal_assignments = [a for a in all_assignments if _valid_minimal(a, attackers)]
-    print(f"Found {len(minimal_assignments)} minimal assignments out of {len(all_assignments)} total assignments.")
+    print(
+        f"Found {len(minimal_assignments)} minimal assignments out of {len(all_assignments)} total assignments."
+    )
     for assignment in minimal_assignments:
         print("Assignment:", assignment)
 
@@ -285,7 +288,6 @@ def decide_simple_blocks(
 
     _, final_assignment = top[0]
     print(final_assignment)
-
 
     reset_block_assignments(game_state)
     for blk_idx, choice in enumerate(final_assignment):

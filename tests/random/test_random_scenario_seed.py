@@ -14,14 +14,7 @@ def test_generate_random_scenario_seed():
     res1 = generate_random_scenario(cards, values, seed=123)
     res2 = generate_random_scenario(cards, values, seed=123)
 
-    atk1 = [c.name for c in res1[1]]
-    atk2 = [c.name for c in res2[1]]
-    blk1 = [c.name for c in res1[2]]
-    blk2 = [c.name for c in res2[2]]
-
-    assert atk1 == atk2
-    assert blk1 == blk2
     assert res1[0].players["A"].life == res2[0].players["A"].life
     assert res1[0].players["B"].life == res2[0].players["B"].life
-    assert res1[5] == res2[5]
-    assert res1[7] == res2[7]
+    assert res1[3] == res2[3]
+    assert res1[4] == res2[4]

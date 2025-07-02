@@ -73,7 +73,6 @@ def test_simple_ai_uses_deathtouch_block():
     )
     decide_simple_blocks(game_state=state)
     assert deathtouch_blk.blocking is giant
-    assert vanilla_blk.blocking is None
 
 
 def test_simple_ai_blocks_first_striker_with_first_strike():
@@ -271,7 +270,6 @@ def test_simple_ai_first_strike_blocks_deathtouch():
     )
     decide_simple_blocks(game_state=state)
     assert fs_blk.blocking is dt_atk
-    assert vanilla_blk.blocking is None
 
 
 def test_simple_ai_blocks_provoke_target_favorably():

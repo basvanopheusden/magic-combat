@@ -2,23 +2,29 @@ import random
 
 import numpy as np
 
-from magic_combat import CombatCreature, decide_simple_blocks, CombatSimulator, generate_random_scenario, load_cards, \
-    compute_card_statistics, build_value_map
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
 from magic_combat import GameState
 from magic_combat import PlayerState
+from magic_combat import build_value_map
+from magic_combat import compute_card_statistics
 from magic_combat import decide_optimal_blocks
+from magic_combat import decide_simple_blocks
+from magic_combat import generate_random_scenario
+from magic_combat import load_cards
 from magic_combat.block_utils import reset_block_assignments
 
 
 def main() -> None:
-
     attackers = [
         CombatCreature("Elemental Beast", 3, 3, "A", trample=True),
-        CombatCreature("Toxic Lizard", 2, 1, "A", toxic=2)
+        CombatCreature("Toxic Lizard", 2, 1, "A", toxic=2),
     ]
-    blockers = [CombatCreature(
-        "Ferocious Charger", 3, 3, "B", trample=True, melee=True, horsemanship=True
-    )]
+    blockers = [
+        CombatCreature(
+            "Ferocious Charger", 3, 3, "B", trample=True, melee=True, horsemanship=True
+        )
+    ]
     state = GameState(
         players={
             "A": PlayerState(life=11, poison=9, creatures=attackers),
@@ -26,24 +32,24 @@ def main() -> None:
         }
     )
     print(state)
-    # assignments, _ = decide_optimal_blocks(
-    #     game_state=state,
-    #     provoke_map={},
-    #     k=5,
-    # )
-    # for score, assignment in assignments:
-    #     print("----")
-    #     for blk_idx, choice in enumerate(assignment):
-    #         if choice is not None:
-    #             attacker = blockers[blk_idx]
-    #             blocker = attackers[choice]
-    #             print(
-    #                 f"{attacker.name} ({attacker.power}/{attacker.toughness}) "
-    #                 f"blocks {blocker.name} ({blocker.power}/{blocker.toughness})"
-    #             )
-    #         else:
-    #             print(f"{blockers[blk_idx].name} does not block")
-    #     print(score)
+    assignments, _ = decide_optimal_blocks(
+        game_state=state,
+        provoke_map={},
+        k=5,
+    )
+    for score, assignment in assignments:
+        print("----")
+        for blk_idx, choice in enumerate(assignment):
+            if choice is not None:
+                attacker = blockers[blk_idx]
+                blocker = attackers[choice]
+                print(
+                    f"{attacker.name} ({attacker.power}/{attacker.toughness}) "
+                    f"blocks {blocker.name} ({blocker.power}/{blocker.toughness})"
+                )
+            else:
+                print(f"{blockers[blk_idx].name} does not block")
+        print(score)
 
     reset_block_assignments(game_state=state)
     decide_simple_blocks(
@@ -60,6 +66,7 @@ def main() -> None:
             print(f"{blk.name} does not block")
     result = CombatSimulator(attackers, blockers, game_state=state).simulate()
     print(result)
+
 
 def generate_scenario():
     seed = 0
@@ -127,7 +134,6 @@ def generate_scenario():
             )
         else:
             print(f"{blk.name} does not block")
-
 
 
 if __name__ == "__main__":
