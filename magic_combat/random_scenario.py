@@ -232,8 +232,6 @@ def _generate_interactions(
 
 
 def _determine_block_assignments(
-    attackers: list[CombatCreature],
-    blockers: list[CombatCreature],
     state: GameState,
     provoke_map: dict[CombatCreature, CombatCreature],
     *,
@@ -242,6 +240,8 @@ def _determine_block_assignments(
 ) -> Tuple[Tuple[Optional[int], ...] | None, Tuple[Optional[int], ...]]:
     """Return simple and optimal block assignments."""
 
+    attackers = list(state.players["A"].creatures)
+    blockers = list(state.players["B"].creatures)
     simple_atk = copy.deepcopy(attackers)
     simple_blk = copy.deepcopy(blockers)
     simple_state = copy.deepcopy(state)
@@ -279,8 +279,6 @@ def _determine_block_assignments(
 
 
 def _score_optimal_result(
-    attackers: list[CombatCreature],
-    blockers: list[CombatCreature],
     state: GameState,
     optimal_assignment: Tuple[Optional[int], ...],
     provoke_map: dict[CombatCreature, CombatCreature],
@@ -288,6 +286,8 @@ def _score_optimal_result(
 ) -> Tuple[int, int, int, float, int]:
     """Simulate combat using ``optimal_assignment`` and return its value."""
 
+    attackers = list(state.players["A"].creatures)
+    blockers = list(state.players["B"].creatures)
     atk_copy = copy.deepcopy(attackers)
     blk_copy = copy.deepcopy(blockers)
     for a in atk_copy:
@@ -330,8 +330,6 @@ def _score_optimal_result(
 
 
 def _compute_combat_results(
-    attackers: list[CombatCreature],
-    blockers: list[CombatCreature],
     state: GameState,
     provoke_map: dict[CombatCreature, CombatCreature],
     mentor_map: dict[CombatCreature, CombatCreature],
@@ -343,19 +341,15 @@ def _compute_combat_results(
     Tuple[Optional[int], ...],
     Tuple[int, int, int, float, int],
 ]:
-    """Return block assignments and outcome for ``attackers`` and ``blockers``."""
+    """Return block assignments and outcome for the creatures in ``state``."""
 
     simple_assignment, optimal_assignment = _determine_block_assignments(
-        attackers,
-        blockers,
         state,
         provoke_map,
         max_iterations=max_iterations,
         unique_optimal=unique_optimal,
     )
     combat_value = _score_optimal_result(
-        attackers,
-        blockers,
         state,
         optimal_assignment,
         provoke_map,
@@ -401,8 +395,6 @@ def _attempt_random_scenario(
         optimal_assignment,
         combat_value,
     ) = _compute_combat_results(
-        attackers,
-        blockers,
         state,
         provoke_map,
         mentor_map,

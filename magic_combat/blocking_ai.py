@@ -32,8 +32,6 @@ def _get_all_assignments(
 
 
 def _get_block_options(
-    attackers: Sequence[CombatCreature],
-    blockers: Sequence[CombatCreature],
     game_state: GameState,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
     *,
@@ -41,6 +39,8 @@ def _get_block_options(
 ) -> list[list[int | None]]:
     """Return possible block choices for each selected blocker."""
 
+    attackers = list(game_state.players["A"].creatures)
+    blockers = list(game_state.players["B"].creatures)
     selected = list(range(len(blockers))) if indices is None else list(indices)
 
     provoked: dict[CombatCreature, CombatCreature] = {}
@@ -205,8 +205,6 @@ def decide_optimal_blocks(
     counter = IterationCounter(max_iterations)
 
     options = _get_block_options(
-        attackers,
-        blockers,
         game_state,
         provoke_map,
     )
@@ -253,8 +251,6 @@ def decide_simple_blocks(
         return
 
     block_options = _get_block_options(
-        attackers,
-        blockers,
         game_state,
         provoke_map,
     )
@@ -263,7 +259,9 @@ def decide_simple_blocks(
 
     minimal_assignments = [a for a in all_assignments if _valid_minimal(a, attackers)]
     print(
-        f"Found {len(minimal_assignments)} minimal assignments out of {len(all_assignments)} total assignments."
+        "Found "
+        f"{len(minimal_assignments)} minimal assignments out of "
+        f"{len(all_assignments)} total assignments."
     )
     for assignment in minimal_assignments:
         print("Assignment:", assignment)
