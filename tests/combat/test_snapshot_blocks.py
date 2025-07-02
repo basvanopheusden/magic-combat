@@ -48,8 +48,6 @@ def test_optimal_blocks_snapshots() -> None:
         assert chosen == snap["optimal_assignment"]
         value = list(
             _score_optimal_result(
-                attackers,
-                blockers,
                 state,
                 tuple(chosen),
                 provoke_map,
