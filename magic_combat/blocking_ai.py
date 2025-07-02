@@ -11,7 +11,6 @@ from typing import Sequence
 from typing import Tuple
 from typing import TypeAlias
 
-from . import CombatCreature
 from .block_utils import evaluate_block_assignment
 from .block_utils import reset_block_assignments
 from .block_utils import should_force_provoke
