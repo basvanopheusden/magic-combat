@@ -5,14 +5,14 @@ from magic_combat import CombatSimulator
 from tests.conftest import link_block
 
 
-def test_shadow_blocker_can_block_nonshadow_attacker():
-    """CR 702.27b: A creature with shadow can block or be blocked only by creatures with shadow."""
+def test_shadow_blocker_cant_block_nonshadow_attacker():
+    """CR 702.27b: A shadow creature can't block a non-shadow creature."""
     attacker = CombatCreature("Goblin", 2, 2, "A")
     blocker = CombatCreature("Shade", 2, 2, "B", shadow=True)
     link_block(attacker, blocker)
     sim = CombatSimulator([attacker], [blocker])
-    # Simulator currently allows this block
-    sim.validate_blocking()
+    with pytest.raises(ValueError):
+        sim.validate_blocking()
 
 
 def test_shadow_attacker_blocked_by_nonshadow_illegal():

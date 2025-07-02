@@ -161,6 +161,8 @@ def can_block(attacker: "CombatCreature", blocker: "CombatCreature") -> bool:
         return False
     if attacker.shadow and not blocker.shadow:
         return False
+    if blocker.shadow and not attacker.shadow:
+        return False
     if attacker.horsemanship and not blocker.horsemanship:
         return False
     if attacker.skulk and blocker.effective_power() > attacker.effective_power():
