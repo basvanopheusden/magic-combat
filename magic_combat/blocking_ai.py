@@ -138,11 +138,16 @@ def _minimax_assignments(
     game_state: GameState,
     counter: IterationCounter,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]],
+    mentor_map: Optional[dict[CombatCreature, CombatCreature]],
     *,
     include_loss: bool,
     k: int,
 ) -> Tuple[list[tuple[ScoreVector, tuple[Optional[int], ...]]], int]:
-    """Evaluate a collection of predetermined blocking assignments."""
+    """Evaluate a collection of predetermined blocking assignments.
+
+    ``provoke_map`` and ``mentor_map`` ensure special interactions are
+    enforced when simulating each assignment.
+    """
 
     attackers = list(game_state.players["A"].creatures)
     blockers = list(game_state.players["B"].creatures)
@@ -162,8 +167,9 @@ def _minimax_assignments(
                 block_dict,
                 game_state,
                 counter,
-                provoke_map,
-                damage_order,
+                provoke_map=provoke_map,
+                mentor_map=mentor_map,
+                damage_order=damage_order,
             )
             if result is not None:
                 score = result.score("A", "B", include_loss=include_loss) + (key,)
@@ -189,10 +195,15 @@ def decide_optimal_blocks(
     game_state: GameState,
     *,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
+    mentor_map: Optional[dict[CombatCreature, CombatCreature]] = None,
     max_iterations: int = int(1e4),
     k: int = 1,
 ) -> Tuple[list[tuple[ScoreVector, tuple[Optional[int], ...]]], int,]:
-    """Assign blockers to attackers using a minimax search over block assignments."""
+    """Assign blockers to attackers using a minimax search.
+
+    ``provoke_map`` and ``mentor_map`` describe forced blocks and mentor
+    targets that must be respected when evaluating assignments.
+    """
 
     check_non_negative(k, "k")
 
@@ -214,6 +225,7 @@ def decide_optimal_blocks(
         game_state,
         counter,
         provoke_map,
+        mentor_map,
         include_loss=True,
         k=k,
     )
@@ -237,9 +249,14 @@ def decide_optimal_blocks(
 def decide_simple_blocks(
     game_state: GameState,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
+    mentor_map: Optional[dict[CombatCreature, CombatCreature]] = None,
     max_iterations: int = int(1e4),
 ) -> tuple[ScoreVector, tuple[Optional[int], ...]]:
-    """Assign blocks using a small two-stage minimax search."""
+    """Assign blocks using a small two-stage minimax search.
+
+    ``provoke_map`` and ``mentor_map`` function the same as in
+    :func:`decide_optimal_blocks`.
+    """
 
     attackers = list(game_state.players["A"].creatures)
     blockers = list(game_state.players["B"].creatures)
@@ -261,6 +278,7 @@ def decide_simple_blocks(
         game_state,
         counter,
         provoke_map,
+        mentor_map,
         include_loss=False,
         k=5,
     )
@@ -276,6 +294,7 @@ def decide_simple_blocks(
         game_state,
         counter,
         provoke_map,
+        mentor_map,
         include_loss=True,
         k=1,
     )

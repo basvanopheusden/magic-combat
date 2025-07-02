@@ -39,6 +39,7 @@ def test_optimal_blocks_snapshots() -> None:
         decide_optimal_blocks(
             game_state=state,
             provoke_map=provoke_map,
+            mentor_map=mentor_map,
         )
         chosen: List[Optional[int]] = [
             attackers.index(b.blocking) if b.blocking is not None else None

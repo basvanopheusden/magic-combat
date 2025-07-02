@@ -34,7 +34,6 @@ from .scryfall_loader import cards_to_creatures
 from .scryfall_loader import fetch_french_vanilla_cards
 from .scryfall_loader import load_cards
 from .scryfall_loader import save_cards
-from .simulator import CombatSimulator
 
 __all__ = [
     "ensure_cards",
@@ -266,6 +265,7 @@ def _attempt_random_scenario(
     top, opt_count = decide_optimal_blocks(
         game_state=optimal_state,
         provoke_map=provoke_map,
+        mentor_map=mentor_map,
         max_iterations=max_iterations,
         k=1,
     )
@@ -273,14 +273,15 @@ def _attempt_random_scenario(
         logging.warning("Invalid block scenario: multiple optimal blocks found")
         raise InvalidBlockScenarioError("non unique optimal blocks")
 
-    optimal_score, optimal_assignment = top[0]
-    simple_score, simple_assignment = decide_simple_blocks(
+    _, optimal_assignment = top[0]
+    _, simple_assignment = decide_simple_blocks(
         game_state=simple_state,
         provoke_map=provoke_map,
+        mentor_map=mentor_map,
         max_iterations=max_iterations,
     )
 
-    if simple_assignment is not None and simple_assignment == optimal_assignment:
+    if simple_assignment == optimal_assignment:
         logging.warning("Invalid block scenario: simple blocks equal optimal")
         raise InvalidBlockScenarioError("simple blocks equal optimal")
     print(simple_assignment, optimal_assignment, original_state)

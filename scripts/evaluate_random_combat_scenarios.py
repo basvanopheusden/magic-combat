@@ -1,5 +1,4 @@
 import asyncio
-import copy
 import random
 from typing import List
 from typing import Optional
@@ -8,7 +7,6 @@ import numpy as np
 import openai
 
 from magic_combat import CombatResult
-from magic_combat import CombatSimulator
 from magic_combat import IllegalBlockError
 from magic_combat import build_value_map
 from magic_combat import compute_card_statistics
@@ -18,9 +16,7 @@ from magic_combat import load_cards
 from magic_combat.block_utils import evaluate_block_assignment
 from magic_combat.create_llm_prompt import create_llm_prompt
 from magic_combat.create_llm_prompt import parse_block_assignments
-from magic_combat.creature import CombatCreature
 from magic_combat.exceptions import UnparsableLLMOutputError
-from magic_combat.gamestate import GameState
 from magic_combat.gamestate import PlayerState
 from magic_combat.limits import IterationCounter
 from magic_combat.llm_cache import LLMCache
@@ -189,10 +185,15 @@ async def _evaluate_single_scenario(
             llm_map.append(idx_choice)
         try:
             llm_result, _ = evaluate_block_assignment(
-                {blockers[i]: attackers[choice] for i, choice in enumerate(llm_map)},
+                {
+                    blockers[i]: attackers[choice]
+                    for i, choice in enumerate(llm_map)
+                    if choice is not None
+                },
                 state,
                 IterationCounter(),
                 provoke_map=provoke_map,
+                mentor_map=mentor_map,
                 damage_order=None,
             )
         except IllegalBlockError as exc:
@@ -206,7 +207,7 @@ async def _evaluate_single_scenario(
 
         simple_block_dict = {
             blockers[blk_idx]: attackers[choice]
-            for blk_idx, choice in enumerate(simple_map)
+            for blk_idx, choice in enumerate(simple_map or ())
             if choice is not None
         }
         simple_result, _ = evaluate_block_assignment(
@@ -214,6 +215,7 @@ async def _evaluate_single_scenario(
             state,
             iteration_counter,
             provoke_map=provoke_map,
+            mentor_map=mentor_map,
             damage_order=None,
         )
         optimal_block_dict = {
@@ -226,6 +228,7 @@ async def _evaluate_single_scenario(
             state,
             iteration_counter,
             provoke_map=provoke_map,
+            mentor_map=mentor_map,
             damage_order=None,
         )
 
@@ -235,35 +238,42 @@ async def _evaluate_single_scenario(
         include_colors = any(
             c.fear or c.intimidate or c.protection_colors for c in all_creatures
         )
+        prov_map_display = (
+            {a.name: b.name for a, b in provoke_map.items()} if provoke_map else None
+        )
+        mentor_map_display = (
+            {m.name: t.name for m, t in mentor_map.items()} if mentor_map else None
+        )
         _print_player_state(
             "Player A", state.players["A"], include_colors=include_colors
         )
         _print_player_state(
             "Player B", state.players["B"], include_colors=include_colors
         )
+        if prov_map_display:
+            print("Provoke targets:", prov_map_display)
+        if mentor_map_display:
+            print("Mentor targets:", mentor_map_display)
         for blocker, attacker in simple_block_dict.items():
-            if attacker is None:
-                print(f"{blocker.name} does not block")
-            else:
-                print(
-                    f"{blocker.name} ({blocker.power}/{blocker.toughness}) "
-                    f"blocks {attacker.name} ({attacker.power}/{attacker.toughness})"
-                )
+            print(
+                f"{blocker.name} ({blocker.power}/{blocker.toughness}) "
+                f"blocks {attacker.name} ({attacker.power}/{attacker.toughness})"
+            )
         print(simple_result)
-        print(simple_result.score("A", "B"))
+        if simple_result is not None:
+            print(simple_result.score("A", "B"))
         for blocker, attacker in optimal_block_dict.items():
-            if attacker is None:
-                print(f"{blocker.name} does not block")
-            else:
-                print(
-                    f"{blocker.name} ({blocker.power}/{blocker.toughness}) "
-                    f"blocks {attacker.name} ({attacker.power}/{attacker.toughness})"
-                )
+            print(
+                f"{blocker.name} ({blocker.power}/{blocker.toughness}) "
+                f"blocks {attacker.name} ({attacker.power}/{attacker.toughness})"
+            )
         print(opt_result)
-        print(opt_result.score("A", "B"))
+        if opt_result is not None:
+            print(opt_result.score("A", "B"))
         decide_simple_blocks(
             game_state=state,
             provoke_map=provoke_map,
+            mentor_map=mentor_map,
         )
         break
 

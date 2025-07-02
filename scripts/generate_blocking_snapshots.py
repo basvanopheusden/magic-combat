@@ -58,7 +58,6 @@ def main() -> None:
             mentor_map,
             opt_map,
             simple_map,
-            combat_value,
         ) = generate_random_scenario(cards, values, seed=seed)
         attackers = list(state.players["A"].creatures)
         blockers = list(state.players["B"].creatures)
@@ -73,7 +72,6 @@ def main() -> None:
             "mentor_map": encode_map(mentor_map, attackers, attackers),
             "optimal_assignment": list(opt_map),
             "simple_assignment": list(simple_map) if simple_map is not None else None,
-            "combat_value": list(combat_value),
         }
         snapshots.append(snapshot)
         print(snapshot)
