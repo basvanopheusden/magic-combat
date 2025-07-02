@@ -231,134 +231,6 @@ def _generate_interactions(
     return provoke_map, mentor_map
 
 
-def _determine_block_assignments(
-    state: GameState,
-    provoke_map: dict[CombatCreature, CombatCreature],
-    *,
-    max_iterations: int,
-    unique_optimal: bool,
-) -> Tuple[Tuple[Optional[int], ...] | None, Tuple[Optional[int], ...]]:
-    """Return simple and optimal block assignments."""
-
-    attackers = list(state.players["A"].creatures)
-    blockers = list(state.players["B"].creatures)
-    simple_atk = copy.deepcopy(attackers)
-    simple_blk = copy.deepcopy(blockers)
-    simple_state = copy.deepcopy(state)
-    try:
-        decide_simple_blocks(
-            game_state=simple_state,
-            provoke_map=provoke_map,
-            max_iterations=max_iterations,
-        )
-        sim_check = CombatSimulator(simple_atk, simple_blk, game_state=simple_state)
-        sim_check.validate_blocking()
-        atk_map = {id(a): i for i, a in enumerate(simple_atk)}
-        simple_assignment = tuple(atk_map.get(id(b.blocking), None) for b in simple_blk)
-    except IllegalBlockError:
-        simple_assignment = None
-
-    _, opt_count = decide_optimal_blocks(
-        game_state=state,
-        provoke_map=provoke_map,
-        max_iterations=max_iterations,
-        k=1,
-    )
-    if unique_optimal and opt_count != 1:
-        logging.warning("Invalid block scenario: multiple optimal blocks found")
-        raise InvalidBlockScenarioError("non unique optimal blocks")
-
-    opt_map = {id(a): i for i, a in enumerate(attackers)}
-    optimal_assignment = tuple(opt_map.get(id(b.blocking), None) for b in blockers)
-
-    if simple_assignment is not None and simple_assignment == optimal_assignment:
-        logging.warning("Invalid block scenario: simple blocks equal optimal")
-        raise InvalidBlockScenarioError("simple blocks equal optimal")
-
-    return simple_assignment, optimal_assignment
-
-
-def _score_optimal_result(
-    state: GameState,
-    optimal_assignment: Tuple[Optional[int], ...],
-    provoke_map: dict[CombatCreature, CombatCreature],
-    mentor_map: dict[CombatCreature, CombatCreature],
-) -> Tuple[int, int, int, float, int]:
-    """Simulate combat using ``optimal_assignment`` and return its value."""
-
-    attackers = list(state.players["A"].creatures)
-    blockers = list(state.players["B"].creatures)
-    atk_copy = copy.deepcopy(attackers)
-    blk_copy = copy.deepcopy(blockers)
-    for a in atk_copy:
-        a.blocked_by.clear()
-    for b in blk_copy:
-        b.blocking = None
-    state_copy = copy.deepcopy(state)
-    prov_copies: dict[CombatCreature, CombatCreature] = {}
-    if provoke_map:
-        atk_map_idx = {id(a): i for i, a in enumerate(attackers)}
-        blk_map_idx = {id(b): i for i, b in enumerate(blockers)}
-        for atk, blk in provoke_map.items():
-            if atk in attackers and blk in blockers:
-                a_copy = atk_copy[atk_map_idx[id(atk)]]
-                b_copy = blk_copy[blk_map_idx[id(blk)]]
-                prov_copies[a_copy] = b_copy
-    mentor_copies: dict[CombatCreature, CombatCreature] = {}
-    if mentor_map:
-        atk_map_idx = {id(a): i for i, a in enumerate(attackers)}
-        for mentor, target in mentor_map.items():
-            if mentor in attackers and target in attackers:
-                mentor_copies[atk_copy[atk_map_idx[id(mentor)]]] = atk_copy[
-                    atk_map_idx[id(target)]
-                ]
-    for blk_idx, choice in enumerate(optimal_assignment):
-        if choice is not None:
-            idx = int(choice)
-            blk_copy[blk_idx].blocking = atk_copy[idx]
-            atk_copy[idx].blocked_by.append(blk_copy[blk_idx])
-    sim = CombatSimulator(
-        atk_copy,
-        blk_copy,
-        game_state=state_copy,
-        provoke_map=prov_copies or None,
-        mentor_map=mentor_copies or None,
-    )
-    result = sim.simulate()
-    score = result.score("A", "B")
-    return score[4], score[5], score[2], score[1], score[3]
-
-
-def _compute_combat_results(
-    state: GameState,
-    provoke_map: dict[CombatCreature, CombatCreature],
-    mentor_map: dict[CombatCreature, CombatCreature],
-    *,
-    max_iterations: int,
-    unique_optimal: bool,
-) -> Tuple[
-    Tuple[Optional[int], ...] | None,
-    Tuple[Optional[int], ...],
-    Tuple[int, int, int, float, int],
-]:
-    """Return block assignments and outcome for the creatures in ``state``."""
-
-    simple_assignment, optimal_assignment = _determine_block_assignments(
-        state,
-        provoke_map,
-        max_iterations=max_iterations,
-        unique_optimal=unique_optimal,
-    )
-    combat_value = _score_optimal_result(
-        state,
-        optimal_assignment,
-        provoke_map,
-        mentor_map,
-    )
-
-    return simple_assignment, optimal_assignment, combat_value
-
-
 def _attempt_random_scenario(
     cards: list[dict[str, Any]],
     values: Dict[int, float],
@@ -374,7 +246,6 @@ def _attempt_random_scenario(
     dict[CombatCreature, CombatCreature],
     Tuple[Optional[int], ...],
     Tuple[Optional[int], ...] | None,
-    Tuple[int, int, int, float, int],
 ]:
     """Attempt to create a single random combat scenario."""
 
@@ -387,33 +258,38 @@ def _attempt_random_scenario(
         np_rng=np_rng,
     )
 
-    state = _build_gamestate(attackers, blockers, rng)
+    original_state = _build_gamestate(attackers, blockers, rng)
     provoke_map, mentor_map = _generate_interactions(attackers, blockers, rng)
 
-    (
-        simple_assignment,
-        optimal_assignment,
-        combat_value,
-    ) = _compute_combat_results(
-        state,
-        provoke_map,
-        mentor_map,
+    optimal_state = copy.deepcopy(original_state)
+    simple_state = copy.deepcopy(original_state)
+    top, opt_count = decide_optimal_blocks(
+        game_state=optimal_state,
+        provoke_map=provoke_map,
         max_iterations=max_iterations,
-        unique_optimal=unique_optimal,
+        k=1,
+    )
+    if unique_optimal and opt_count != 1:
+        logging.warning("Invalid block scenario: multiple optimal blocks found")
+        raise InvalidBlockScenarioError("non unique optimal blocks")
+
+    optimal_score, optimal_assignment = top[0]
+    simple_score, simple_assignment = decide_simple_blocks(
+        game_state=simple_state,
+        provoke_map=provoke_map,
+        max_iterations=max_iterations,
     )
 
-    for atk in attackers:
-        atk.blocked_by.clear()
-    for blk in blockers:
-        blk.blocking = None
-
+    if simple_assignment is not None and simple_assignment == optimal_assignment:
+        logging.warning("Invalid block scenario: simple blocks equal optimal")
+        raise InvalidBlockScenarioError("simple blocks equal optimal")
+    print(simple_assignment, optimal_assignment, original_state)
     return (
-        state,
+        original_state,
         provoke_map,
         mentor_map,
         optimal_assignment,
         simple_assignment,
-        combat_value,
     )
 
 
@@ -432,7 +308,6 @@ def generate_random_scenario(
     dict[CombatCreature, CombatCreature],
     Tuple[Optional[int], ...],
     Tuple[Optional[int], ...] | None,
-    Tuple[int, int, int, float, int],
 ]:
     """Return a non-trivial random combat scenario.
 

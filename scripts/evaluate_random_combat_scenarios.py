@@ -12,63 +12,19 @@ from magic_combat import CombatSimulator
 from magic_combat import IllegalBlockError
 from magic_combat import build_value_map
 from magic_combat import compute_card_statistics
+from magic_combat import decide_simple_blocks
 from magic_combat import generate_random_scenario
 from magic_combat import load_cards
+from magic_combat.block_utils import evaluate_block_assignment
 from magic_combat.create_llm_prompt import create_llm_prompt
 from magic_combat.create_llm_prompt import parse_block_assignments
 from magic_combat.creature import CombatCreature
 from magic_combat.exceptions import UnparsableLLMOutputError
 from magic_combat.gamestate import GameState
 from magic_combat.gamestate import PlayerState
+from magic_combat.limits import IterationCounter
 from magic_combat.llm_cache import LLMCache
 from magic_combat.text_utils import summarize_creature
-
-
-def _simulate_assignment(
-    attackers: List[CombatCreature],
-    blockers: List[CombatCreature],
-    assignment: List[Optional[int]],
-    state: GameState,
-    provoke_map: dict[CombatCreature, CombatCreature],
-    mentor_map: dict[CombatCreature, CombatCreature],
-) -> CombatResult:
-    """Return the combat result for ``assignment``."""
-
-    atk = copy.deepcopy(attackers)
-    blk = copy.deepcopy(blockers)
-    state_copy = copy.deepcopy(state)
-    for idx, choice in enumerate(assignment):
-        if choice is not None:
-            blk[idx].blocking = atk[choice]
-            atk[choice].blocked_by.append(blk[idx])
-    sim = CombatSimulator(
-        atk,
-        blk,
-        game_state=state_copy,
-        provoke_map=provoke_map,
-        mentor_map=mentor_map,
-    )
-    return sim.simulate()
-
-
-def _value_for_assignment(
-    attackers: List[CombatCreature],
-    blockers: List[CombatCreature],
-    assignment: List[Optional[int]],
-    state: GameState,
-    provoke_map: dict[CombatCreature, CombatCreature],
-    mentor_map: dict[CombatCreature, CombatCreature],
-) -> tuple[int, int, int, float, int]:
-    result = _simulate_assignment(
-        attackers,
-        blockers,
-        assignment,
-        state,
-        provoke_map,
-        mentor_map,
-    )
-    score = result.score("A", "B")
-    return score[4], score[5], score[2], score[1], score[3]
 
 
 def _format_value(value: tuple[float, float, float, float, int]) -> str:
@@ -179,7 +135,6 @@ async def _evaluate_single_scenario(
         mentor_map,
         opt_map,
         simple_map,
-        opt_value,
     ) = generate_random_scenario(
         cards,
         values,
@@ -188,25 +143,10 @@ async def _evaluate_single_scenario(
         seed=seed + idx,
         unique_optimal=True,
     )
-    attackers = list(state.players["A"].creatures)
-    blockers = list(state.players["B"].creatures)
-
-    optimal = {
-        blk.name: (attackers[choice].name if choice is not None else None)
-        for blk, choice in zip(blockers, opt_map)
-    }
-    simple = {
-        blk.name: (attackers[choice].name if choice is not None else None)
-        for blk, choice in zip(blockers, simple_map or [])
-    }
-
-    # Clear assignments for the LLM prompt
-    for atk in attackers:
-        atk.blocked_by.clear()
-    for blk in blockers:
-        blk.blocking = None
 
     prompt = create_llm_prompt(state)
+    attackers = list(state.players["A"].creatures)
+    blockers = list(state.players["B"].creatures)
 
     attempts = 0
     max_attempts = 3
@@ -237,7 +177,6 @@ async def _evaluate_single_scenario(
 
         if invalid:
             print("Response contained illegal block assignments")
-        correct = sum(1 for b, a in parsed.items() if optimal.get(b) == a)
         llm_map: list[Optional[int]] = []
         for blk in blockers:
             target = parsed.get(blk.name)
@@ -249,81 +188,47 @@ async def _evaluate_single_scenario(
                         break
             llm_map.append(idx_choice)
         try:
-            llm_value = _value_for_assignment(
-                attackers,
-                blockers,
-                llm_map,
+            llm_result, _ = evaluate_block_assignment(
+                {blockers[i]: attackers[choice] for i, choice in enumerate(llm_map)},
                 state,
-                provoke_map,
-                mentor_map,
-            )
-            llm_result = _simulate_assignment(
-                attackers,
-                blockers,
-                llm_map,
-                state,
-                provoke_map,
-                mentor_map,
+                IterationCounter(),
+                provoke_map=provoke_map,
+                damage_order=None,
             )
         except IllegalBlockError as exc:
             print(f"Error evaluating LLM assignment: {exc}")
-            llm_value = (0, 0, 0, float("inf"), 0)
             llm_result = CombatResult({}, [], {})
-        if simple_map is not None:
-            simple_value = _value_for_assignment(
-                attackers,
-                blockers,
-                list(simple_map),
-                state,
-                provoke_map,
-                mentor_map,
-            )
-            simple_result = _simulate_assignment(
-                attackers,
-                blockers,
-                list(simple_map),
-                state,
-                provoke_map,
-                mentor_map,
-            )
-        else:
-            simple_value = None
-            simple_result = None
-        try:
-            opt_result = _simulate_assignment(
-                attackers,
-                blockers,
-                list(opt_map),
-                state,
-                provoke_map,
-                mentor_map,
-            )
-        except IllegalBlockError as exc:
-            print(f"Error evaluating optimal assignment: {exc}")
+        # print(f"Correct assignments: {correct}/{len(blockers)}")
+        print("\nModel response:\n", llm_response)
+        # print("\nLLM blocks:", {b: parsed.get(b) for b in optimal})
+        print(llm_result)
+        iteration_counter = IterationCounter()
 
-            print("Initial game state:")
-            all_creatures = state.players["A"].creatures + state.players["B"].creatures
-            include_colors = any(
-                c.fear or c.intimidate or c.protection_colors for c in all_creatures
-            )
-            _print_player_state(
-                "Player A", state.players["A"], include_colors=include_colors
-            )
-            _print_player_state(
-                "Player B", state.players["B"], include_colors=include_colors
-            )
-            print("\nOptimal blocks:", optimal)
-            print("Optimal value:", _format_value(opt_value))
-
-            raise exc
-
-        diff: tuple[float, float, float, float, int] = (
-            llm_value[0] - opt_value[0],
-            llm_value[1] - opt_value[1],
-            llm_value[2] - opt_value[2],
-            llm_value[3] - opt_value[3],
-            llm_value[4] - opt_value[4],
+        simple_block_dict = {
+            blockers[blk_idx]: attackers[choice]
+            for blk_idx, choice in enumerate(simple_map)
+            if choice is not None
+        }
+        simple_result, _ = evaluate_block_assignment(
+            simple_block_dict,
+            state,
+            iteration_counter,
+            provoke_map=provoke_map,
+            damage_order=None,
         )
+        optimal_block_dict = {
+            blockers[blk_idx]: attackers[choice]
+            for blk_idx, choice in enumerate(opt_map)
+            if choice is not None
+        }
+        opt_result, _ = evaluate_block_assignment(
+            optimal_block_dict,
+            state,
+            iteration_counter,
+            provoke_map=provoke_map,
+            damage_order=None,
+        )
+
         print(f"\n=== Scenario {idx + 1} ===")
         print("Initial game state:")
         all_creatures = state.players["A"].creatures + state.players["B"].creatures
@@ -336,20 +241,30 @@ async def _evaluate_single_scenario(
         _print_player_state(
             "Player B", state.players["B"], include_colors=include_colors
         )
-        print()
-        print(f"Correct assignments: {correct}/{len(blockers)}")
-        if simple_result is not None and simple_value is not None:
-            print("\nSimple blocks:", simple)
-            print(simple_result)
-            print("Simple value:", _format_value(simple_value))
-        print("\nOptimal blocks:", optimal)
+        for blocker, attacker in simple_block_dict.items():
+            if attacker is None:
+                print(f"{blocker.name} does not block")
+            else:
+                print(
+                    f"{blocker.name} ({blocker.power}/{blocker.toughness}) "
+                    f"blocks {attacker.name} ({attacker.power}/{attacker.toughness})"
+                )
+        print(simple_result)
+        print(simple_result.score("A", "B"))
+        for blocker, attacker in optimal_block_dict.items():
+            if attacker is None:
+                print(f"{blocker.name} does not block")
+            else:
+                print(
+                    f"{blocker.name} ({blocker.power}/{blocker.toughness}) "
+                    f"blocks {attacker.name} ({attacker.power}/{attacker.toughness})"
+                )
         print(opt_result)
-        print("Optimal value:", _format_value(opt_value))
-        print("\nModel response:\n", llm_response)
-        print("\nLLM blocks:", {b: parsed.get(b) for b in optimal})
-        print(llm_result)
-        print("LLM value:", _format_value(llm_value))
-        print("Difference:", _format_value(diff))
+        print(opt_result.score("A", "B"))
+        decide_simple_blocks(
+            game_state=state,
+            provoke_map=provoke_map,
+        )
         break
 
 

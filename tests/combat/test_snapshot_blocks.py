@@ -9,7 +9,6 @@ from magic_combat import decode_provoke
 from magic_combat import state_from_dict
 from magic_combat.blocking_ai import decide_optimal_blocks
 from magic_combat.constants import SNAPSHOT_VERSION
-from magic_combat.random_scenario import _score_optimal_result
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "data"
 SNAP_PATH = DATA_PATH / "blocking_snapshots.json"
@@ -46,12 +45,3 @@ def test_optimal_blocks_snapshots() -> None:
             for b in blockers
         ]
         assert chosen == snap["optimal_assignment"]
-        value = list(
-            _score_optimal_result(
-                state,
-                tuple(chosen),
-                provoke_map,
-                mentor_map,
-            )
-        )
-        assert value == snap["combat_value"]

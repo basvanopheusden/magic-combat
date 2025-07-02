@@ -238,7 +238,7 @@ def decide_simple_blocks(
     game_state: GameState,
     provoke_map: Optional[dict[CombatCreature, CombatCreature]] = None,
     max_iterations: int = int(1e4),
-) -> None:
+) -> tuple[ScoreVector, tuple[Optional[int], ...]]:
     """Assign blocks using a small two-stage minimax search."""
 
     attackers = list(game_state.players["A"].creatures)
@@ -246,8 +246,6 @@ def decide_simple_blocks(
     counter = IterationCounter(max_iterations)
 
     reset_block_assignments(game_state)
-    if not blockers:
-        return
 
     block_options = _get_block_options(
         game_state,
@@ -264,11 +262,9 @@ def decide_simple_blocks(
         counter,
         provoke_map,
         include_loss=False,
-        k=1,
+        k=5,
     )
-
-    if not top:
-        return
+    print(top)
 
     _, best_assignment = top[0]
 
@@ -284,10 +280,7 @@ def decide_simple_blocks(
         k=1,
     )
 
-    if not top:
-        return
-
-    _, final_assignment = top[0]
+    final_score, final_assignment = top[0]
 
     reset_block_assignments(game_state)
     for blk_idx, choice in enumerate(final_assignment):
@@ -296,3 +289,5 @@ def decide_simple_blocks(
             atk = attackers[choice]
             blk.blocking = atk
             atk.blocked_by.append(blk)
+
+    return final_score, final_assignment
