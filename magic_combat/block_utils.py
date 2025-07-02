@@ -22,9 +22,14 @@ def evaluate_block_assignment(
     state: GameState,
     counter: IterationCounter,
     provoke_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
+    mentor_map: Optional[Dict[CombatCreature, CombatCreature]] = None,
     damage_order: Optional[dict[CombatCreature, tuple[CombatCreature, ...]]] = None,
 ) -> Tuple[Optional[CombatResult], Optional[GameState]]:
-    """Simulate combat for ``assignment`` and return the result and new state."""
+    """Simulate combat for ``assignment`` and return the result and new state.
+
+    ``provoke_map`` and ``mentor_map`` are used to validate special attacker
+    interactions during simulation.
+    """
     orig_atks = list(state.players["A"].creatures)
     orig_blks = list(state.players["B"].creatures)
     state_copy = deepcopy(state)
@@ -44,6 +49,12 @@ def evaluate_block_assignment(
         for atk, blk in provoke_map.items():
             if atk in atk_map and blk in blk_map:
                 prov_copies[atk_map[atk]] = blk_map[blk]
+
+    mentor_copies: Dict[CombatCreature, CombatCreature] = {}
+    if mentor_map:
+        for mentor, target in mentor_map.items():
+            if mentor in atk_map and target in atk_map:
+                mentor_copies[atk_map[mentor]] = atk_map[target]
 
     order_map: dict[CombatCreature, tuple[CombatCreature, ...]] | None = None
     if damage_order:
@@ -67,6 +78,7 @@ def evaluate_block_assignment(
         game_state=state_copy,
         damage_order_map=order_map,
         provoke_map=prov_copies or None,
+        mentor_map=mentor_copies or None,
     )
     try:
         counter.increment()
