@@ -58,10 +58,11 @@ def main() -> None:
     )
     for blk in blockers:
         if blk.blocking:
-            print(
-                f"{blk.name} ({blk.power}/{blk.toughness}) "
-                f"blocks {blk.blocking.name} ({blk.blocking.power}/{blk.blocking.toughness})"
+            msg = (
+                f"{blk.name} ({blk.power}/{blk.toughness}) blocks "
+                f"{blk.blocking.name} ({blk.blocking.power}/{blk.blocking.toughness})"
             )
+            print(msg)
         else:
             print(f"{blk.name} does not block")
     result = CombatSimulator(attackers, blockers, game_state=state).simulate()
@@ -128,10 +129,11 @@ def generate_scenario():
     )
     for blk in blockers:
         if blk.blocking:
-            print(
-                f"{blk.name} ({blk.power}/{blk.toughness}) "
-                f"blocks {blk.blocking.name} ({blk.blocking.power}/{blk.blocking.toughness})"
+            msg = (
+                f"{blk.name} ({blk.power}/{blk.toughness}) blocks "
+                f"{blk.blocking.name} ({blk.blocking.power}/{blk.blocking.toughness})"
             )
+            print(msg)
         else:
             print(f"{blk.name} does not block")
 
