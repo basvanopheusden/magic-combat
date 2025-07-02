@@ -257,13 +257,6 @@ def decide_simple_blocks(
     all_assignments = _get_all_assignments(block_options)
 
     minimal_assignments = [a for a in all_assignments if _valid_minimal(a, attackers)]
-    print(
-        "Found "
-        f"{len(minimal_assignments)} minimal assignments out of "
-        f"{len(all_assignments)} total assignments."
-    )
-    for assignment in minimal_assignments:
-        print("Assignment:", assignment)
 
     top, _ = _minimax_assignments(
         minimal_assignments,
@@ -295,17 +288,11 @@ def decide_simple_blocks(
         return
 
     _, final_assignment = top[0]
-    print(final_assignment)
 
     reset_block_assignments(game_state)
     for blk_idx, choice in enumerate(final_assignment):
-        print(f"Blocker {blk_idx} assigned to attacker {choice}")
         if choice is not None:
             blk = blockers[blk_idx]
             atk = attackers[choice]
             blk.blocking = atk
             atk.blocked_by.append(blk)
-            print(
-                f"{blk.name} ({blk.power}/{blk.toughness}) blocks "
-                f"{atk.name} ({atk.power}/{atk.toughness})"
-            )
