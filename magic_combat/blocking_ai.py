@@ -251,8 +251,11 @@ def decide_simple_blocks(
     all_assignments = _get_all_assignments(block_options)
 
     minimal_assignments = [a for a in all_assignments if _valid_minimal(a, attackers)]
+    min_count = len(minimal_assignments)
+    total_count = len(all_assignments)
     print(
-        f"Found {len(minimal_assignments)} minimal assignments out of {len(all_assignments)} total assignments."
+        "Found"
+        f" {min_count} minimal assignments out of {total_count} total assignments."
     )
     for assignment in minimal_assignments:
         print("Assignment:", assignment)

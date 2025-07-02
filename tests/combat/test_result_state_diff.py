@@ -5,7 +5,6 @@ from magic_combat import CombatSimulator
 from magic_combat import GameState
 from magic_combat import PlayerState
 from magic_combat.block_utils import evaluate_block_assignment
-from magic_combat.gamestate import has_player_lost
 from magic_combat.limits import IterationCounter
 from tests.conftest import link_block
 
@@ -14,7 +13,7 @@ def _score_from_states(
     start: GameState, end: GameState | None, attacker: str, defender: str
 ) -> tuple[int, float, int, int, int, int]:
     assert end is not None
-    lost = 1 if has_player_lost(end, defender) else 0
+    lost = 1 if end.has_player_lost(defender) else 0
     start_att = start.players[attacker].creatures
     start_def = start.players[defender].creatures
     end_att_names = {c.name for c in end.players[attacker].creatures}

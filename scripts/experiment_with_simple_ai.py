@@ -60,7 +60,8 @@ def main() -> None:
         if blk.blocking:
             print(
                 f"{blk.name} ({blk.power}/{blk.toughness}) "
-                f"blocks {blk.blocking.name} ({blk.blocking.power}/{blk.blocking.toughness})"
+                f"blocks {blk.blocking.name} "
+                f"({blk.blocking.power}/{blk.blocking.toughness})"
             )
         else:
             print(f"{blk.name} does not block")
@@ -130,7 +131,8 @@ def generate_scenario():
         if blk.blocking:
             print(
                 f"{blk.name} ({blk.power}/{blk.toughness}) "
-                f"blocks {blk.blocking.name} ({blk.blocking.power}/{blk.blocking.toughness})"
+                f"blocks {blk.blocking.name} "
+                f"({blk.blocking.power}/{blk.blocking.toughness})"
             )
         else:
             print(f"{blk.name} does not block")
