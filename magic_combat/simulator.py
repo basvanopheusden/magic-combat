@@ -537,15 +537,6 @@ class CombatSimulator:
         if remaining > 0 and attacker.trample:
             self._deal_damage_to_player(attacker, remaining)
 
-    def _assign_damage_to_attacker(
-        self, attacker: CombatCreature, blockers: Optional[List[CombatCreature]] = None
-    ) -> None:
-        """Deal each blocker's combat damage to the attacker."""
-        blockers = blockers if blockers is not None else attacker.blocked_by
-        for blocker in blockers:
-            dmg: int = blocker.effective_power()
-            self._apply_damage_to_creature(attacker, dmg, blocker)
-
     def _deal_damage_to_player(
         self, attacker: CombatCreature, dmg: Optional[int] = None
     ) -> None:
