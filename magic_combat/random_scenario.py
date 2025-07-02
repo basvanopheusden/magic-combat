@@ -376,8 +376,6 @@ def _attempt_random_scenario(
     unique_optimal: bool,
 ) -> Tuple[
     GameState,
-    list[CombatCreature],
-    list[CombatCreature],
     dict[CombatCreature, CombatCreature],
     dict[CombatCreature, CombatCreature],
     Tuple[Optional[int], ...],
@@ -412,16 +410,13 @@ def _attempt_random_scenario(
         unique_optimal=unique_optimal,
     )
 
-    start_state = copy.deepcopy(state)
     for atk in attackers:
         atk.blocked_by.clear()
     for blk in blockers:
         blk.blocking = None
 
     return (
-        start_state,
-        attackers,
-        blockers,
+        state,
         provoke_map,
         mentor_map,
         optimal_assignment,
@@ -441,8 +436,6 @@ def generate_random_scenario(
     seed: int | None = None,
 ) -> Tuple[
     GameState,
-    list[CombatCreature],
-    list[CombatCreature],
     dict[CombatCreature, CombatCreature],
     dict[CombatCreature, CombatCreature],
     Tuple[Optional[int], ...],

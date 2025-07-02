@@ -21,7 +21,6 @@ from .utils import check_non_negative
 
 ScoreVector: TypeAlias = tuple[int, float, int, int, int, int, tuple[int, ...]]
 
-
 def _get_all_assignments(
     options: Sequence[Sequence[int | None]],
 ) -> list[tuple[Optional[int], ...]]:
@@ -251,6 +250,9 @@ def decide_simple_blocks(
     all_assignments = _get_all_assignments(block_options)
 
     minimal_assignments = [a for a in all_assignments if _valid_minimal(a, attackers)]
+    print(f"Found {len(minimal_assignments)} minimal assignments out of {len(all_assignments)} total assignments.")
+    for assignment in minimal_assignments:
+        print("Assignment:", assignment)
 
     top, _ = _minimax_assignments(
         minimal_assignments,
@@ -264,10 +266,13 @@ def decide_simple_blocks(
     if not top:
         return
 
-    best_assignment = top[0][1]
+    _, best_assignment = top[0]
 
-    verify, _ = _minimax_assignments(
-        [best_assignment],
+    superset_assignments = [
+        a for a in all_assignments if _valid_superset(best_assignment, a)
+    ]
+    top, _ = _minimax_assignments(
+        superset_assignments,
         game_state,
         counter,
         provoke_map,
@@ -275,30 +280,22 @@ def decide_simple_blocks(
         k=1,
     )
 
-    stage1_lost = verify[0][0][0] == 1
+    if not top:
+        return
 
-    final_assignment = best_assignment
+    _, final_assignment = top[0]
+    print(final_assignment)
 
-    if stage1_lost:
-        superset_assignments = [
-            a for a in all_assignments if _valid_superset(best_assignment, a)
-        ]
-        top2, _ = _minimax_assignments(
-            superset_assignments,
-            game_state,
-            counter,
-            provoke_map,
-            include_loss=True,
-            k=1,
-        )
-
-        if top2:
-            final_assignment = top2[0][1]
 
     reset_block_assignments(game_state)
     for blk_idx, choice in enumerate(final_assignment):
+        print(f"Blocker {blk_idx} assigned to attacker {choice}")
         if choice is not None:
             blk = blockers[blk_idx]
             atk = attackers[choice]
             blk.blocking = atk
             atk.blocked_by.append(blk)
+            print(
+                f"{blk.name} ({blk.power}/{blk.toughness}) blocks "
+                f"{atk.name} ({atk.power}/{atk.toughness})"
+            )
