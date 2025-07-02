@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Optional
+from typing import Sequence
 
 from magic_combat.constants import POISON_LOSS_THRESHOLD
 
@@ -50,6 +52,29 @@ class GameState:
             for line in str(state).splitlines():
                 lines.append(f"  {line}")
         return "\n".join(lines)
+
+    def apply_block_assignment(self, assignment: Sequence[Optional[int]]) -> None:
+        """Assign blockers according to ``assignment``.
+
+        Each entry maps a blocker index to an attacker index or ``None`` if the
+        blocker is unassigned. Attackers and blockers are taken from players
+        ``"A"`` and ``"B"`` respectively.
+        """
+
+        attackers = list(self.players["A"].creatures)
+        blockers = list(self.players["B"].creatures)
+
+        for blk_idx, choice in enumerate(assignment):
+            print(f"Blocker {blk_idx} assigned to attacker {choice}")
+            if choice is not None:
+                blk = blockers[blk_idx]
+                atk = attackers[choice]
+                blk.blocking = atk
+                atk.blocked_by.append(blk)
+                print(
+                    f"{blk.name} ({blk.power}/{blk.toughness}) blocks "
+                    f"{atk.name} ({atk.power}/{atk.toughness})"
+                )
 
 
 def has_player_lost(state: GameState, player: str) -> bool:
