@@ -87,8 +87,6 @@ def main() -> None:
     for i in range(args.iterations):
         (
             start_state,
-            attackers,
-            blockers,
             provoke_map,
             mentor_map,
             *_,
@@ -100,6 +98,8 @@ def main() -> None:
             max_iterations=args.max_iterations,
             unique_optimal=args.unique_optimal,
         )
+        attackers = list(start_state.players["A"].creatures)
+        blockers = list(start_state.players["B"].creatures)
         state = copy.deepcopy(start_state)
         result = CombatSimulator(
             attackers,

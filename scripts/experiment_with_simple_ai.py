@@ -59,8 +59,8 @@ def main() -> None:
     for blk in blockers:
         if blk.blocking:
             print(
-                f"{blk.name} ({blk.power}/{blk.toughness}) "
-                f"blocks {blk.blocking.name} ({blk.blocking.power}/{blk.blocking.toughness})"
+                f"{blk.name} ({blk.power}/{blk.toughness}) blocks "
+                f"{blk.blocking.name} ({blk.blocking.power}/{blk.blocking.toughness})"
             )
         else:
             print(f"{blk.name} does not block")
@@ -110,7 +110,7 @@ def generate_scenario():
         else:
             print(f"{blockers[blk_idx].name} does not block")
     print("Simple blocks:")
-    for blk_idx, choice in enumerate(simple_map):
+    for blk_idx, choice in enumerate(simple_map or []):
         if choice is not None:
             attacker = blockers[blk_idx]
             blocker = attackers[choice]
@@ -129,8 +129,8 @@ def generate_scenario():
     for blk in blockers:
         if blk.blocking:
             print(
-                f"{blk.name} ({blk.power}/{blk.toughness}) "
-                f"blocks {blk.blocking.name} ({blk.blocking.power}/{blk.blocking.toughness})"
+                f"{blk.name} ({blk.power}/{blk.toughness}) blocks "
+                f"{blk.blocking.name} ({blk.blocking.power}/{blk.blocking.toughness})"
             )
         else:
             print(f"{blk.name} does not block")

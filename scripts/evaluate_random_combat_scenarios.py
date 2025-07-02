@@ -175,8 +175,6 @@ async def _evaluate_single_scenario(
     print("Generating scenario", idx + 1)
     (
         state,
-        attackers,
-        blockers,
         provoke_map,
         mentor_map,
         opt_map,
@@ -190,6 +188,8 @@ async def _evaluate_single_scenario(
         seed=seed + idx,
         unique_optimal=True,
     )
+    attackers = list(state.players["A"].creatures)
+    blockers = list(state.players["B"].creatures)
 
     optimal = {
         blk.name: (attackers[choice].name if choice is not None else None)

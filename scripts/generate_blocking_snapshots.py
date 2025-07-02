@@ -54,14 +54,14 @@ def main() -> None:
         seed = args.seed + i
         (
             state,
-            attackers,
-            blockers,
             provoke_map,
             mentor_map,
             opt_map,
             simple_map,
             combat_value,
         ) = generate_random_scenario(cards, values, seed=seed)
+        attackers = list(state.players["A"].creatures)
+        blockers = list(state.players["B"].creatures)
 
         snapshot: dict[str, object] = {
             "version": SNAPSHOT_VERSION,
