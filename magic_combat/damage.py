@@ -2,7 +2,6 @@
 
 from copy import deepcopy
 from itertools import permutations
-from typing import Iterable
 from typing import List
 from typing import Sequence
 
@@ -46,13 +45,3 @@ def optimal_damage_order(
             best_order = list(perm)
 
     return best_order
-
-
-def damage_order_permutations(
-    attacker: CombatCreature, blockers: Sequence[CombatCreature]
-) -> Iterable[tuple[CombatCreature, ...]]:
-    """Yield all possible damage orders for ``attacker``."""
-    if len(blockers) <= 1:
-        yield tuple(blockers)
-    else:
-        yield from permutations(blockers)

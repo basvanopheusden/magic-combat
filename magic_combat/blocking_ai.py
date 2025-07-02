@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import heapq
+from itertools import permutations
 from itertools import product
 from typing import Iterable
 from typing import Optional
@@ -10,11 +11,11 @@ from typing import Sequence
 from typing import Tuple
 from typing import TypeAlias
 
+from . import CombatCreature
 from .block_utils import evaluate_block_assignment
 from .block_utils import reset_block_assignments
 from .block_utils import should_force_provoke
 from .creature import CombatCreature
-from .damage import damage_order_permutations
 from .gamestate import GameState
 from .limits import IterationCounter
 from .utils import check_non_negative
@@ -94,6 +95,16 @@ def _valid_superset(
     """Return ``True`` if ``candidate`` extends ``reference`` without changes."""
 
     return all(r is None or r == c for r, c in zip(reference, candidate))
+
+
+def damage_order_permutations(
+    attacker: CombatCreature, blockers: Sequence[CombatCreature]
+) -> Iterable[tuple[CombatCreature, ...]]:
+    """Yield all possible damage orders for ``attacker``."""
+    if len(blockers) <= 1:
+        yield tuple(blockers)
+    else:
+        yield from permutations(blockers)
 
 
 def get_all_damage_orderings(
