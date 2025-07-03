@@ -112,5 +112,12 @@ def cards_to_creatures(
     cards: Iterable[Dict[str, Any]], controller: str
 ) -> List[CombatCreature]:
     """Convert an iterable of card dicts into :class:`CombatCreature` objects."""
+    creatures = []
+    for card in cards:
+        try:
+            creature = card_to_creature(card, controller)
+            creatures.append(creature)
+        except ValueError as exc:
+            print(f"Skipping card {card.get('name', 'unknown')}: {exc}")
 
-    return [card_to_creature(c, controller) for c in cards]
+    return creatures

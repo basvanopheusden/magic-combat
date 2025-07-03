@@ -15,6 +15,7 @@ from magic_combat import create_llm_prompt
 from magic_combat import generate_random_scenario
 from magic_combat import load_cards
 from magic_combat.dataset import ReferenceAnswer
+from magic_combat.text_utils import summarize_creature
 
 
 def _dump(path: Path, data: list[dict[str, object]]) -> None:
@@ -42,12 +43,18 @@ def main() -> None:
     cards = load_cards(args.cards)
     stats = compute_card_statistics(cards)
     values = build_value_map(cards)
+    scenario_generator = generate_random_scenario(
+        cards,
+        values,
+        stats,
+        seed=args.seed,
+        max_iterations=int(1e4),
+        generated_cards=False,
+    )
 
     items: list[dict[str, object]] = []
     for i in range(args.n):
-        state, _, _, opt_map, _ = generate_random_scenario(
-            cards, values, stats, seed=args.seed + i
-        )
+        state, _, _, opt_map, _ = next(scenario_generator)
         prompt = create_llm_prompt(state)
         attackers = list(state.players["A"].creatures)
         blockers = list(state.players["B"].creatures)
@@ -58,6 +65,15 @@ def main() -> None:
         }
         answer = ReferenceAnswer.from_state(mapping, state)
         items.append({"prompt": prompt, "answer": answer.model_dump()})
+        print(f"Generated scenario {i + 1}/{args.n} with {len(attackers)} attackers and {len(blockers)} blockers")
+        for attacker in attackers:
+            print(summarize_creature(attacker, include_colors=True))
+        for blocker in blockers:
+            print(summarize_creature(blocker, include_colors=True))
+        for blocker, attacker in mapping.items():
+            print(f"  {blocker} -> {attacker}")
+
+
 
     _dump(Path(args.output), items)
 
