@@ -1,5 +1,8 @@
 from magic_combat import CombatCreature
 from magic_combat import CombatSimulator
+from magic_combat import GameState
+from magic_combat import PlayerState
+from magic_combat.constants import DEFAULT_STARTING_LIFE
 from tests.conftest import link_block
 
 
@@ -159,3 +162,88 @@ def test_lifelink_on_both_sides():
     result = sim.simulate()
     assert result.lifegain["A"] == 2
     assert result.lifegain["B"] == 2
+
+
+def test_lifelink_blocker_keeps_player_alive():
+    """CR 510.2, 702.15b & 104.3b: Lifelink life gain happens with damage, so
+    state-based actions see the gained life."""
+    a1 = CombatCreature("Raider", 2, 2, "A")
+    a2 = CombatCreature("Brute", 2, 2, "A")
+    blk = CombatCreature("Healer", 1, 1, "B", lifelink=True)
+    link_block(a1, blk)
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[a1, a2]),
+            "B": PlayerState(life=2, creatures=[blk]),
+        }
+    )
+    sim = CombatSimulator([a1, a2], [blk], game_state=state)
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 2
+    assert result.lifegain["B"] == 1
+    assert state.players["B"].life == 1
+    assert "B" not in sim.players_lost
+
+
+def test_first_strike_lethal_before_lifelink():
+    """CR 702.7b & 702.15b: Lifelink can't save a player from lethal first strike damage."""
+    fs = CombatCreature("Swiftblade", 2, 2, "A", first_strike=True)
+    atk = CombatCreature("Raider", 2, 2, "A")
+    blk = CombatCreature("Cleric", 1, 1, "B", lifelink=True)
+    link_block(atk, blk)
+    state = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[fs, atk]),
+            "B": PlayerState(life=2, creatures=[blk]),
+        }
+    )
+    sim = CombatSimulator([fs, atk], [blk], game_state=state)
+    sim.simulate()
+    assert "B" in sim.players_lost
+
+
+def test_double_strike_lifelink_blocker_hits_twice():
+    """CR 702.4b & 702.15b: Double strike lifelink deals damage in both steps."""
+    atk = CombatCreature("Brute", 3, 3, "A")
+    blk = CombatCreature("Guardian", 1, 1, "B", lifelink=True, double_strike=True)
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.lifegain["B"] == 2
+
+
+def test_persist_lifelink_attacker_returns_after_damage():
+    """CR 702.77a & 702.15b: Persist returns the creature after lifelink damage."""
+    atk = CombatCreature("Undying Cleric", 2, 2, "A", lifelink=True, persist=True)
+    blk = CombatCreature("Bear", 2, 2, "B")
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.lifegain["A"] == 2
+    assert atk.minus1_counters == 1
+    assert atk not in result.creatures_destroyed
+
+
+def test_undying_lifelink_attacker_returns_after_damage():
+    """CR 702.92a & 702.15b: Undying returns after lifelink damage is dealt."""
+    atk = CombatCreature("Resilient Monk", 2, 2, "A", lifelink=True, undying=True)
+    blk = CombatCreature("Bear", 2, 2, "B")
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.lifegain["A"] == 2
+    assert atk.plus1_counters == 1
+    assert atk not in result.creatures_destroyed
+
+
+def test_deathtouch_trample_lifelink_assignment():
+    """CR 702.2b, 702.19b & 702.15b: Deathtouch trample lifelink assigns minimal blocker damage."""
+    atk = CombatCreature(
+        "Predator", 5, 5, "A", deathtouch=True, trample=True, lifelink=True
+    )
+    blk = CombatCreature("Wall", 5, 5, "B")
+    link_block(atk, blk)
+    sim = CombatSimulator([atk], [blk])
+    result = sim.simulate()
+    assert result.damage_to_players["B"] == 4
+    assert result.lifegain["A"] == 5
