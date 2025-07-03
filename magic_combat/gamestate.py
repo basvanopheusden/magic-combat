@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Any
 
 from magic_combat.constants import POISON_LOSS_THRESHOLD
 
@@ -50,6 +51,35 @@ class GameState:
             for line in str(state).splitlines():
                 lines.append(f"  {line}")
         return "\n".join(lines)
+
+    def to_dict(self) -> dict[str, dict[str, int]]:
+        """Return life totals and poison counters for this state."""
+        life = {p: ps.life for p, ps in self.players.items()}
+        poison = {p: ps.poison for p, ps in self.players.items()}
+        return {"life": life, "poison": poison}
+
+    @classmethod
+    def from_dict(
+        cls,
+        data: dict[str, Any],
+        attackers: list[CombatCreature],
+        blockers: list[CombatCreature],
+    ) -> "GameState":
+        """Create a ``GameState`` from raw ``data`` and creature lists."""
+        return cls(
+            players={
+                "A": PlayerState(
+                    life=int(data["life"]["A"]),
+                    poison=int(data["poison"]["A"]),
+                    creatures=attackers,
+                ),
+                "B": PlayerState(
+                    life=int(data["life"]["B"]),
+                    poison=int(data["poison"]["B"]),
+                    creatures=blockers,
+                ),
+            }
+        )
 
 
 def has_player_lost(state: GameState, player: str) -> bool:

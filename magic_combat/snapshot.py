@@ -10,10 +10,6 @@ from typing import List
 from .creature import Color
 from .creature import CombatCreature
 from .gamestate import GameState
-from .gamestate import PlayerState
-
-_DEFENDER = "B"
-_ATTACKER = "A"
 
 
 def creature_to_dict(creature: CombatCreature) -> Dict[str, Any]:
@@ -34,9 +30,7 @@ def creature_from_dict(data: Dict[str, Any]) -> CombatCreature:
 
 def state_to_dict(state: GameState) -> Dict[str, Any]:
     """Return life totals and poison counters for ``state``."""
-    life = {p: ps.life for p, ps in state.players.items()}
-    poison = {p: ps.poison for p, ps in state.players.items()}
-    return {"life": life, "poison": poison}
+    return state.to_dict()
 
 
 def state_from_dict(
@@ -45,20 +39,7 @@ def state_from_dict(
     blockers: List[CombatCreature],
 ) -> GameState:
     """Create a :class:`GameState` from ``data`` and creature lists."""
-    return GameState(
-        players={
-            _ATTACKER: PlayerState(
-                life=int(data["life"][_ATTACKER]),
-                poison=int(data["poison"][_ATTACKER]),
-                creatures=attackers,
-            ),
-            _DEFENDER: PlayerState(
-                life=int(data["life"][_DEFENDER]),
-                poison=int(data["poison"][_DEFENDER]),
-                creatures=blockers,
-            ),
-        }
-    )
+    return GameState.from_dict(data, attackers, blockers)
 
 
 def encode_map(

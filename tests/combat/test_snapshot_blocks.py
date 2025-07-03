@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import List
 from typing import Optional
 
+from magic_combat import GameState
 from magic_combat import creature_from_dict
 from magic_combat import decode_mentor
 from magic_combat import decode_provoke
-from magic_combat import state_from_dict
 from magic_combat.blocking_ai import decide_optimal_blocks
 from magic_combat.constants import SNAPSHOT_VERSION
 
@@ -33,7 +33,7 @@ def test_optimal_blocks_snapshots() -> None:
             continue
         attackers = [creature_from_dict(d) for d in snap["attackers"]]
         blockers = [creature_from_dict(d) for d in snap["blockers"]]
-        state = state_from_dict(snap["state"], attackers, blockers)
+        state = GameState.from_dict(snap["state"], attackers, blockers)
         provoke_map = decode_provoke(snap["provoke_map"], attackers, blockers)
         mentor_map = decode_mentor(snap["mentor_map"], attackers)
         decide_optimal_blocks(

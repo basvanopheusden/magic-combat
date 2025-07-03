@@ -14,7 +14,6 @@ from magic_combat import creature_to_dict
 from magic_combat import encode_map
 from magic_combat import generate_random_scenario
 from magic_combat import load_cards
-from magic_combat import state_to_dict
 from magic_combat.constants import SNAPSHOT_VERSION
 
 
@@ -67,7 +66,7 @@ def main() -> None:
             "seed": seed,
             "attackers": [creature_to_dict(c) for c in attackers],
             "blockers": [creature_to_dict(c) for c in blockers],
-            "state": state_to_dict(state),
+            "state": state.to_dict(),
             "provoke_map": encode_map(provoke_map, attackers, blockers),
             "mentor_map": encode_map(mentor_map, attackers, attackers),
             "optimal_assignment": list(opt_map),

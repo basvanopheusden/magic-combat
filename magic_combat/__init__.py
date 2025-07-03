@@ -47,8 +47,6 @@ from .snapshot import creature_to_dict
 from .snapshot import decode_mentor
 from .snapshot import decode_provoke
 from .snapshot import encode_map
-from .snapshot import state_from_dict
-from .snapshot import state_to_dict
 from .utils import apply_attacker_blocking_bonuses
 from .utils import apply_blocker_bushido
 from .utils import calculate_mana_value
@@ -101,8 +99,6 @@ __all__ = [
     "SNAPSHOT_VERSION",
     "creature_to_dict",
     "creature_from_dict",
-    "state_to_dict",
-    "state_from_dict",
     "encode_map",
     "decode_provoke",
     "decode_mentor",
