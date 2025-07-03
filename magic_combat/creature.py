@@ -190,6 +190,12 @@ class CombatCreature:
 
         return calculate_mana_value(self.mana_cost, 0)
 
+    def _set_counter(self, attr: str, value: int, name: str) -> None:
+        """Validate ``value`` and assign it to the counter ``attr``."""
+
+        check_non_negative(value, name)
+        setattr(self, attr, value)
+
     # --- Counter properties with validation ---
     @property
     def plus1_counters(self) -> int:
@@ -199,8 +205,7 @@ class CombatCreature:
     @plus1_counters.setter
     def plus1_counters(self, value: int) -> None:
         """Validate and set the +1/+1 counter total."""
-        check_non_negative(value, "plus1 counters")
-        self._plus1_counters = value
+        self._set_counter("_plus1_counters", value, "plus1 counters")
 
     @property
     def minus1_counters(self) -> int:
@@ -210,8 +215,7 @@ class CombatCreature:
     @minus1_counters.setter
     def minus1_counters(self, value: int) -> None:
         """Validate and set the -1/-1 counter total."""
-        check_non_negative(value, "minus1 counters")
-        self._minus1_counters = value
+        self._set_counter("_minus1_counters", value, "minus1 counters")
 
     def apply_counter_annihilation(self) -> None:
         """Remove matched +1/+1 and -1/-1 counters.
