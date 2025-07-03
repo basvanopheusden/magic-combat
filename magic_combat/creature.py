@@ -147,21 +147,23 @@ class CombatCreature:
         """Return ``True`` if this creature is protected from the color."""
         return color in self.protection_colors
 
+    def _effective_stat(self, base: int, plus1: int, minus1: int, temp: int) -> int:
+        """Return a stat value after counters and temporary effects."""
+        return max(0, base + plus1 - minus1 + temp)
+
     def effective_power(self) -> int:
         """Base power, counters, and temporary modifiers."""
-        return max(
-            0,
-            self.power + self.plus1_counters - self.minus1_counters + self.temp_power,
+        return self._effective_stat(
+            self.power, self.plus1_counters, self.minus1_counters, self.temp_power
         )
 
     def effective_toughness(self) -> int:
         """Base toughness, counters, and temporary modifiers."""
-        return max(
-            0,
-            self.toughness
-            + self.plus1_counters
-            - self.minus1_counters
-            + self.temp_toughness,
+        return self._effective_stat(
+            self.toughness,
+            self.plus1_counters,
+            self.minus1_counters,
+            self.temp_toughness,
         )
 
     def is_destroyed_by_damage(self) -> bool:
