@@ -1,4 +1,12 @@
 # Magic Combat
+from llms.llm import call_anthropic_model
+from magic_combat import CombatCreature
+from magic_combat import CombatSimulator
+from magic_combat import compute_card_statistics
+from magic_combat import fetch_french_vanilla_cards
+from magic_combat import generate_random_creature
+from magic_combat import load_cards
+from magic_combat import save_cards
 
 This project provides a small combat simulator inspired by trading card games
 such as *Magic: The Gathering*.
@@ -52,7 +60,6 @@ implemented correctly.
 ## Usage
 
 ```python
-from magic_combat import CombatCreature, CombatSimulator
 
 attacker = CombatCreature("Knight", 2, 2, "A")
 blocker = CombatCreature("Goblin", 1, 1, "B")
@@ -73,7 +80,6 @@ resulting data can be stored locally using :func:`save_cards` and later
 loaded with :func:`load_cards`.
 
 ```python
-from magic_combat import fetch_french_vanilla_cards, save_cards
 
 cards = fetch_french_vanilla_cards()  # optional ``timeout`` parameter
 save_cards(cards, "data/cards.json")
@@ -97,7 +103,6 @@ Once you have downloaded card data, you can build statistics for the real
 creature distribution and sample new creatures from it:
 
 ```python
-from magic_combat import load_cards, compute_card_statistics, generate_random_creature
 
 cards = load_cards("data/cards.json")
 stats = compute_card_statistics(cards)
@@ -135,3 +140,17 @@ OPENAI_API_KEY=<your-key> \
 
 The script will generate scenarios, send them to the model and print the
 results to the console.
+
+## Using Anthropic models
+
+Support for Anthropic's Claude models is also provided.  Before using these
+functions you must install the ``anthropic`` package (already included in
+``requirements.txt``) and set the ``ANTHROPIC_API_KEY`` environment variable.
+The :func:`llms.llm.call_anthropic_model` helper mirrors
+``call_openai_model`` but queries the Anthropic API instead.  Example:
+
+```bash
+ANTHROPIC_API_KEY=<your-key> python - <<'EOF'
+print(asyncio.run(call_anthropic_model(["Hello"], model="claude-3-sonnet-20240229")))
+EOF
+```
