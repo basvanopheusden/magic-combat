@@ -12,7 +12,6 @@ from typing import Optional
 
 from .creature import CombatCreature
 from .gamestate import GameState
-from .utils import ensure_player_state
 
 __all__ = ["damage_creature", "damage_player"]
 
@@ -52,15 +51,15 @@ def damage_player(
     if source.infect:
         poison_counters[player] = poison_counters.get(player, 0) + amount
         if game_state is not None:
-            ps = ensure_player_state(game_state, player)
+            ps = game_state.ensure_player_state(player)
             ps.poison += amount
     else:
         damage_to_players[player] = damage_to_players.get(player, 0) + amount
         if game_state is not None:
-            ps = ensure_player_state(game_state, player)
+            ps = game_state.ensure_player_state(player)
             ps.life -= amount
     if source.toxic:
         poison_counters[player] = poison_counters.get(player, 0) + source.toxic
         if game_state is not None:
-            ps = ensure_player_state(game_state, player)
+            ps = game_state.ensure_player_state(player)
             ps.poison += source.toxic

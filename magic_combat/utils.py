@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .creature import CombatCreature
-    from .gamestate import GameState
-    from .gamestate import PlayerState
 
 
 def check_non_negative(value: int, name: str) -> None:
@@ -34,19 +32,6 @@ def check_positive(value: int, name: str) -> None:
     """Validate that ``value`` is strictly positive."""
     if value <= 0:
         raise ValueError(f"{name} must be positive")
-
-
-def ensure_player_state(state: "GameState", player: str) -> "PlayerState":
-    """Return existing :class:`PlayerState` for ``player`` or create one."""
-
-    # Import inside the function to avoid circular imports at module load time.
-    from magic_combat.constants import DEFAULT_STARTING_LIFE
-
-    from .gamestate import PlayerState
-
-    return state.players.setdefault(
-        player, PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0)
-    )
 
 
 def _evaluate_mana_symbol(symbol: str, x_value: int) -> int:

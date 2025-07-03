@@ -14,7 +14,6 @@ from .damage import optimal_damage_order
 from .exceptions import IllegalBlockError
 from .gamestate import GameState
 from .utils import can_block
-from .utils import ensure_player_state
 
 
 @dataclass
@@ -450,7 +449,7 @@ class CombatSimulator:
             return
         max_life = max(ps.life for ps in self.game_state.players.values())
         defender = self._get_defending_player()
-        defender_life = ensure_player_state(self.game_state, defender).life
+        defender_life = self.game_state.ensure_player_state(defender).life
         for atk in self.attackers:
             if atk.dethrone and defender_life >= max_life:
                 atk.plus1_counters += 1
@@ -466,7 +465,7 @@ class CombatSimulator:
                     self.player_damage.get(defender, 0) + atk.afflict
                 )
                 if self.game_state is not None:
-                    ps = ensure_player_state(self.game_state, defender)
+                    ps = self.game_state.ensure_player_state(defender)
                     ps.life -= atk.afflict
 
     def _handle_bushido_rampage_flanking(self) -> None:
@@ -649,7 +648,7 @@ class CombatSimulator:
                 already = self._lifegain_applied.get(player, 0)
                 diff = gain - already
                 if diff:
-                    ps = ensure_player_state(self.game_state, player)
+                    ps = self.game_state.ensure_player_state(player)
                     ps.life += diff
                     self._lifegain_applied[player] = gain
         # lifegain remains tracked for CombatResult
