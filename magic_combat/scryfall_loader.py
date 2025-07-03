@@ -16,6 +16,7 @@ from .creature import CombatCreature
 from .keywords import ALLOWED_KEYWORDS
 from .parsing import apply_keyword_attributes
 from .parsing import parse_colors as _parse_colors
+from .utils import write_json
 
 SCRYFALL_API = "https://api.scryfall.com/cards/search"
 QUERY = "is:frenchvanilla t:creature"
@@ -67,8 +68,7 @@ def fetch_french_vanilla_cards(timeout: float = 10.0) -> List[Dict[str, Any]]:
 
 def save_cards(cards: List[Dict[str, Any]], path: str) -> None:
     """Save ``cards`` to ``path`` as JSON."""
-    with open(path, "w", encoding="utf8") as fh:
-        json.dump(cards, fh, indent=2, ensure_ascii=False)
+    write_json(cards, path)
 
 
 def load_cards(path: str) -> List[Dict[str, Any]]:

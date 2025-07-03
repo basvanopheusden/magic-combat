@@ -2,7 +2,6 @@
 """Generate snapshot scenarios for optimal blocking tests."""
 
 import argparse
-import json
 import random
 from pathlib import Path
 from typing import List
@@ -16,13 +15,12 @@ from magic_combat import generate_random_scenario
 from magic_combat import load_cards
 from magic_combat import state_to_dict
 from magic_combat.constants import SNAPSHOT_VERSION
+from magic_combat.utils import write_json
 
 
 def _dump_snapshot(data: List[dict[str, object]], path: Path) -> None:
     """Write snapshot data to ``path`` in JSON format."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as fh:
-        json.dump(data, fh, indent=2)
+    write_json(data, path)
 
 
 def main() -> None:

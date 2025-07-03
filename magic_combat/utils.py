@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -208,3 +210,12 @@ def apply_blocker_bushido(blocker: "CombatCreature") -> None:
     if blocker.blocking is not None and blocker.bushido:
         blocker.temp_power += blocker.bushido
         blocker.temp_toughness += blocker.bushido
+
+
+def write_json(obj: object, path: str | Path) -> None:
+    """Write ``obj`` to ``path`` in JSON format."""
+
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("w", encoding="utf-8") as fh:
+        json.dump(obj, fh, indent=2, ensure_ascii=False)
