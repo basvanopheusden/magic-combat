@@ -369,3 +369,33 @@ def test_simple_ai_ignores_tapped_blocker():
     )
     decide_simple_blocks(game_state=state)
     assert blk.blocking is None
+
+
+def test_simple_ai_accounts_for_mentor_map():
+    """CR 702.134a: Mentor gives counters to a weaker attacker."""
+
+    # Without a mentor map the AI chooses to block the smaller attacker
+    mentor = CombatCreature("Mentor", 2, 2, "A", mentor=True)
+    pupil = CombatCreature("Pupil", 1, 1, "A")
+    blk1 = CombatCreature("Blocker", 2, 2, "B")
+    state1 = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[mentor, pupil]),
+            "B": PlayerState(life=20, creatures=[blk1]),
+        }
+    )
+    decide_simple_blocks(game_state=state1)
+    assert blk1.blocking is pupil
+
+    # With a mentor map the blocker switches to the mentor creature
+    mentor = CombatCreature("Mentor", 2, 2, "A", mentor=True)
+    pupil = CombatCreature("Pupil", 1, 1, "A")
+    blk2 = CombatCreature("Blocker", 2, 2, "B")
+    state2 = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[mentor, pupil]),
+            "B": PlayerState(life=20, creatures=[blk2]),
+        }
+    )
+    decide_simple_blocks(game_state=state2, mentor_map={mentor: pupil})
+    assert blk2.blocking is mentor
