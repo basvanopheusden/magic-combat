@@ -532,9 +532,13 @@ class CombatSimulator:
         remaining = attacker.effective_power()
         for blocker in ordered:
             lethal = 1 if attacker.deathtouch else blocker.effective_toughness()
+            if blocker.damaged_by_deathtouch:
+                lethal = 0
+            lethal = max(lethal - blocker.damage_marked, 0)
             dmg: int = min(remaining, lethal)
-            self._apply_damage_to_creature(blocker, dmg, attacker)
-            remaining -= dmg
+            if dmg > 0:
+                self._apply_damage_to_creature(blocker, dmg, attacker)
+                remaining -= dmg
             if remaining <= 0:
                 break
         if remaining > 0 and attacker.trample:

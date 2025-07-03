@@ -241,9 +241,10 @@ def test_deathtouch_trample_lifelink_assignment():
     atk = CombatCreature(
         "Predator", 5, 5, "A", deathtouch=True, trample=True, lifelink=True
     )
-    blk = CombatCreature("Wall", 5, 5, "B")
+    blk = CombatCreature("Wall", 3, 3, "B", indestructible=True)
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     result = sim.simulate()
     assert result.damage_to_players["B"] == 4
+    assert blk not in result.creatures_destroyed
     assert result.lifegain["A"] == 5
