@@ -147,21 +147,23 @@ class CombatCreature:
         """Return ``True`` if this creature is protected from the color."""
         return color in self.protection_colors
 
+    def _effective_stat(self, base: int, plus1: int, minus1: int, temp: int) -> int:
+        """Return a stat value after counters and temporary effects."""
+        return max(0, base + plus1 - minus1 + temp)
+
     def effective_power(self) -> int:
         """Base power, counters, and temporary modifiers."""
-        return max(
-            0,
-            self.power + self.plus1_counters - self.minus1_counters + self.temp_power,
+        return self._effective_stat(
+            self.power, self.plus1_counters, self.minus1_counters, self.temp_power
         )
 
     def effective_toughness(self) -> int:
         """Base toughness, counters, and temporary modifiers."""
-        return max(
-            0,
-            self.toughness
-            + self.plus1_counters
-            - self.minus1_counters
-            + self.temp_toughness,
+        return self._effective_stat(
+            self.toughness,
+            self.plus1_counters,
+            self.minus1_counters,
+            self.temp_toughness,
         )
 
     def is_destroyed_by_damage(self) -> bool:
@@ -190,6 +192,12 @@ class CombatCreature:
 
         return calculate_mana_value(self.mana_cost, 0)
 
+    def _set_counter(self, attr: str, value: int, name: str) -> None:
+        """Validate ``value`` and assign it to the counter ``attr``."""
+
+        check_non_negative(value, name)
+        setattr(self, attr, value)
+
     # --- Counter properties with validation ---
     @property
     def plus1_counters(self) -> int:
@@ -199,8 +207,7 @@ class CombatCreature:
     @plus1_counters.setter
     def plus1_counters(self, value: int) -> None:
         """Validate and set the +1/+1 counter total."""
-        check_non_negative(value, "plus1 counters")
-        self._plus1_counters = value
+        self._set_counter("_plus1_counters", value, "plus1 counters")
 
     @property
     def minus1_counters(self) -> int:
@@ -210,8 +217,7 @@ class CombatCreature:
     @minus1_counters.setter
     def minus1_counters(self, value: int) -> None:
         """Validate and set the -1/-1 counter total."""
-        check_non_negative(value, "minus1 counters")
-        self._minus1_counters = value
+        self._set_counter("_minus1_counters", value, "minus1 counters")
 
     def apply_counter_annihilation(self) -> None:
         """Remove matched +1/+1 and -1/-1 counters.

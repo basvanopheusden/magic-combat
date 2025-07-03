@@ -70,13 +70,22 @@ def encode_map(
     return {str(atk.index(a)): blk.index(b) for a, b in mapping.items()}
 
 
+def decode_mapping(
+    data: Dict[str, int],
+    src: List[CombatCreature],
+    dst: List[CombatCreature],
+) -> Dict[CombatCreature, CombatCreature]:
+    """Decode an index mapping into a creature mapping."""
+    return {src[int(k)]: dst[v] for k, v in data.items()}
+
+
 def decode_provoke(
     data: Dict[str, int],
     atk: List[CombatCreature],
     blk: List[CombatCreature],
 ) -> Dict[CombatCreature, CombatCreature]:
     """Decode an encoded provoke mapping."""
-    return {atk[int(k)]: blk[v] for k, v in data.items()}
+    return decode_mapping(data, atk, blk)
 
 
 def decode_mentor(
@@ -84,4 +93,4 @@ def decode_mentor(
     atk: List[CombatCreature],
 ) -> Dict[CombatCreature, CombatCreature]:
     """Decode an encoded mentor mapping."""
-    return {atk[int(k)]: atk[v] for k, v in data.items()}
+    return decode_mapping(data, atk, atk)

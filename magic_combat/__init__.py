@@ -21,7 +21,6 @@ from .exceptions import ScenarioGenerationError
 from .exceptions import UnparsableLLMOutputError
 from .gamestate import GameState
 from .gamestate import PlayerState
-from .gamestate import has_player_lost
 from .llm_cache import LLMCache
 from .llm_cache import MockLLMCache
 from .random_creature import assign_random_counters
@@ -44,6 +43,7 @@ from .simulator import CombatResult
 from .simulator import CombatSimulator
 from .snapshot import creature_from_dict
 from .snapshot import creature_to_dict
+from .snapshot import decode_mapping
 from .snapshot import decode_mentor
 from .snapshot import decode_provoke
 from .snapshot import encode_map
@@ -63,7 +63,6 @@ __all__ = [
     "decide_simple_blocks",
     "GameState",
     "PlayerState",
-    "has_player_lost",
     "calculate_mana_value",
     "fetch_french_vanilla_cards",
     "load_cards",
@@ -104,6 +103,7 @@ __all__ = [
     "state_to_dict",
     "state_from_dict",
     "encode_map",
+    "decode_mapping",
     "decode_provoke",
     "decode_mentor",
 ]

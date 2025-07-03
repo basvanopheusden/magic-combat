@@ -59,10 +59,9 @@ class GameState:
         for blocker in self.players["B"].creatures:
             blocker.blocking = None
 
-
-def has_player_lost(state: GameState, player: str) -> bool:
-    """Return ``True`` if ``player`` has lost the game."""
-    ps = state.players.get(player)
-    if ps is None:
-        return False
-    return ps.life <= 0 or ps.poison >= POISON_LOSS_THRESHOLD
+    def has_player_lost(self, player: str) -> bool:
+        """Return ``True`` if ``player`` has lost the game."""
+        ps = self.players.get(player)
+        if ps is None:
+            return False
+        return ps.life <= 0 or ps.poison >= POISON_LOSS_THRESHOLD
