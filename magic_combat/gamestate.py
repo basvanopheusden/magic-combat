@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import field
 
+from magic_combat.constants import DEFAULT_STARTING_LIFE
 from magic_combat.constants import POISON_LOSS_THRESHOLD
 
 from .creature import CombatCreature
@@ -50,6 +51,14 @@ class GameState:
             for line in str(state).splitlines():
                 lines.append(f"  {line}")
         return "\n".join(lines)
+
+    def ensure_player_state(self, player: str) -> PlayerState:
+        """Return existing :class:`PlayerState` for ``player`` or create one."""
+
+        return self.players.setdefault(
+            player,
+            PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0),
+        )
 
 
 def has_player_lost(state: GameState, player: str) -> bool:
