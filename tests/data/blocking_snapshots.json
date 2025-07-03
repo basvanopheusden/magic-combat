@@ -255,8 +255,8 @@
         "afflict": 0,
         "provoke": false,
         "protection_colors": [
-          "RED",
-          "GREEN"
+          "GREEN",
+          "RED"
         ],
         "tapped": false,
         "attacking": false,
@@ -276,9 +276,9 @@
         "mana_cost": "{2}{G/U}{R}",
         "oracle_text": "Trample",
         "colors": [
-          "RED",
+          "GREEN",
           "BLUE",
-          "GREEN"
+          "RED"
         ],
         "artifact": false,
         "flying": false,
@@ -662,9 +662,9 @@
         "mana_cost": "{2}{G/U}{R}",
         "oracle_text": "Trample",
         "colors": [
-          "RED",
+          "GREEN",
           "BLUE",
-          "GREEN"
+          "RED"
         ],
         "artifact": false,
         "flying": false,
@@ -971,8 +971,8 @@
         "afflict": 0,
         "provoke": false,
         "protection_colors": [
-          "RED",
-          "GREEN"
+          "GREEN",
+          "RED"
         ],
         "tapped": false,
         "attacking": false,
@@ -1657,8 +1657,8 @@
         "afflict": 0,
         "provoke": false,
         "protection_colors": [
-          "RED",
-          "GREEN"
+          "GREEN",
+          "RED"
         ],
         "tapped": true,
         "attacking": false,
@@ -4955,9 +4955,9 @@
         "mana_cost": "{2}{G/U}{R}",
         "oracle_text": "Trample",
         "colors": [
-          "RED",
+          "GREEN",
           "BLUE",
-          "GREEN"
+          "RED"
         ],
         "artifact": false,
         "flying": false,
@@ -6881,9 +6881,9 @@
         "mana_cost": "{2}{G/U}{R}",
         "oracle_text": "Trample",
         "colors": [
-          "RED",
+          "GREEN",
           "BLUE",
-          "GREEN"
+          "RED"
         ],
         "artifact": false,
         "flying": false,

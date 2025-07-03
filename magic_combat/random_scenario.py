@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import copy
-import logging
 import os
 import random
 from typing import Any
@@ -271,7 +270,7 @@ def _attempt_random_scenario(
         k=1,
     )
     if unique_optimal and opt_count != 1:
-        logging.warning("Invalid block scenario: multiple optimal blocks found")
+        print("Invalid block scenario: multiple optimal blocks found")
         raise InvalidBlockScenarioError("non unique optimal blocks")
 
     _, optimal_assignment = top[0]
@@ -283,7 +282,7 @@ def _attempt_random_scenario(
     )
 
     if simple_assignment == optimal_assignment:
-        logging.warning("Invalid block scenario: simple blocks equal optimal")
+        print("Invalid block scenario: simple blocks equal optimal")
         raise InvalidBlockScenarioError("simple blocks equal optimal")
     return (
         original_state,

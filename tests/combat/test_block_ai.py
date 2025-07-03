@@ -52,13 +52,19 @@ def test_optimal_ai_respects_multiple_provoke():
     blk1 = CombatCreature("Guard1", 2, 2, "B")
     blk2 = CombatCreature("Guard2", 3, 3, "B")
     provoke_map = {atk1: blk1, atk2: blk2}
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk1, atk2]),
+            "B": PlayerState(life=20, creatures=[blk1, blk2]),
+        }
+    )
     decide_optimal_blocks(game_state=state, provoke_map=provoke_map)
     sim = CombatSimulator(
         [atk1, atk2], [blk1, blk2], game_state=state, provoke_map=provoke_map
     )
     sim.validate_blocking()
 
-    
+
 def test_optimal_ai_blocks_provoke_target_favorably():
     """CR 702.40a: Provoke forces a creature to block if able."""
     atk1 = CombatCreature("Taunter", 2, 2, "A", provoke=True)
