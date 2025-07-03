@@ -131,13 +131,15 @@ async def _evaluate_single_scenario(
         mentor_map,
         opt_map,
         simple_map,
-    ) = generate_random_scenario(
-        cards,
-        values,
-        stats,
-        generated_cards=False,
-        seed=seed + idx,
-        unique_optimal=True,
+    ) = next(
+        generate_random_scenario(
+            cards,
+            values,
+            stats,
+            generated_cards=False,
+            seed=seed + idx,
+            unique_optimal=True,
+        )
     )
 
     prompt = create_llm_prompt(state)

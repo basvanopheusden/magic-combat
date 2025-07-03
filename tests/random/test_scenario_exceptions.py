@@ -16,9 +16,9 @@ def test_missing_statistics_error():
     cards = load_cards(str(DATA_PATH))
     values = build_value_map(cards)
     with pytest.raises(MissingStatisticsError):
-        generate_random_scenario(cards, values, generated_cards=True)
+        next(generate_random_scenario(cards, values, generated_cards=True))
 
 
 def test_scenario_generation_error():
     with pytest.raises(ScenarioGenerationError):
-        generate_random_scenario([], {})
+        next(generate_random_scenario([], {}))
