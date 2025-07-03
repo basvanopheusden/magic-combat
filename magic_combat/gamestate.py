@@ -51,6 +51,14 @@ class GameState:
                 lines.append(f"  {line}")
         return "\n".join(lines)
 
+    def reset_block_assignments(self) -> None:
+        """Clear ``blocked_by`` and ``blocking`` fields on all combatants."""
+
+        for attacker in self.players["A"].creatures:
+            attacker.blocked_by.clear()
+        for blocker in self.players["B"].creatures:
+            blocker.blocking = None
+
 
 def has_player_lost(state: GameState, player: str) -> bool:
     """Return ``True`` if ``player`` has lost the game."""
