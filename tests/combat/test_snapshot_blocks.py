@@ -3,12 +3,12 @@ from pathlib import Path
 from typing import List
 from typing import Optional
 
-from magic_combat import creature_from_dict
-from magic_combat import decode_mentor
-from magic_combat import decode_provoke
-from magic_combat import state_from_dict
 from magic_combat.blocking_ai import decide_optimal_blocks
 from magic_combat.constants import SNAPSHOT_VERSION
+from magic_combat.snapshot import creature_from_dict
+from magic_combat.snapshot import decode_mentor
+from magic_combat.snapshot import decode_provoke
+from magic_combat.snapshot import state_from_dict
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "data"
 SNAP_PATH = DATA_PATH / "blocking_snapshots.json"

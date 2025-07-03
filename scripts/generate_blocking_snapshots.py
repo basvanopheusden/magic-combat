@@ -10,12 +10,12 @@ from typing import List
 import numpy as np
 
 from magic_combat import build_value_map
-from magic_combat import creature_to_dict
-from magic_combat import encode_map
 from magic_combat import generate_random_scenario
 from magic_combat import load_cards
-from magic_combat import state_to_dict
 from magic_combat.constants import SNAPSHOT_VERSION
+from magic_combat.snapshot import creature_to_dict
+from magic_combat.snapshot import encode_map
+from magic_combat.snapshot import state_to_dict
 
 
 def _dump_snapshot(data: List[dict[str, object]], path: Path) -> None:

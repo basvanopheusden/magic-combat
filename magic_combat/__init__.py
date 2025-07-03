@@ -44,6 +44,7 @@ from .simulator import CombatResult
 from .simulator import CombatSimulator
 from .snapshot import creature_from_dict
 from .snapshot import creature_to_dict
+from .snapshot import decode_mapping
 from .snapshot import decode_mentor
 from .snapshot import decode_provoke
 from .snapshot import encode_map
@@ -104,6 +105,7 @@ __all__ = [
     "state_to_dict",
     "state_from_dict",
     "encode_map",
+    "decode_mapping",
     "decode_provoke",
     "decode_mentor",
 ]
