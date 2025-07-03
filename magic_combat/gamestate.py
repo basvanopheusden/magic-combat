@@ -60,10 +60,17 @@ class GameState:
             PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[], poison=0),
         )
 
+    def reset_block_assignments(self) -> None:
+        """Clear ``blocked_by`` and ``blocking`` fields on all combatants."""
 
-def has_player_lost(state: GameState, player: str) -> bool:
-    """Return ``True`` if ``player`` has lost the game."""
-    ps = state.players.get(player)
-    if ps is None:
-        return False
-    return ps.life <= 0 or ps.poison >= POISON_LOSS_THRESHOLD
+        for attacker in self.players["A"].creatures:
+            attacker.blocked_by.clear()
+        for blocker in self.players["B"].creatures:
+            blocker.blocking = None
+
+    def has_player_lost(self, player: str) -> bool:
+        """Return ``True`` if ``player`` has lost the game."""
+        ps = self.players.get(player)
+        if ps is None:
+            return False
+        return ps.life <= 0 or ps.poison >= POISON_LOSS_THRESHOLD

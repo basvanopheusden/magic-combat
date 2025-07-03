@@ -2,7 +2,6 @@ from magic_combat import CombatCreature
 from magic_combat import CombatSimulator
 from magic_combat import GameState
 from magic_combat import PlayerState
-from magic_combat import has_player_lost
 from magic_combat.constants import DEFAULT_STARTING_LIFE
 from magic_combat.constants import POISON_LOSS_THRESHOLD
 from tests.conftest import link_block
@@ -21,7 +20,7 @@ def test_player_loses_when_life_zero():
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert state.players["B"].life == 0
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -40,7 +39,7 @@ def test_player_loses_from_poison():
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert state.players["B"].poison == 11
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -151,6 +150,6 @@ def test_double_strike_infect_can_cause_loss():
     sim = CombatSimulator([atk], [defender], game_state=state)
     result = sim.simulate()
     assert state.players["B"].poison == POISON_LOSS_THRESHOLD
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
     assert result.poison_counters["B"] == 2

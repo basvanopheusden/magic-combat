@@ -108,12 +108,3 @@ def should_force_provoke(
         if not eligible:
             return False
     return True
-
-
-def reset_block_assignments(game_state: GameState) -> None:
-    """Clear ``blocked_by`` and ``blocking`` fields on all combatants."""
-
-    for atk in game_state.players["A"].creatures:
-        atk.blocked_by.clear()
-    for blk in game_state.players["B"].creatures:
-        blk.blocking = None

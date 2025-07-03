@@ -2,7 +2,6 @@ from magic_combat import CombatCreature
 from magic_combat import CombatSimulator
 from magic_combat import GameState
 from magic_combat import PlayerState
-from magic_combat import has_player_lost
 from magic_combat.constants import DEFAULT_STARTING_LIFE
 from magic_combat.constants import POISON_LOSS_THRESHOLD
 from tests.conftest import link_block
@@ -25,7 +24,7 @@ def test_infect_lifelink_poison_lethal():
     assert state.players["B"].life == 20
     assert state.players["B"].poison == POISON_LOSS_THRESHOLD
     assert result.lifegain["A"] == 2
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -43,7 +42,7 @@ def test_double_strike_lifelink_player_lethal():
     result = sim.simulate()
     assert state.players["B"].life == -1
     assert result.lifegain["A"] == 4
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -65,7 +64,7 @@ def test_infect_double_strike_lifelink_poison_lethal():
     result = sim.simulate()
     assert state.players["B"].poison == 11
     assert result.lifegain["A"] == 2
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -98,5 +97,5 @@ def test_trample_deathtouch_lifelink_lethal():
     result = sim.simulate()
     assert state.players["B"].life == 0
     assert result.lifegain["A"] == 3
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost

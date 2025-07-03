@@ -2,7 +2,6 @@ from magic_combat import CombatCreature
 from magic_combat import CombatSimulator
 from magic_combat import GameState
 from magic_combat import PlayerState
-from magic_combat import has_player_lost
 from magic_combat.constants import DEFAULT_STARTING_LIFE
 from magic_combat.constants import POISON_LOSS_THRESHOLD
 from tests.conftest import link_block
@@ -22,7 +21,7 @@ def test_afflict_lethal_when_blocked():
     sim = CombatSimulator([atk], [blk], game_state=state)
     sim.simulate()
     assert state.players["B"].life == 0
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -40,7 +39,7 @@ def test_afflict_and_trample_combined_lethal():
     sim = CombatSimulator([atk], [blk], game_state=state)
     sim.simulate()
     assert state.players["B"].life == 0
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -59,7 +58,7 @@ def test_toxic_three_poison_counters_causes_loss():
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert state.players["B"].poison == 11
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -78,7 +77,7 @@ def test_infect_and_toxic_exactly_ten_poison():
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert state.players["B"].poison == POISON_LOSS_THRESHOLD
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -97,7 +96,7 @@ def test_double_strike_infect_first_step_loss():
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert state.players["B"].poison == 11
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -115,7 +114,7 @@ def test_double_strike_trample_overkill():
     sim = CombatSimulator([atk], [blk], game_state=state)
     sim.simulate()
     assert state.players["B"].life == -2
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -133,7 +132,7 @@ def test_first_strike_blocker_barely_survives():
     sim = CombatSimulator([atk], [blk], game_state=state)
     sim.simulate()
     assert state.players["B"].life == 1
-    assert not has_player_lost(state, "B")
+    assert not state.has_player_lost("B")
     assert "B" not in sim.players_lost
 
 
@@ -152,7 +151,7 @@ def test_trample_lifelink_kills_player():
     sim.simulate()
     assert state.players["B"].life == 0
     assert state.players["A"].life == 14
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
@@ -172,7 +171,7 @@ def test_lifelink_cannot_prevent_poison_loss():
     sim.simulate()
     assert state.players["A"].life == 6
     assert state.players["B"].poison == POISON_LOSS_THRESHOLD
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 
