@@ -284,7 +284,6 @@ def _attempt_random_scenario(
     if simple_assignment == optimal_assignment:
         logging.warning("Invalid block scenario: simple blocks equal optimal")
         raise InvalidBlockScenarioError("simple blocks equal optimal")
-    print(simple_assignment, optimal_assignment, original_state)
     return (
         original_state,
         provoke_map,
