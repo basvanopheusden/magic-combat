@@ -1,11 +1,13 @@
 import asyncio
 import random
-from typing import List
 from typing import Optional
 
 import numpy as np
-import openai
 
+from llms.create_llm_prompt import create_llm_prompt
+from llms.create_llm_prompt import parse_block_assignments
+from llms.llm import call_openai_model
+from llms.llm_cache import LLMCache
 from magic_combat import CombatResult
 from magic_combat import IllegalBlockError
 from magic_combat import build_value_map
@@ -14,12 +16,9 @@ from magic_combat import decide_simple_blocks
 from magic_combat import generate_random_scenario
 from magic_combat import load_cards
 from magic_combat.block_utils import evaluate_block_assignment
-from magic_combat.create_llm_prompt import create_llm_prompt
-from magic_combat.create_llm_prompt import parse_block_assignments
 from magic_combat.exceptions import UnparsableLLMOutputError
 from magic_combat.gamestate import PlayerState
 from magic_combat.limits import IterationCounter
-from magic_combat.llm_cache import LLMCache
 from magic_combat.text_utils import summarize_creature
 
 
@@ -46,72 +45,6 @@ def _print_player_state(
             print(f"  {summary}")
     else:
         print("  no creatures")
-
-
-async def call_openai_model_single_prompt(
-    prompt: str,
-    client: openai.AsyncOpenAI,
-    *,
-    model: str = "gpt-4o",
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-) -> str:
-    """
-    Call the OpenAI model with a single prompt and return the response.
-
-    Args:
-        prompt (str): The prompt to send to the OpenAI model.
-        client (openai.AsyncOpenAI): The OpenAI client instance.
-
-    Returns:
-        str: The response from the OpenAI model.
-    """
-    cached = None
-    if cache is not None:
-        cached = cache.get(prompt, model, seed, temperature)
-    if cached is not None:
-        short = prompt.splitlines()[0][:30]
-        print(f"Using cached LLM response for: {short}...")
-        return cached
-
-    response = await client.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=temperature,
-    )
-    raw = response.choices[0].message.content or ""
-    text = raw.strip()
-    if cache is not None:
-        cache.add(prompt, model, seed, temperature, text)
-    return text
-
-
-async def call_openai_model(
-    prompts: List[str],
-    *,
-    model: str = "gpt-4o",
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-) -> str:
-    client = openai.AsyncOpenAI()
-    try:
-        tasks = [
-            call_openai_model_single_prompt(
-                prompt,
-                client,
-                model=model,
-                temperature=temperature,
-                seed=seed,
-                cache=cache,
-            )
-            for prompt in prompts
-        ]
-        responses = await asyncio.gather(*tasks)
-        return "\n\n".join(responses)
-    finally:
-        await client.close()
 
 
 async def _evaluate_single_scenario(
@@ -152,13 +85,14 @@ async def _evaluate_single_scenario(
         try:
             async with semaphore:
                 print("Calling OpenAI model for scenario", idx + 1)
-                llm_response = await call_openai_model(
+                llm_responses = await call_openai_model(
                     [prompt],
                     seed=seed + idx,
                     model="o3-2025-04-16",
                     temperature=1.0,
                     cache=cache,
                 )
+                llm_response = llm_responses[0]
                 print("Model response received for scenario", idx + 1)
         except Exception as exc:  # pragma: no cover - network failure
             print(f"Failed to query model: {exc}")

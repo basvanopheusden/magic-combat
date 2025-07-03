@@ -2,10 +2,10 @@
 
 from typing import Iterable
 
-from .creature import CombatCreature
-from .gamestate import GameState
-from .rules_text import get_relevant_rules_text
-from .text_utils import summarize_creature
+from magic_combat.creature import CombatCreature
+from magic_combat.gamestate import GameState
+from magic_combat.rules_text import get_relevant_rules_text
+from magic_combat.text_utils import summarize_creature
 
 
 def create_llm_prompt(game_state: GameState) -> str:
@@ -139,7 +139,7 @@ def parse_block_assignments(
         else:
             invalid = True
     if not seen_assignment:
-        from .exceptions import UnparsableLLMOutputError
+        from magic_combat.exceptions import UnparsableLLMOutputError
 
         raise UnparsableLLMOutputError("No block assignments found")
     return pairs, invalid
