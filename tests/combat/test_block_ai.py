@@ -45,6 +45,28 @@ def test_optimal_ai_provoke_untaps_tapped_blocker():
     assert blk.blocking is atk
 
 
+def test_optimal_ai_respects_multiple_provoke():
+    """CR 702.40a: Each provoked creature must block its chosen attacker."""
+    atk1 = CombatCreature("Taunter1", 2, 2, "A", provoke=True)
+    atk2 = CombatCreature("Taunter2", 3, 3, "A", provoke=True)
+    blk1 = CombatCreature("Guard1", 2, 2, "B")
+    blk2 = CombatCreature("Guard2", 3, 3, "B")
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk1, atk2]),
+            "B": PlayerState(life=20, creatures=[blk1, blk2]),
+        }
+    )
+    provoke_map = {atk1: blk1, atk2: blk2}
+    decide_optimal_blocks(game_state=state, provoke_map=provoke_map)
+    sim = CombatSimulator(
+        [atk1, atk2], [blk1, blk2], game_state=state, provoke_map=provoke_map
+    )
+    sim.validate_blocking()
+    assert blk1.blocking is atk1
+    assert blk2.blocking is atk2
+
+
 def test_ai_blocks_to_prevent_lethal():
     """CR 104.3a: A player with 0 or less life loses the game."""
     atk = CombatCreature("Ogre", 3, 3, "A")
