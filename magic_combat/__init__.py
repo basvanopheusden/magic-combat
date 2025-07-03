@@ -21,7 +21,6 @@ from .exceptions import ScenarioGenerationError
 from .exceptions import UnparsableLLMOutputError
 from .gamestate import GameState
 from .gamestate import PlayerState
-from .gamestate import has_player_lost
 from .llm_cache import LLMCache
 from .llm_cache import MockLLMCache
 from .random_creature import assign_random_counters
@@ -63,7 +62,6 @@ __all__ = [
     "decide_simple_blocks",
     "GameState",
     "PlayerState",
-    "has_player_lost",
     "calculate_mana_value",
     "fetch_french_vanilla_cards",
     "load_cards",

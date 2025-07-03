@@ -2,7 +2,6 @@ from magic_combat import CombatCreature
 from magic_combat import CombatSimulator
 from magic_combat import GameState
 from magic_combat import PlayerState
-from magic_combat import has_player_lost
 from magic_combat.constants import DEFAULT_STARTING_LIFE
 from magic_combat.constants import POISON_LOSS_THRESHOLD
 from tests.conftest import link_block
@@ -136,7 +135,7 @@ def test_player_loses_at_ten_poison():
     sim = CombatSimulator([atk], [defender], game_state=state)
     sim.simulate()
     assert state.players["B"].poison == POISON_LOSS_THRESHOLD
-    assert has_player_lost(state, "B")
+    assert state.has_player_lost("B")
     assert "B" in sim.players_lost
 
 

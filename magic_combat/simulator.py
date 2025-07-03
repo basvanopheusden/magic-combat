@@ -13,7 +13,6 @@ from .creature import CombatCreature
 from .damage import optimal_damage_order
 from .exceptions import IllegalBlockError
 from .gamestate import GameState
-from .gamestate import has_player_lost
 from .utils import can_block
 from .utils import ensure_player_state
 
@@ -255,7 +254,7 @@ class CombatSimulator:
         if self.game_state is not None:
             for player in self.game_state.players:
                 if (
-                    has_player_lost(self.game_state, player)
+                    self.game_state.has_player_lost(player)
                     and player not in self.players_lost
                 ):
                     self.players_lost.append(player)
