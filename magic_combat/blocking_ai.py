@@ -12,7 +12,6 @@ from typing import Tuple
 from typing import TypeAlias
 
 from .block_utils import evaluate_block_assignment
-from .block_utils import reset_block_assignments
 from .block_utils import should_force_provoke
 from .creature import CombatCreature
 from .gamestate import GameState
@@ -231,7 +230,7 @@ def decide_optimal_blocks(
     )
 
     # Apply the chosen assignment to the real objects
-    reset_block_assignments(game_state)
+    game_state.reset_block_assignments()
     if len(top) == 0:
         return [], optimal_count
 
@@ -262,7 +261,7 @@ def decide_simple_blocks(
     blockers = list(game_state.players["B"].creatures)
     counter = IterationCounter(max_iterations)
 
-    reset_block_assignments(game_state)
+    game_state.reset_block_assignments()
 
     block_options = _get_block_options(
         game_state,
@@ -301,7 +300,7 @@ def decide_simple_blocks(
 
     final_score, final_assignment = top[0]
 
-    reset_block_assignments(game_state)
+    game_state.reset_block_assignments()
     for blk_idx, choice in enumerate(final_assignment):
         if choice is not None:
             blk = blockers[blk_idx]
