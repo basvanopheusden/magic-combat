@@ -28,6 +28,9 @@ class CombatResult:
     creature_value_deltas: Dict[CombatCreature, float] = field(
         default_factory=dict[CombatCreature, float]
     )
+    initial_values: Dict[CombatCreature, float] = field(
+        default_factory=dict[CombatCreature, float]
+    )
     poison_counters: Dict[str, int] = field(default_factory=dict[str, int])
     players_lost: List[str] = field(default_factory=list[str])
 
@@ -67,12 +70,14 @@ class CombatResult:
         if not include:
             return 0.0
         att_val = sum(
-            c.value()
+            self.initial_values.get(c, c.value())
             for c in self.creatures_destroyed
             if c.controller == attacker_player
         )
         def_val = sum(
-            c.value() for c in self.creatures_destroyed if c.controller == defender
+            self.initial_values.get(c, c.value())
+            for c in self.creatures_destroyed
+            if c.controller == defender
         )
         att_delta = sum(
             delta
@@ -667,6 +672,7 @@ class CombatSimulator:
             lifegain=self.lifegain,
             players_lost=self.players_lost,
             creature_value_deltas=deltas,
+            initial_values=self._initial_values,
         )
 
     def simulate(self) -> CombatResult:
