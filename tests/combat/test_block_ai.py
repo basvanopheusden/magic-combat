@@ -45,6 +45,23 @@ def test_optimal_ai_provoke_untaps_tapped_blocker():
     assert blk.blocking is atk
 
 
+def test_optimal_ai_blocks_provoke_target_favorably():
+    """CR 702.40a: Provoke forces a creature to block if able."""
+    atk1 = CombatCreature("Taunter", 2, 2, "A", provoke=True)
+    atk2 = CombatCreature("Brute", 4, 4, "A")
+    blk1 = CombatCreature("Guard1", 2, 2, "B")
+    blk2 = CombatCreature("Guard2", 4, 4, "B")
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[atk1, atk2]),
+            "B": PlayerState(life=20, creatures=[blk1, blk2]),
+        }
+    )
+    decide_optimal_blocks(game_state=state, provoke_map={atk1: blk1})
+    assert blk1.blocking is atk1
+    assert blk2.blocking is atk2
+
+
 def test_ai_blocks_to_prevent_lethal():
     """CR 104.3a: A player with 0 or less life loses the game."""
     atk = CombatCreature("Ogre", 3, 3, "A")
