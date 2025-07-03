@@ -318,8 +318,8 @@
       2
     ],
     "simple_assignment": [
-      null,
-      null
+      1,
+      2
     ],
     "combat_value": [
       3,
@@ -590,7 +590,7 @@
     ],
     "simple_assignment": [
       null,
-      null
+      1
     ],
     "combat_value": [
       2,
@@ -923,7 +923,7 @@
     ],
     "simple_assignment": [
       null,
-      null
+      0
     ],
     "combat_value": [
       4,
@@ -1193,7 +1193,7 @@
       null
     ],
     "simple_assignment": [
-      null,
+      1,
       null
     ],
     "combat_value": [
@@ -1524,8 +1524,8 @@
       null
     ],
     "simple_assignment": [
-      null,
-      null,
+      1,
+      1,
       null
     ],
     "combat_value": [
@@ -1738,7 +1738,7 @@
       1
     ],
     "simple_assignment": [
-      null
+      1
     ],
     "combat_value": [
       4,
@@ -1950,7 +1950,7 @@
     ],
     "simple_assignment": [
       null,
-      null
+      0
     ],
     "combat_value": [
       0,
@@ -2160,7 +2160,7 @@
       0
     ],
     "simple_assignment": [
-      null
+      0
     ],
     "combat_value": [
       2,
@@ -2669,9 +2669,9 @@
     ],
     "simple_assignment": [
       null,
-      null,
-      null,
-      null
+      1,
+      2,
+      1
     ],
     "combat_value": [
       7,
@@ -2881,7 +2881,7 @@
       0
     ],
     "simple_assignment": [
-      null
+      0
     ],
     "combat_value": [
       2,
