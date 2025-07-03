@@ -9,9 +9,9 @@ from pathlib import Path
 
 import numpy as np
 
+from llms.create_llm_prompt import create_llm_prompt
 from magic_combat import build_value_map
 from magic_combat import compute_card_statistics
-from magic_combat import create_llm_prompt
 from magic_combat import generate_random_scenario
 from magic_combat import load_cards
 from magic_combat.dataset import ReferenceAnswer
@@ -65,15 +65,17 @@ def main() -> None:
         }
         answer = ReferenceAnswer.from_state(mapping, state)
         items.append({"prompt": prompt, "answer": answer.model_dump()})
-        print(
-            f"Generated scenario {i + 1}/{args.n} with {len(attackers)} attackers and {len(blockers)} blockers"
+        scenario_info = (
+            f"Generated scenario {i + 1}/{args.n} with "
+            f"{len(attackers)} attackers and {len(blockers)} blockers"
         )
+        print(scenario_info)
         for attacker in attackers:
             print(summarize_creature(attacker, include_colors=True))
         for blocker in blockers:
             print(summarize_creature(blocker, include_colors=True))
-        for blocker, attacker in mapping.items():
-            print(f"  {blocker} -> {attacker}")
+        for blk_name, atk_name in mapping.items():
+            print(f"  {blk_name} -> {atk_name}")
 
     _dump(Path(args.output), items)
 
