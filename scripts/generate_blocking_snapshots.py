@@ -58,7 +58,7 @@ def main() -> None:
             mentor_map,
             opt_map,
             simple_map,
-        ) = generate_random_scenario(cards, values, seed=seed)
+        ) = next(generate_random_scenario(cards, values, seed=seed))
         attackers = list(state.players["A"].creatures)
         blockers = list(state.players["B"].creatures)
 
