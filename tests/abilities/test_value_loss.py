@@ -17,13 +17,15 @@ def test_persist_revival_value_drop():
 
 
 def test_infect_kills_persist_full_value_loss():
-    """CR 702.90a & 702.77a: Infect counters stop a persist creature from returning."""
+    """CR 702.90a & 702.77a: Infect counters keep a persist creature from returning
+    when lethal damage destroys both combatants."""
     atk = CombatCreature("Infector", 2, 2, "A", infect=True)
     blk = CombatCreature("Spirit", 2, 2, "B", persist=True)
     link_block(atk, blk)
     result = CombatSimulator([atk], [blk]).simulate()
     assert blk in result.creatures_destroyed
-    assert result.score("A", "B")[1] == pytest.approx(-4.5)
+    assert atk in result.creatures_destroyed
+    assert result.score("A", "B")[1] == pytest.approx(0.0)
 
 
 def test_persist_survives_infect_counter():
@@ -49,14 +51,16 @@ def test_wither_annihilates_plus_one_counter():
 
 
 def test_wither_kills_persist_with_plus_one():
-    """CR 702.90a & 702.77a: Wither damage can prevent persist from returning."""
+    """CR 702.90a & 702.77a: Wither damage can prevent persist from returning
+    when both creatures die."""
     atk = CombatCreature("Witherer", 3, 3, "A", wither=True)
     blk = CombatCreature("Spirit", 2, 2, "B", persist=True)
     blk.plus1_counters = 1
     link_block(atk, blk)
     result = CombatSimulator([atk], [blk]).simulate()
     assert blk in result.creatures_destroyed
-    assert result.score("A", "B")[1] == pytest.approx(-6.5)
+    assert atk in result.creatures_destroyed
+    assert result.score("A", "B")[1] == pytest.approx(0.0)
 
 
 def test_undying_returns_after_infect():
