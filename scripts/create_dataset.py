@@ -65,15 +65,15 @@ def main() -> None:
         }
         answer = ReferenceAnswer.from_state(mapping, state)
         items.append({"prompt": prompt, "answer": answer.model_dump()})
-        print(f"Generated scenario {i + 1}/{args.n} with {len(attackers)} attackers and {len(blockers)} blockers")
+        print(
+            f"Generated scenario {i + 1}/{args.n} with {len(attackers)} attackers and {len(blockers)} blockers"
+        )
         for attacker in attackers:
             print(summarize_creature(attacker, include_colors=True))
         for blocker in blockers:
             print(summarize_creature(blocker, include_colors=True))
         for blocker, attacker in mapping.items():
             print(f"  {blocker} -> {attacker}")
-
-
 
     _dump(Path(args.output), items)
 
