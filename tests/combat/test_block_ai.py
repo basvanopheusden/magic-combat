@@ -502,3 +502,31 @@ def test_ai_blocks_undying_when_free():
     )
     decide_optimal_blocks(game_state=state)
     assert blk.blocking is atk
+
+
+def test_optimal_ai_accounts_for_mentor_map():
+    """CR 702.134a: Mentor gives counters to a weaker attacker."""
+
+    mentor = CombatCreature("Mentor", 2, 2, "A", mentor=True)
+    pupil = CombatCreature("Pupil", 1, 1, "A")
+    blk1 = CombatCreature("Blocker", 2, 2, "B")
+    state1 = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[mentor, pupil]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk1]),
+        }
+    )
+    decide_optimal_blocks(game_state=state1)
+    assert blk1.blocking is pupil
+
+    mentor = CombatCreature("Mentor", 2, 2, "A", mentor=True)
+    pupil = CombatCreature("Pupil", 1, 1, "A")
+    blk2 = CombatCreature("Blocker", 2, 2, "B")
+    state2 = GameState(
+        players={
+            "A": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[mentor, pupil]),
+            "B": PlayerState(life=DEFAULT_STARTING_LIFE, creatures=[blk2]),
+        }
+    )
+    decide_optimal_blocks(game_state=state2, mentor_map={mentor: pupil})
+    assert blk2.blocking is mentor
