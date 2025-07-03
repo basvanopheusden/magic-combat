@@ -8,6 +8,7 @@ import os
 import random
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import Iterable
 from typing import List
 from typing import Optional
@@ -284,7 +285,6 @@ def _attempt_random_scenario(
     if simple_assignment == optimal_assignment:
         logging.warning("Invalid block scenario: simple blocks equal optimal")
         raise InvalidBlockScenarioError("simple blocks equal optimal")
-    print(simple_assignment, optimal_assignment, original_state)
     return (
         original_state,
         provoke_map,
@@ -303,37 +303,40 @@ def generate_random_scenario(
     max_iterations: int = int(1e4),
     unique_optimal: bool = False,
     seed: int | None = None,
-) -> Tuple[
-    GameState,
-    dict[CombatCreature, CombatCreature],
-    dict[CombatCreature, CombatCreature],
-    Tuple[Optional[int], ...],
-    Tuple[Optional[int], ...] | None,
+) -> Generator[
+    Tuple[
+        GameState,
+        dict[CombatCreature, CombatCreature],
+        dict[CombatCreature, CombatCreature],
+        Tuple[Optional[int], ...],
+        Tuple[Optional[int], ...] | None,
+    ],
+    None,
+    None,
 ]:
-    """Return a non-trivial random combat scenario.
+    """Yield non-trivial random combat scenarios indefinitely.
 
-    The returned ``GameState`` reflects the optimal blocks used to validate the
-    scenario. ``attackers`` and ``blockers`` are cleared of any assignments so
-    they can be reused. ``provoke_map`` and ``mentor_map`` describe any special
-    attacker interactions and should be supplied when simulating combat. The
-    optimal and simple block assignments are returned as tuples of attacker
-    indices, along with a summary tuple of life lost, poison counters, number of
-    creatures destroyed, value difference, and mana value difference for the
-    optimal blocks.
+    Each yielded scenario passes the uniqueness and simple/optimal block checks.
+    The ``GameState`` reflects the optimal blocks used to validate the scenario.
+    ``attackers`` and ``blockers`` are cleared of any assignments so they can be
+    reused. ``provoke_map`` and ``mentor_map`` describe any special attacker
+    interactions and should be supplied when simulating combat. The optimal and
+    simple block assignments are returned as tuples of attacker indices, along
+    with a summary tuple of life lost, poison counters, number of creatures
+    destroyed, value difference and mana value difference for the optimal blocks.
     """
+
+    if not cards or not values:
+        raise ScenarioGenerationError("Unable to generate valid scenario")
 
     rng = random.Random(seed) if seed is not None else random.Random()
     np_rng = (
         np.random.default_rng(seed) if seed is not None else np.random.default_rng()
     )
 
-    attempts = 0
     while True:
-        attempts += 1
-        if attempts > 100:
-            raise ScenarioGenerationError("Unable to generate valid scenario")
         try:
-            return _attempt_random_scenario(
+            yield _attempt_random_scenario(
                 cards,
                 values,
                 stats,
@@ -345,5 +348,10 @@ def generate_random_scenario(
             )
         except MissingStatisticsError:
             raise
-        except (MagicCombatError, IllegalBlockError, InvalidBlockScenarioError):
+        except (
+            ScenarioGenerationError,
+            IllegalBlockError,
+            InvalidBlockScenarioError,
+            MagicCombatError,
+        ):
             continue

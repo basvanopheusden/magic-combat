@@ -90,13 +90,15 @@ def main() -> None:
             provoke_map,
             mentor_map,
             *_,
-        ) = generate_random_scenario(
-            cards,
-            values,
-            stats,
-            generated_cards=args.generated_cards,
-            max_iterations=args.max_iterations,
-            unique_optimal=args.unique_optimal,
+        ) = next(
+            generate_random_scenario(
+                cards,
+                values,
+                stats,
+                generated_cards=args.generated_cards,
+                max_iterations=args.max_iterations,
+                unique_optimal=args.unique_optimal,
+            )
         )
         attackers = list(start_state.players["A"].creatures)
         blockers = list(start_state.players["B"].creatures)

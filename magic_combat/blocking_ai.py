@@ -279,9 +279,8 @@ def decide_simple_blocks(
         provoke_map,
         mentor_map,
         include_loss=False,
-        k=5,
+        k=1,
     )
-    print(top)
 
     _, best_assignment = top[0]
 
