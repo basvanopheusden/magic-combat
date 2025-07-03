@@ -12,6 +12,7 @@ from .create_llm_prompt import parse_block_assignments
 from .creature import Color
 from .creature import CombatCreature
 from .damage import optimal_damage_order
+from .dataset import ReferenceAnswer
 from .exceptions import CardDataError
 from .exceptions import IllegalBlockError
 from .exceptions import InvalidBlockScenarioError
@@ -106,4 +107,5 @@ __all__ = [
     "decode_mapping",
     "decode_provoke",
     "decode_mentor",
+    "ReferenceAnswer",
 ]
