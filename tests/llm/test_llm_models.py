@@ -7,6 +7,7 @@ from llms.llm import LanguageModelName
 from llms.llm import call_anthropic_model
 from llms.llm import call_gemini_model
 from llms.llm import call_openai_model
+from llms.llm import call_together_model
 from llms.llm_cache import LLMCache
 from llms.llm_cache import MockLLMCache
 
@@ -106,12 +107,52 @@ class DummyAnthropicClient:
         pass
 
 
+class DummyTogetherChoice:
+    def __init__(self, content: str) -> None:
+        self.message = type("M", (), {"content": content})()
+
+
+class DummyTogetherClient:
+    def __init__(self) -> None:
+        self.calls = 0
+        self.chat = type(
+            "Chat",
+            (),
+            {
+                "completions": type(
+                    "Completions",
+                    (),
+                    {
+                        "create": self._create,
+                    },
+                )()
+            },
+        )()
+
+    async def _create(
+        self,
+        *,
+        model: str,
+        messages: list[dict[str, str]],
+        temperature: float = 0.0,
+        seed: int = 0,
+    ):
+        self.calls += 1
+        prompt = messages[0]["content"]
+        return type(
+            "R",
+            (),
+            {"choices": [DummyTogetherChoice(f"response to {prompt}")]},
+        )()
+
+
 @pytest.mark.parametrize(
     "call_fn,client_cls,patch_target",
     [
         (call_openai_model, DummyOpenAIClient, "openai.AsyncOpenAI"),
         (call_gemini_model, DummyGeminiClient, "google.genai.Client"),
         (call_anthropic_model, DummyAnthropicClient, "anthropic.AsyncAnthropic"),
+        (call_together_model, DummyTogetherClient, "together.AsyncClient"),
     ],
 )
 def test_call_models(
@@ -130,6 +171,7 @@ def test_call_models(
         (call_openai_model, DummyOpenAIClient, "openai.AsyncOpenAI"),
         (call_gemini_model, DummyGeminiClient, "google.genai.Client"),
         (call_anthropic_model, DummyAnthropicClient, "anthropic.AsyncAnthropic"),
+        (call_together_model, DummyTogetherClient, "together.AsyncClient"),
     ],
 )
 def test_llm_cache_hit(
@@ -159,6 +201,7 @@ def test_llm_cache_hit(
         (call_openai_model, DummyOpenAIClient, "openai.AsyncOpenAI"),
         (call_gemini_model, DummyGeminiClient, "google.genai.Client"),
         (call_anthropic_model, DummyAnthropicClient, "anthropic.AsyncAnthropic"),
+        (call_together_model, DummyTogetherClient, "together.AsyncClient"),
     ],
 )
 def test_llm_cache_miss(
@@ -201,6 +244,7 @@ def test_llm_cache_miss(
         (call_openai_model, DummyOpenAIClient, "openai.AsyncOpenAI"),
         (call_gemini_model, DummyGeminiClient, "google.genai.Client"),
         (call_anthropic_model, DummyAnthropicClient, "anthropic.AsyncAnthropic"),
+        (call_together_model, DummyTogetherClient, "together.AsyncClient"),
     ],
 )
 def test_llm_cache_file_hit(
