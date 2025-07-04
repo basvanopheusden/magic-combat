@@ -7,8 +7,7 @@ import numpy as np
 from llms.create_llm_prompt import create_llm_prompt
 from llms.create_llm_prompt import parse_block_assignments
 from llms.llm import LanguageModelName
-from llms.llm import call_anthropic_model
-from llms.llm import call_openai_model
+from llms.llm import build_language_model
 from llms.llm_cache import LLMCache
 from magic_combat import CombatResult
 from magic_combat import IllegalBlockError
@@ -84,23 +83,16 @@ async def _evaluate_single_scenario(
 
     attempts = 0
     max_attempts = 3
+    llm = build_language_model(LanguageModelName(model), cache=cache)
     while True:
         try:
             async with semaphore:
-                print("Calling OpenAI model for scenario", idx + 1)
-                call = (
-                    call_anthropic_model
-                    if model.startswith("claude")
-                    else call_openai_model
-                )
-                llm_responses = await call(
-                    [prompt],
-                    seed=seed + idx,
-                    model=LanguageModelName(model),
+                print("Calling model for scenario", idx + 1)
+                llm_response = await llm.call(
+                    prompt,
                     temperature=1.0,
-                    cache=cache,
+                    seed=seed + idx,
                 )
-                llm_response = llm_responses[0]
                 print("Model response received for scenario", idx + 1)
         except Exception as exc:  # pragma: no cover - network failure
             print(f"Failed to query model: {exc}")

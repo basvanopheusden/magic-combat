@@ -1,7 +1,7 @@
-import asyncio
+from abc import ABC
+from abc import abstractmethod
 from enum import Enum
-from typing import Awaitable
-from typing import Callable
+from typing import Any
 from typing import Optional
 
 import anthropic
@@ -27,16 +27,13 @@ class LanguageModelName(Enum):
     CLAUDE_3_5_SONNET = "claude-3-5-sonnet-20241022"
     CLAUDE_4_SONNET = "claude-sonnet-4-20250514"
     CLAUDE_4_OPUS = "claude-opus-4-20250514"
-    LLAMA_3_8B_INSTRUCT = "meta-llama-3-8b-instruct"
-    LLAMA_3_70B_INSTRUCT = "meta-llama-3-70b-instruct"
-    DEEPSEEK_67B_CHAT = "deepseek-chat"
-    TEST_M = "m"
-    TEST_M1 = "m1"
-    TEST_M2 = "m2"
+    DEEPSEEK_R1 = "deepseek-ai/DeepSeek-R1"
+    LLAMA_4_MAVERICK = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+    LLAMA_4_SCOUT = "meta-llama/Llama-4-Scout-17B-16E-Instruct"
 
 
 def get_default_temperature(model: LanguageModelName) -> float:
-    """Return the default temperature for the given model."""
+    """Return the default temperature for ``model``."""
     if model in {
         LanguageModelName.O3_PRO,
         LanguageModelName.O3,
@@ -46,321 +43,185 @@ def get_default_temperature(model: LanguageModelName) -> float:
     return 0.2
 
 
-async def _call_model_cached(
-    prompt: str,
-    call: Callable[[], Awaitable[str]],
-    *,
-    model: LanguageModelName,
-    temperature: float,
-    seed: int,
-    cache: Optional[LLMCache],
-    semaphore: Optional[asyncio.Semaphore],
-) -> str:
-    """Return cached result for ``call`` if available."""
-
-    cached = cache.get(prompt, model.value, seed, temperature) if cache else None
-    if cached is not None:
-        short = prompt.splitlines()[0][:30]
-        print(
-            "Using cached LLM response for: "
-            f"{short}, {model.value}, seed={seed}, temperature={temperature}"
-        )
-        return cached
-
-    async def _run() -> str:
-        return await call()
-
-    if semaphore is None:
-        text = await _run()
-    else:
-        async with semaphore:
-            text = await _run()
-
-    if cache is not None:
-        cache.add(prompt, model.value, seed, temperature, text)
-    return text
-
-
-async def _call_model(
-    prompts: list[str],
-    call_single: Callable[[str, Optional[asyncio.Semaphore]], Awaitable[str]],
-    concurrency: int | None,
-) -> list[str]:
-    semaphore = asyncio.Semaphore(concurrency) if concurrency else None
-    tasks = [call_single(prompt, semaphore) for prompt in prompts]
-    responses = await asyncio.gather(*tasks)
-    return list(responses)
-
-
-async def call_openai_model_single_prompt(
-    prompt: str,
-    client: openai.AsyncOpenAI,
-    *,
-    model: LanguageModelName = LanguageModelName.GPT_4O,
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-    semaphore: Optional[asyncio.Semaphore] = None,
-) -> str:
-    """Return ``prompt`` response from OpenAI, optionally using ``cache``."""
-
-    async def _call() -> str:
-        response = await client.chat.completions.create(
-            model=model.value,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=temperature,
-        )
-        return (response.choices[0].message.content or "").strip()
-
-    return await _call_model_cached(
-        prompt,
-        _call,
-        model=model,
-        temperature=temperature,
-        seed=seed,
-        cache=cache,
-        semaphore=semaphore,
-    )
-
-
-async def call_openai_model(
-    prompts: list[str],
-    *,
-    model: LanguageModelName = LanguageModelName.GPT_4O,
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-    concurrency: int | None = None,
-) -> list[str]:
-    """Return responses for ``prompts``."""
-    client = openai.AsyncOpenAI()
-
-    async def _call_single(prompt: str, sem: Optional[asyncio.Semaphore]) -> str:
-        return await call_openai_model_single_prompt(
-            prompt,
-            client,
-            model=model,
-            temperature=temperature,
-            seed=seed,
-            cache=cache,
-            semaphore=sem,
-        )
-
-    try:
-        return await _call_model(prompts, _call_single, concurrency)
-    finally:
-        await client.close()
-
-
 def get_short_prompt(prompt: str) -> str:
-    """Return a short version of the prompt for logging."""
+    """Return a short version of ``prompt`` for logging."""
     key_str = "The current game state is as follows:"
     rules_str = "# Relevant Rules"
     if key_str in prompt and rules_str in prompt:
         parts = prompt.split(key_str, 1)
         return parts[1].split(rules_str, 1)[0].strip()
-    else:
-        return prompt.splitlines()[0][:30]
+    return prompt.splitlines()[0][:30]
 
 
-async def call_openai_pro_model_single_prompt(
-    prompt: str,
-    client: openai.AsyncOpenAI,
-    *,
-    model: LanguageModelName = LanguageModelName.O3_PRO,
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-    semaphore: Optional[asyncio.Semaphore] = None,
-) -> str:
-    """Return ``prompt`` response from O3 Pro using the completions API."""
+class LanguageModel(ABC):
+    """Base language model wrapper."""
 
-    async def _call() -> str:
-        print("Calling OpenAI Pro model for:", get_short_prompt(prompt))
-        response: Response = await client.responses.create(
-            model=model.value,
-            input=prompt,
-            temperature=temperature,
+    def __init__(
+        self,
+        model: LanguageModelName,
+        *,
+        cache: Optional[LLMCache] = None,
+        verbose: bool = False,
+        max_tokens: int = 1024,
+    ) -> None:
+        self.model = model
+        self.cache = cache
+        self.verbose = verbose
+        self.default_temperature = get_default_temperature(model)
+        self.max_tokens = max_tokens
+
+    async def call(
+        self,
+        prompt: str,
+        *,
+        temperature: Optional[float] = None,
+        seed: int = 0,
+        max_tokens: Optional[int] = None,
+    ) -> str:
+        """Return the model's response to ``prompt``."""
+        temp = self.default_temperature if temperature is None else temperature
+        if self.verbose:
+            print("Calling model for:", get_short_prompt(prompt))
+        cached = (
+            self.cache.get(prompt, self.model.value, seed, temp) if self.cache else None
         )
-        print("OpenAI Pro model response:", response.output_text)
-        return (response.output_text or "").strip()
-
-    return await _call_model_cached(
-        prompt,
-        _call,
-        model=model,
-        temperature=temperature,
-        seed=seed,
-        cache=cache,
-        semaphore=semaphore,
-    )
-
-
-async def call_openai_pro_model(
-    prompts: list[str],
-    *,
-    model: LanguageModelName = LanguageModelName.O3_PRO,
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-    concurrency: int | None = None,
-) -> list[str]:
-    """Return responses for ``prompts`` using the completions API."""
-    client = openai.AsyncOpenAI()
-
-    async def _call_single(prompt: str, sem: Optional[asyncio.Semaphore]) -> str:
-        return await call_openai_pro_model_single_prompt(
+        if cached is not None:
+            if self.verbose:
+                print("Cached response:", cached)
+            return cached
+        text = await self._call_api_model(
             prompt,
-            client,
-            model=model,
-            temperature=temperature,
+            temperature=temp,
             seed=seed,
-            cache=cache,
-            semaphore=sem,
+            max_tokens=self.max_tokens if max_tokens is None else max_tokens,
         )
+        if self.cache is not None:
+            self.cache.add(prompt, self.model.value, seed, temp, text)
+        if self.verbose:
+            print("Model output:", text)
+        return text
 
-    try:
-        return await _call_model(prompts, _call_single, concurrency)
-    finally:
-        await client.close()
+    @abstractmethod
+    async def _call_api_model(
+        self, prompt: str, *, temperature: float, seed: int, max_tokens: int
+    ) -> str:
+        """Call the underlying API and return its response."""
+
+    async def close(self) -> None:  # pragma: no cover - subclasses may override
+        """Close any open client resources."""
+        return None
 
 
-async def call_gemini_model_single_prompt(
-    prompt: str,
-    *,
-    model: LanguageModelName = LanguageModelName.GEMINI_2_5_PRO,
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-    semaphore: Optional[asyncio.Semaphore] = None,
-) -> str:
-    """Return ``prompt`` response from Gemini, optionally using ``cache``."""
+class OpenAILanguageModel(LanguageModel):
+    def __init__(
+        self,
+        model: LanguageModelName,
+        *,
+        cache: Optional[LLMCache] = None,
+        verbose: bool = False,
+        max_tokens: int = 1024,
+    ) -> None:
+        super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
+        self.client = openai.AsyncOpenAI()
 
-    client = genai.Client()
-    generation_config = genai_types.GenerateContentConfig(
-        temperature=temperature, seed=seed
-    )
+    async def _call_api_model(
+        self, prompt: str, *, temperature: float, seed: int, max_tokens: int
+    ) -> str:
+        if self.model == LanguageModelName.O3_PRO:
+            client: Any = self.client
+            resp: Response = (
+                await client.responses.create(  # pyright: ignore[reportCallIssue]
+                    model=self.model.value,
+                    input=prompt,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+            )
+            return (resp.output_text or "").strip()
+        chat_resp = await self.client.chat.completions.create(
+            model=self.model.value,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        return (chat_resp.choices[0].message.content or "").strip()
 
-    async def _call() -> str:
-        response = await client.aio.models.generate_content(
-            model=model.value, contents=prompt, config=generation_config
+    async def close(self) -> None:
+        await self.client.close()
+
+
+class GeminiLanguageModel(LanguageModel):
+    def __init__(
+        self,
+        model: LanguageModelName,
+        *,
+        cache: Optional[LLMCache] = None,
+        verbose: bool = False,
+        max_tokens: int = 1024,
+    ) -> None:
+        super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
+        self.client = genai.Client()
+
+    async def _call_api_model(
+        self, prompt: str, *, temperature: float, seed: int, max_tokens: int
+    ) -> str:
+        config = genai_types.GenerateContentConfig(
+            temperature=temperature, seed=seed, max_output_tokens=max_tokens
+        )
+        response = await self.client.aio.models.generate_content(
+            model=self.model.value, contents=prompt, config=config
         )
         return (response.text or "").strip()
 
-    return await _call_model_cached(
-        prompt,
-        _call,
-        model=model,
-        temperature=temperature,
-        seed=seed,
-        cache=cache,
-        semaphore=semaphore,
-    )
 
+class AnthropicLanguageModel(LanguageModel):
+    def __init__(
+        self,
+        model: LanguageModelName,
+        *,
+        cache: Optional[LLMCache] = None,
+        verbose: bool = False,
+        max_tokens: int = 1024,
+    ) -> None:
+        super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
+        self.client = anthropic.AsyncAnthropic()
 
-async def call_gemini_model(
-    prompts: list[str],
-    *,
-    model: LanguageModelName = LanguageModelName.GEMINI_2_5_PRO,
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-    concurrency: int | None = None,
-) -> list[str]:
-    """Return responses for ``prompts`` using Gemini."""
-
-    async def _call_single(prompt: str, sem: Optional[asyncio.Semaphore]) -> str:
-        return await call_gemini_model_single_prompt(
-            prompt,
-            model=model,
-            temperature=temperature,
-            seed=seed,
-            cache=cache,
-            semaphore=sem,
-        )
-
-    return await _call_model(prompts, _call_single, concurrency)
-
-
-async def call_anthropic_model_single_prompt(
-    prompt: str,
-    client: anthropic.AsyncAnthropic,
-    *,
-    model: LanguageModelName = LanguageModelName.CLAUDE_4_OPUS,
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-    semaphore: Optional[asyncio.Semaphore] = None,
-) -> str:
-    """Return ``prompt`` response from Anthropic, optionally using ``cache``."""
-
-    async def _create() -> str:
-        response = await client.messages.create(
-            model=model.value,
+    async def _call_api_model(
+        self, prompt: str, *, temperature: float, seed: int, max_tokens: int
+    ) -> str:
+        response = await self.client.messages.create(
+            model=self.model.value,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
-            max_tokens=1024,
+            max_tokens=max_tokens,
         )
-        return "".join(getattr(block, "text", "") for block in response.content).strip()
+        return "".join(getattr(b, "text", "") for b in response.content).strip()
 
-    return await _call_model_cached(
-        prompt,
-        _create,
-        model=model,
-        temperature=temperature,
-        seed=seed,
-        cache=cache,
-        semaphore=semaphore,
-    )
+    async def close(self) -> None:
+        await self.client.close()
 
 
-async def call_anthropic_model(
-    prompts: list[str],
-    *,
-    model: LanguageModelName = LanguageModelName.CLAUDE_4_OPUS,
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-    concurrency: int | None = None,
-) -> list[str]:
-    """Return responses for ``prompts`` using Anthropic models."""
-    client = anthropic.AsyncAnthropic()
+class TogetherLanguageModel(LanguageModel):
+    def __init__(
+        self,
+        model: LanguageModelName,
+        *,
+        cache: Optional[LLMCache] = None,
+        verbose: bool = False,
+        max_tokens: int = 1024,
+    ) -> None:
+        super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
+        self.client = together.AsyncTogether()
 
-    async def _call_single(prompt: str, sem: Optional[asyncio.Semaphore]) -> str:
-        return await call_anthropic_model_single_prompt(
-            prompt,
-            client,
-            model=model,
-            temperature=temperature,
-            seed=seed,
-            cache=cache,
-            semaphore=sem,
-        )
-
-    try:
-        return await _call_model(prompts, _call_single, concurrency)
-    finally:
-        await client.close()
-
-
-async def call_together_model_single_prompt(
-    prompt: str,
-    client: together.AsyncTogether,
-    *,
-    model: LanguageModelName = LanguageModelName.LLAMA_3_8B_INSTRUCT,
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-    semaphore: Optional[asyncio.Semaphore] = None,
-) -> str:
-    """Return ``prompt`` response from Together, optionally using ``cache``."""
-
-    async def _create() -> str:
-        response = await client.chat.completions.create(
-            model=model.value,
+    async def _call_api_model(
+        self, prompt: str, *, temperature: float, seed: int, max_tokens: int
+    ) -> str:
+        response = await self.client.chat.completions.create(
+            model=self.model.value,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             seed=seed,
+            max_tokens=max_tokens,
         )
         choice = response.choices[0]  # type: ignore[index]
         message = choice.message
@@ -369,60 +230,63 @@ async def call_together_model_single_prompt(
             content = message.content
         return content.strip()
 
-    return await _call_model_cached(
-        prompt,
-        _create,
-        model=model,
-        temperature=temperature,
-        seed=seed,
-        cache=cache,
-        semaphore=semaphore,
-    )
 
+class MockLanguageModel(LanguageModel):
+    """Simple in-memory mock model for tests."""
 
-async def call_together_model(
-    prompts: list[str],
-    *,
-    model: LanguageModelName = LanguageModelName.LLAMA_3_8B_INSTRUCT,
-    temperature: float = 0.2,
-    seed: int = 0,
-    cache: Optional[LLMCache] = None,
-    concurrency: int | None = None,
-) -> list[str]:
-    """Return responses for ``prompts`` using Together models."""
-    client = together.AsyncTogether()
-
-    async def _call_single(prompt: str, sem: Optional[asyncio.Semaphore]) -> str:
-        return await call_together_model_single_prompt(
-            prompt,
-            client,
-            model=model,
-            temperature=temperature,
-            seed=seed,
+    def __init__(
+        self,
+        responses: list[str],
+        *,
+        cache: Optional[LLMCache] = None,
+        verbose: bool = False,
+        max_tokens: int = 1024,
+    ) -> None:
+        super().__init__(
+            LanguageModelName.GPT_4O,
             cache=cache,
-            semaphore=sem,
+            verbose=verbose,
+            max_tokens=max_tokens,
         )
+        self.responses = responses
+        self.calls = 0
 
-    return await _call_model(prompts, _call_single, concurrency)
+    async def _call_api_model(
+        self, prompt: str, *, temperature: float, seed: int, max_tokens: int
+    ) -> str:
+        response = self.responses[self.calls]
+        self.calls += 1
+        return response
 
 
-CALL_METHOD_BY_MODEL = {
-    LanguageModelName.GEMINI_2_5_PRO: call_gemini_model,
-    LanguageModelName.GEMINI_2_5_FLASH: call_gemini_model,
-    LanguageModelName.GEMINI_2_0_FLASH: call_gemini_model,
-    LanguageModelName.GPT_4O: call_openai_model,
-    LanguageModelName.GPT_4_1: call_openai_model,
-    LanguageModelName.O4_MINI: call_openai_model,
-    LanguageModelName.O3: call_openai_model,
-    LanguageModelName.O3_PRO: call_openai_pro_model,
-    LanguageModelName.CLAUDE_3_7_SONNET: call_anthropic_model,
-    LanguageModelName.CLAUDE_3_5_SONNET: call_anthropic_model,
-    LanguageModelName.CLAUDE_4_SONNET: call_anthropic_model,
-    LanguageModelName.CLAUDE_4_OPUS: call_anthropic_model,
-    LanguageModelName.LLAMA_3_8B_INSTRUCT: call_together_model,
-    LanguageModelName.LLAMA_3_70B_INSTRUCT: call_together_model,
-    LanguageModelName.DEEPSEEK_67B_CHAT: call_together_model,
-    LanguageModelName.TEST_M: call_openai_model,
-    LanguageModelName.TEST_M1: call_openai_model,
-    LanguageModelName.TEST_M2: call_openai_model,
+_MODEL_CLASS_BY_NAME: dict[LanguageModelName, type[LanguageModel]] = {
+    LanguageModelName.GEMINI_2_5_PRO: GeminiLanguageModel,
+    LanguageModelName.GEMINI_2_5_FLASH: GeminiLanguageModel,
+    LanguageModelName.GEMINI_2_0_FLASH: GeminiLanguageModel,
+    LanguageModelName.GPT_4O: OpenAILanguageModel,
+    LanguageModelName.GPT_4_1: OpenAILanguageModel,
+    LanguageModelName.O4_MINI: OpenAILanguageModel,
+    LanguageModelName.O3: OpenAILanguageModel,
+    LanguageModelName.O3_PRO: OpenAILanguageModel,
+    LanguageModelName.CLAUDE_3_7_SONNET: AnthropicLanguageModel,
+    LanguageModelName.CLAUDE_3_5_SONNET: AnthropicLanguageModel,
+    LanguageModelName.CLAUDE_4_SONNET: AnthropicLanguageModel,
+    LanguageModelName.CLAUDE_4_OPUS: AnthropicLanguageModel,
+    LanguageModelName.DEEPSEEK_R1: TogetherLanguageModel,
+    LanguageModelName.LLAMA_4_MAVERICK: TogetherLanguageModel,
+    LanguageModelName.LLAMA_4_SCOUT: TogetherLanguageModel,
 }
+
+
+def build_language_model(
+    model: LanguageModelName,
+    *,
+    cache: Optional[LLMCache] = None,
+    verbose: bool = False,
+    max_tokens: int = 1024,
+) -> LanguageModel:
+    """Instantiate a language model for ``model``."""
+    if model not in _MODEL_CLASS_BY_NAME:
+        raise ValueError(f"Unsupported model: {model}")
+    cls = _MODEL_CLASS_BY_NAME[model]
+    return cls(model, cache=cache, verbose=verbose, max_tokens=max_tokens)

@@ -10,8 +10,8 @@ from typing import cast
 from typing import overload
 
 from llms.create_llm_prompt import parse_block_assignments
-from llms.llm import CALL_METHOD_BY_MODEL
 from llms.llm import LanguageModelName
+from llms.llm import build_language_model
 from llms.llm import get_default_temperature
 from llms.llm_cache import LLMCache
 from magic_combat.dataset import ReferenceAnswer
@@ -27,6 +27,7 @@ async def evaluate_dataset(
     concurrency: int = 20,
     cache: Optional[LLMCache] = None,
     return_item_results: Literal[False] = False,
+    verbose: bool = False,
 ) -> float:
     ...
 
@@ -40,7 +41,8 @@ async def evaluate_dataset(
     concurrency: int = 20,
     cache: Optional[LLMCache] = None,
     return_item_results: Literal[True],
-) -> list[bool]:
+    verbose: bool = False,
+) -> List[bool]:
     ...
 
 
@@ -52,7 +54,8 @@ async def evaluate_dataset(
     concurrency: int = 20,
     cache: Optional[LLMCache] = None,
     return_item_results: bool = False,
-) -> float | list[bool]:
+    verbose: bool = False,
+) -> float | List[bool]:
     """Return accuracy or per-item results for prompts in ``path``."""
     items: List[dict[str, Any]] = []
     with Path(path).open(encoding="utf8") as fh:
@@ -62,71 +65,38 @@ async def evaluate_dataset(
                 continue
             items.append(json.loads(line))
 
-    prompts = [cast(str, item["prompt"]) for item in items]
-    if model not in CALL_METHOD_BY_MODEL:
-        raise ValueError(f"Unsupported model: {model}")
-    call = CALL_METHOD_BY_MODEL[model]
     temperature = get_default_temperature(model)
+    semaphore = asyncio.Semaphore(concurrency)
+    llm = build_language_model(model, cache=cache, verbose=verbose)
 
-    try:
-        responses = await call(
-            prompts,
-            model=model,
-            temperature=temperature,
-            seed=seed,
-            cache=cache,
-            concurrency=concurrency,
-        )
-    except Exception as e:
-        print(f"Error calling model {model}: {e}")
-        return 0.0 if not return_item_results else []
+    results: List[bool] = []
+    max_attempts = 3
 
-    results: list[bool] = []
-    for idx, (item, response) in enumerate(zip(items, responses)):
+    for idx, item in enumerate(items):
+        prompt = cast(str, item["prompt"])
         ref_data = cast(dict[str, str], item["answer"])
         ref = ReferenceAnswer.model_validate(ref_data)
         blk_names = ref.blocks.keys()
         atk_names = ref.blocks.values()
-        attempts = 0
-        max_attempts = 3
-        while True:
+        parsed = None
+        for attempt in range(max_attempts):
             try:
+                async with semaphore:
+                    response = await llm.call(
+                        prompt,
+                        temperature=temperature,
+                        seed=seed + attempt,
+                    )
                 parsed, _ = parse_block_assignments(response, blk_names, atk_names)
                 break
-            except UnparsableLLMOutputError:
-                attempts += 1
-                if attempts >= max_attempts:
-                    print(
-                        "Warning: unparseable response for item "
-                        f"{idx}; giving up after {max_attempts} attempts"
-                    )
-                    parsed = None
-                    break
-                print(
-                    "Warning: unparseable response for item "
-                    f"{idx}; retrying with new seed"
-                )
-                try:
-                    response = (
-                        await call(
-                            [prompts[idx]],
-                            model=model,
-                            temperature=temperature,
-                            seed=seed + attempts,
-                            cache=cache,
-                            concurrency=concurrency,
-                        )
-                    )[0]
-                except Exception as e:
-                    print(f"Error calling model {model}: {e}")
-                    parsed = None
-                    break
-
+            except UnparsableLLMOutputError as exc:
+                print(f"Warning: unparseable response for item {idx}; retrying: {exc}")
+            except Exception as exc:  # pragma: no cover - network failure
+                print(f"Error calling model {model}: {exc}")
+                break
         if parsed is None:
             results.append(False)
-            print(f"Unparsable response for prompt: {response}")
             continue
-        print(parsed)
         pred = ReferenceAnswer(blocks=parsed)
         results.append(pred == ref)
 
@@ -141,12 +111,6 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate LLM accuracy")
     parser.add_argument("dataset", help="Path to dataset JSONL")
     parser.add_argument("--model", default="gpt-4o", help="Model name")
-    parser.add_argument(
-        "--temperature",
-        type=float,
-        default=0.2,
-        help="Sampling temperature",
-    )
     parser.add_argument("--seed", type=int, default=0, help="Base random seed")
     parser.add_argument(
         "--concurrency",
@@ -155,6 +119,7 @@ def main() -> None:
         help="Concurrent requests",
     )
     parser.add_argument("--cache", help="Path to cache file")
+    parser.add_argument("--verbose", action="store_true", help="Print prompts")
     args = parser.parse_args()
 
     cache = LLMCache(args.cache) if args.cache else None
@@ -165,6 +130,7 @@ def main() -> None:
             seed=args.seed,
             concurrency=args.concurrency,
             cache=cache,
+            verbose=args.verbose,
         )
     )
     print(f"Accuracy: {accuracy:.3f}")
