@@ -4,8 +4,10 @@ import json
 from pathlib import Path
 from typing import Any
 from typing import List
+from typing import Literal
 from typing import Optional
 from typing import cast
+from typing import overload
 
 from llms.create_llm_prompt import parse_block_assignments
 from llms.llm import call_anthropic_model
@@ -13,6 +15,34 @@ from llms.llm import call_openai_model
 from llms.llm_cache import LLMCache
 from magic_combat.dataset import ReferenceAnswer
 from magic_combat.exceptions import UnparsableLLMOutputError
+
+
+@overload
+async def evaluate_dataset(
+    path: str,
+    *,
+    model: str = "gpt-4o",
+    temperature: float = 0.2,
+    seed: int = 0,
+    concurrency: int = 20,
+    cache: Optional[LLMCache] = None,
+    return_item_results: Literal[False] = False,
+) -> float:
+    ...
+
+
+@overload
+async def evaluate_dataset(
+    path: str,
+    *,
+    model: str = "gpt-4o",
+    temperature: float = 0.2,
+    seed: int = 0,
+    concurrency: int = 20,
+    cache: Optional[LLMCache] = None,
+    return_item_results: Literal[True],
+) -> list[bool]:
+    ...
 
 
 async def evaluate_dataset(
@@ -23,8 +53,9 @@ async def evaluate_dataset(
     seed: int = 0,
     concurrency: int = 20,
     cache: Optional[LLMCache] = None,
-) -> float:
-    """Return accuracy for prompts in ``path``."""
+    return_item_results: bool = False,
+) -> float | list[bool]:
+    """Return accuracy or per-item results for prompts in ``path``."""
     items: List[dict[str, Any]] = []
     with Path(path).open(encoding="utf8") as fh:
         for line in fh:
@@ -44,7 +75,7 @@ async def evaluate_dataset(
         concurrency=concurrency,
     )
 
-    correct = 0
+    results: list[bool] = []
     for item, response in zip(items, responses):
         ref_data = cast(dict[str, str], item["answer"])
         ref = ReferenceAnswer.model_validate(ref_data)
@@ -55,9 +86,13 @@ async def evaluate_dataset(
         except UnparsableLLMOutputError:
             continue
         pred = ReferenceAnswer(blocks=parsed)
-        if pred == ref:
-            correct += 1
-    return correct / len(items) if items else 0.0
+        results.append(pred == ref)
+
+    if return_item_results:
+        return results
+
+    correct = sum(results)
+    return correct / len(results) if results else 0.0
 
 
 def main() -> None:
