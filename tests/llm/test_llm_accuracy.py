@@ -3,6 +3,7 @@
 import asyncio
 import json
 
+from llms.llm import LanguageModelName
 from llms.llm_cache import MockLLMCache
 from scripts.evaluate_llm_accuracy import evaluate_dataset
 
@@ -59,7 +60,9 @@ def test_evaluate_dataset(monkeypatch, tmp_path):
     monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient(responses))
     cache = MockLLMCache()
     acc = asyncio.run(
-        evaluate_dataset(str(data_path), model="m", concurrency=2, cache=cache)
+        evaluate_dataset(
+            str(data_path), model=LanguageModelName.TEST_M, concurrency=2, cache=cache
+        )
     )
     assert acc == 1.0
     assert len(cache.entries) == 2
@@ -79,7 +82,7 @@ def test_evaluate_dataset_return_results(monkeypatch, tmp_path):
     results = asyncio.run(
         evaluate_dataset(
             str(data_path),
-            model="m",
+            model=LanguageModelName.TEST_M,
             concurrency=2,
             return_item_results=True,
         )
@@ -101,6 +104,8 @@ def test_evaluate_dataset_unparsable(monkeypatch, tmp_path):
     monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient(responses))
     cache = MockLLMCache()
     acc = asyncio.run(
-        evaluate_dataset(str(data_path), model="m", concurrency=2, cache=cache)
+        evaluate_dataset(
+            str(data_path), model=LanguageModelName.TEST_M, concurrency=2, cache=cache
+        )
     )
     assert acc == 0.5

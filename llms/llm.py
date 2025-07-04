@@ -24,6 +24,9 @@ class LanguageModelName(Enum):
     CLAUDE_3_7_OPUS = "claude-3-opus-20240229"
     CLAUDE_4_SONNET = "claude-3-sonnet-20240229"
     CLAUDE_4_OPUS = "claude-4-opus-20240229"
+    TEST_M = "m"
+    TEST_M1 = "m1"
+    TEST_M2 = "m2"
 
 
 def get_default_temperature(model: LanguageModelName) -> float:
@@ -154,7 +157,7 @@ async def call_gemini_model_single_prompt(
 
     async def _call() -> str:
         response = await client.aio.models.generate_content(
-            model=model, contents=prompt, config=generation_config
+            model=model.value, contents=prompt, config=generation_config
         )
         return (response.text or "").strip()
 
@@ -207,7 +210,7 @@ async def call_anthropic_model_single_prompt(
 
     async def _create() -> str:
         response = await client.messages.create(
-            model=model,
+            model=model.value,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_tokens=1024,
@@ -266,4 +269,7 @@ CALL_METHOD_BY_MODEL = {
     LanguageModelName.CLAUDE_3_7_OPUS: call_anthropic_model,
     LanguageModelName.CLAUDE_4_SONNET: call_anthropic_model,
     LanguageModelName.CLAUDE_4_OPUS: call_anthropic_model,
+    LanguageModelName.TEST_M: call_openai_model,
+    LanguageModelName.TEST_M1: call_openai_model,
+    LanguageModelName.TEST_M2: call_openai_model,
 }
