@@ -52,7 +52,9 @@ async def _call_model_cached(
     cached = cache.get(prompt, model.value, seed, temperature) if cache else None
     if cached is not None:
         short = prompt.splitlines()[0][:30]
-        print(f"Using cached LLM response for: {short}, {model.value}, seed={seed}, temperature={temperature}")
+        print(
+            f"Using cached LLM response for: {short}, {model.value}, seed={seed}, temperature={temperature}"
+        )
         return cached
 
     async def _run() -> str:
