@@ -1,0 +1,129 @@
+#!/usr/bin/env python
+"""Generate a leaderboard for multiple LLM models."""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+import math
+from pathlib import Path
+from typing import Iterable
+from typing import Optional
+from typing import Sequence
+
+from llms.llm_cache import LLMCache
+from scripts.evaluate_llm_accuracy import evaluate_dataset
+
+
+def count_items(path: str) -> int:
+    """Return the number of non-empty lines in ``path``."""
+    n = 0
+    with Path(path).open(encoding="utf8") as fh:
+        for line in fh:
+            if line.strip():
+                n += 1
+    return n
+
+
+def standard_error(acc: float, n: int) -> float:
+    """Return the standard error of ``acc`` for ``n`` items."""
+    return math.sqrt(acc * (1.0 - acc) / n) if n else 0.0
+
+
+def two_proportion_p_value(results1: Sequence[bool], results2: Sequence[bool]) -> float:
+    """Return p-value from McNemar's test for two result lists."""
+    n01 = 0
+    n10 = 0
+    for a, b in zip(results1, results2):
+        if a and not b:
+            n10 += 1
+        elif b and not a:
+            n01 += 1
+
+    n = n01 + n10
+    if n == 0:
+        return 1.0
+    k = min(n01, n10)
+    prob = 0.0
+    for i in range(k + 1):
+        prob += math.comb(n, i) * 0.5**n
+    p = min(1.0, 2 * prob)
+    return p
+
+
+async def evaluate_models(
+    dataset: str,
+    models: Iterable[str],
+    *,
+    temperature: float = 0.2,
+    seed: int = 0,
+    concurrency: int = 20,
+    cache: Optional[LLMCache] = None,
+) -> dict[str, list[bool]]:
+    """Return per-item correctness for each model in ``models``."""
+    results: dict[str, list[bool]] = {}
+    for model in models:
+        item_results = await evaluate_dataset(
+            dataset,
+            model=model,
+            temperature=temperature,
+            seed=seed,
+            concurrency=concurrency,
+            cache=cache,
+            return_item_results=True,
+        )
+        results[model] = item_results
+    return results
+
+
+async def run_leaderboard(args: argparse.Namespace) -> None:
+    """Execute leaderboard generation using ``args``."""
+    n = count_items(args.dataset)
+    cache = LLMCache(args.cache) if args.cache else None
+    results = await evaluate_models(
+        args.dataset,
+        args.models,
+        temperature=args.temperature,
+        seed=args.seed,
+        concurrency=args.concurrency,
+        cache=cache,
+    )
+
+    print("Model\tAccuracy\tStdErr")
+    sortable = [
+        (model, sum(vals) / len(vals) if vals else 0.0)
+        for model, vals in results.items()
+    ]
+    for model, acc in sorted(sortable, key=lambda x: x[1], reverse=True):
+        se = standard_error(acc, n)
+        print(f"{model}\t{acc:.3f}\t{se:.3f}")
+
+    models = list(results.keys())
+    print("\nPairwise p-values:")
+    print("\t" + "\t".join(models))
+    for m1 in models:
+        row = [m1]
+        for m2 in models:
+            if m1 == m2:
+                row.append("-")
+            else:
+                p = two_proportion_p_value(results[m1], results[m2])
+                row.append(f"{p:.3f}")
+        print("\t".join(row))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Create an LLM leaderboard")
+    parser.add_argument("dataset", help="Path to dataset JSONL")
+    parser.add_argument("models", nargs="+", help="Model names to evaluate")
+    parser.add_argument("--temperature", type=float, default=0.2)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--concurrency", type=int, default=20)
+    parser.add_argument("--cache", help="Path to cache file")
+    args = parser.parse_args()
+
+    asyncio.run(run_leaderboard(args))
+
+
+if __name__ == "__main__":
+    main()

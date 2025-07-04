@@ -63,3 +63,25 @@ def test_evaluate_dataset(monkeypatch, tmp_path):
     )
     assert acc == 1.0
     assert len(cache.entries) == 2
+
+
+def test_evaluate_dataset_return_results(monkeypatch, tmp_path):
+    data_path = tmp_path / "data.jsonl"
+    items = [
+        {"prompt": "p1", "answer": {"blocks": {"B": "A"}}},
+        {"prompt": "p2", "answer": {"blocks": {}}},
+    ]
+    with data_path.open("w", encoding="utf8") as fh:
+        for item in items:
+            fh.write(json.dumps(item) + "\n")
+    responses = ["- B -> A", "None"]
+    monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient(responses))
+    results = asyncio.run(
+        evaluate_dataset(
+            str(data_path),
+            model="m",
+            concurrency=2,
+            return_item_results=True,
+        )
+    )
+    assert results == [True, True]
