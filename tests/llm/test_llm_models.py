@@ -3,6 +3,7 @@ from typing import Callable
 
 import pytest
 
+from llms.llm import LanguageModelName
 from llms.llm import call_anthropic_model
 from llms.llm import call_gemini_model
 from llms.llm import call_openai_model
@@ -137,8 +138,16 @@ def test_llm_cache_hit(
     dummy = client_cls()
     monkeypatch.setattr(patch_target, lambda: dummy)
     cache = MockLLMCache()
-    res1 = asyncio.run(call_fn(["p1"], model="m", temperature=0.3, seed=1, cache=cache))
-    res2 = asyncio.run(call_fn(["p1"], model="m", temperature=0.3, seed=1, cache=cache))
+    res1 = asyncio.run(
+        call_fn(
+            ["p1"], model=LanguageModelName.TEST_M, temperature=0.3, seed=1, cache=cache
+        )
+    )
+    res2 = asyncio.run(
+        call_fn(
+            ["p1"], model=LanguageModelName.TEST_M, temperature=0.3, seed=1, cache=cache
+        )
+    )
     assert res1 == res2
     assert dummy.calls == 1
     assert len(cache.entries) == 1
@@ -158,10 +167,30 @@ def test_llm_cache_miss(
     dummy = client_cls()
     monkeypatch.setattr(patch_target, lambda: dummy)
     cache = MockLLMCache()
-    asyncio.run(call_fn(["p1"], model="m", temperature=0.3, seed=1, cache=cache))
-    asyncio.run(call_fn(["p1"], model="m2", temperature=0.3, seed=1, cache=cache))
-    asyncio.run(call_fn(["p1"], model="m", temperature=0.4, seed=1, cache=cache))
-    asyncio.run(call_fn(["p1"], model="m", temperature=0.3, seed=2, cache=cache))
+    asyncio.run(
+        call_fn(
+            ["p1"], model=LanguageModelName.TEST_M, temperature=0.3, seed=1, cache=cache
+        )
+    )
+    asyncio.run(
+        call_fn(
+            ["p1"],
+            model=LanguageModelName.TEST_M2,
+            temperature=0.3,
+            seed=1,
+            cache=cache,
+        )
+    )
+    asyncio.run(
+        call_fn(
+            ["p1"], model=LanguageModelName.TEST_M, temperature=0.4, seed=1, cache=cache
+        )
+    )
+    asyncio.run(
+        call_fn(
+            ["p1"], model=LanguageModelName.TEST_M, temperature=0.3, seed=2, cache=cache
+        )
+    )
     assert dummy.calls == 4
     assert len(cache.entries) == 4
 
@@ -181,10 +210,20 @@ def test_llm_cache_file_hit(
     monkeypatch.setattr(patch_target, lambda: dummy)
     cache_path = tmp_path / "cache.jsonl"
     cache = LLMCache(str(cache_path))
-    res1 = asyncio.run(call_fn(["p1"], model="m", temperature=0.3, seed=1, cache=cache))
+    res1 = asyncio.run(
+        call_fn(
+            ["p1"], model=LanguageModelName.TEST_M, temperature=0.3, seed=1, cache=cache
+        )
+    )
     cache2 = LLMCache(str(cache_path))
     res2 = asyncio.run(
-        call_fn(["p1"], model="m", temperature=0.3, seed=1, cache=cache2)
+        call_fn(
+            ["p1"],
+            model=LanguageModelName.TEST_M,
+            temperature=0.3,
+            seed=1,
+            cache=cache2,
+        )
     )
     assert res1 == res2
     assert dummy.calls == 1

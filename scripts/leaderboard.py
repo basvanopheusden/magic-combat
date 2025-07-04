@@ -7,7 +7,6 @@ import argparse
 import asyncio
 import math
 from pathlib import Path
-from typing import Iterable
 from typing import Optional
 from typing import Sequence
 
@@ -54,14 +53,17 @@ def two_proportion_p_value(results1: Sequence[bool], results2: Sequence[bool]) -
 
 async def evaluate_models(
     dataset: str,
+    models: Sequence[LanguageModelName] | None = None,
     *,
     seed: int = 0,
     concurrency: int = 20,
     cache: Optional[LLMCache] = None,
 ) -> dict[LanguageModelName, list[bool]]:
     """Return per-item correctness for each model in ``models``."""
+    if models is None:
+        models = list(LanguageModelName)
     results: dict[LanguageModelName, list[bool]] = {}
-    for model in LanguageModelName:
+    for model in models:
         item_results = await evaluate_dataset(
             dataset,
             model=model,
@@ -98,7 +100,7 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
     print("\nPairwise p-values:")
     print("\t" + "\t".join(m.value for m in models))
     for m1 in models:
-        row = [m1]
+        row = [m1.value]
         for m2 in models:
             if m1 == m2:
                 row.append("-")
