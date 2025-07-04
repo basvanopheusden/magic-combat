@@ -147,6 +147,15 @@ async def call_openai_model(
     finally:
         await client.close()
 
+def get_short_prompt(prompt: str) -> str:
+    """Return a short version of the prompt for logging."""
+    key_str = "The current game state is as follows:"
+    rules_str = "# Relevant Rules"
+    if key_str in prompt and rules_str in prompt:
+        parts = prompt.split(key_str, 1)
+        return parts[1].split(rules_str, 1)[0].strip()
+    else:
+        return prompt.splitlines()[0][:30]
 
 async def call_openai_pro_model_single_prompt(
     prompt: str,
@@ -161,11 +170,13 @@ async def call_openai_pro_model_single_prompt(
     """Return ``prompt`` response from O3 Pro using the completions API."""
 
     async def _call() -> str:
+        print("Calling OpenAI Pro model for:", get_short_prompt(prompt))
         response: Response = await client.responses.create(
             model=model.value,
             input=prompt,
             temperature=temperature,
         )
+        print("OpenAI Pro model response:", response.output_text)
         return (response.output_text or "").strip()
 
     return await _call_model_cached(
