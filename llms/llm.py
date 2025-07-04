@@ -32,7 +32,11 @@ class LanguageModelName(Enum):
 
 def get_default_temperature(model: LanguageModelName) -> float:
     """Return the default temperature for the given model."""
-    if model in {LanguageModelName.O3_PRO, LanguageModelName.O3, LanguageModelName.O4_MINI}:
+    if model in {
+        LanguageModelName.O3_PRO,
+        LanguageModelName.O3,
+        LanguageModelName.O4_MINI,
+    }:
         return 1.0
     return 0.2
 
@@ -53,7 +57,8 @@ async def _call_model_cached(
     if cached is not None:
         short = prompt.splitlines()[0][:30]
         print(
-            f"Using cached LLM response for: {short}, {model.value}, seed={seed}, temperature={temperature}"
+            "Using cached LLM response for: "
+            f"{short}, {model.value}, seed={seed}, temperature={temperature}"
         )
         return cached
 
@@ -127,6 +132,67 @@ async def call_openai_model(
 
     async def _call_single(prompt: str, sem: Optional[asyncio.Semaphore]) -> str:
         return await call_openai_model_single_prompt(
+            prompt,
+            client,
+            model=model,
+            temperature=temperature,
+            seed=seed,
+            cache=cache,
+            semaphore=sem,
+        )
+
+    try:
+        return await _call_model(prompts, _call_single, concurrency)
+    finally:
+        await client.close()
+
+
+async def call_openai_pro_model_single_prompt(
+    prompt: str,
+    client: openai.AsyncOpenAI,
+    *,
+    model: LanguageModelName = LanguageModelName.O3_PRO,
+    temperature: float = 0.2,
+    seed: int = 0,
+    cache: Optional[LLMCache] = None,
+    semaphore: Optional[asyncio.Semaphore] = None,
+) -> str:
+    """Return ``prompt`` response from O3 Pro using the completions API."""
+
+    async def _call() -> str:
+        response = await client.completions.create(
+            model=model.value,
+            prompt=prompt,
+            temperature=temperature,
+            max_tokens=1024,
+        )
+        return (response.choices[0].text or "").strip()
+
+    return await _call_model_cached(
+        prompt,
+        _call,
+        model=model,
+        temperature=temperature,
+        seed=seed,
+        cache=cache,
+        semaphore=semaphore,
+    )
+
+
+async def call_openai_pro_model(
+    prompts: list[str],
+    *,
+    model: LanguageModelName = LanguageModelName.O3_PRO,
+    temperature: float = 0.2,
+    seed: int = 0,
+    cache: Optional[LLMCache] = None,
+    concurrency: int | None = None,
+) -> list[str]:
+    """Return responses for ``prompts`` using the completions API."""
+    client = openai.AsyncOpenAI()
+
+    async def _call_single(prompt: str, sem: Optional[asyncio.Semaphore]) -> str:
+        return await call_openai_pro_model_single_prompt(
             prompt,
             client,
             model=model,
@@ -218,7 +284,10 @@ async def call_anthropic_model_single_prompt(
             temperature=temperature,
             max_tokens=1024,
         )
-        return "".join(block.text for block in response.content).strip()
+        blocks = "".join(
+            block.text for block in response.content  # type: ignore[union-attr]
+        )
+        return blocks.strip()
 
     return await _call_model_cached(
         prompt,
@@ -268,7 +337,7 @@ CALL_METHOD_BY_MODEL = {
     LanguageModelName.GPT_4_1: call_openai_model,
     LanguageModelName.O4_MINI: call_openai_model,
     LanguageModelName.O3: call_openai_model,
-    LanguageModelName.O3_PRO: call_openai_model,
+    LanguageModelName.O3_PRO: call_openai_pro_model,
     LanguageModelName.CLAUDE_3_7_SONNET: call_anthropic_model,
     LanguageModelName.CLAUDE_3_5_SONNET: call_anthropic_model,
     LanguageModelName.CLAUDE_4_SONNET: call_anthropic_model,
