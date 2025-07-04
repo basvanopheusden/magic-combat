@@ -6,6 +6,7 @@ from typing import Optional
 
 import anthropic
 import openai
+import together  # type: ignore
 from google import genai
 from google.genai import types as genai_types
 from openai.types.responses import ResponseTextConfig, Response
@@ -26,6 +27,9 @@ class LanguageModelName(Enum):
     CLAUDE_3_5_SONNET = "claude-3-5-sonnet-20241022"
     CLAUDE_4_SONNET = "claude-sonnet-4-20250514"
     CLAUDE_4_OPUS = "claude-opus-4-20250514"
+    LLAMA_3_8B_INSTRUCT = "meta-llama-3-8b-instruct"
+    LLAMA_3_70B_INSTRUCT = "meta-llama-3-70b-instruct"
+    DEEPSEEK_67B_CHAT = "deepseek-chat"
     TEST_M = "m"
     TEST_M1 = "m1"
     TEST_M2 = "m2"
@@ -337,6 +341,69 @@ async def call_anthropic_model(
         await client.close()
 
 
+async def call_together_model_single_prompt(
+    prompt: str,
+    client: together.AsyncTogether,
+    *,
+    model: LanguageModelName = LanguageModelName.LLAMA_3_8B_INSTRUCT,
+    temperature: float = 0.2,
+    seed: int = 0,
+    cache: Optional[LLMCache] = None,
+    semaphore: Optional[asyncio.Semaphore] = None,
+) -> str:
+    """Return ``prompt`` response from Together, optionally using ``cache``."""
+
+    async def _create() -> str:
+        response = await client.chat.completions.create(
+            model=model.value,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+            seed=seed,
+        )
+        choice = response.choices[0]  # type: ignore[index]
+        message = choice.message
+        content = ""
+        if message and isinstance(message.content, str):
+            content = message.content
+        return content.strip()
+
+    return await _call_model_cached(
+        prompt,
+        _create,
+        model=model,
+        temperature=temperature,
+        seed=seed,
+        cache=cache,
+        semaphore=semaphore,
+    )
+
+
+async def call_together_model(
+    prompts: list[str],
+    *,
+    model: LanguageModelName = LanguageModelName.LLAMA_3_8B_INSTRUCT,
+    temperature: float = 0.2,
+    seed: int = 0,
+    cache: Optional[LLMCache] = None,
+    concurrency: int | None = None,
+) -> list[str]:
+    """Return responses for ``prompts`` using Together models."""
+    client = together.AsyncTogether()
+
+    async def _call_single(prompt: str, sem: Optional[asyncio.Semaphore]) -> str:
+        return await call_together_model_single_prompt(
+            prompt,
+            client,
+            model=model,
+            temperature=temperature,
+            seed=seed,
+            cache=cache,
+            semaphore=sem,
+        )
+
+    return await _call_model(prompts, _call_single, concurrency)
+
+
 CALL_METHOD_BY_MODEL = {
     LanguageModelName.GEMINI_2_5_PRO: call_gemini_model,
     LanguageModelName.GEMINI_2_5_FLASH: call_gemini_model,
@@ -350,6 +417,9 @@ CALL_METHOD_BY_MODEL = {
     LanguageModelName.CLAUDE_3_5_SONNET: call_anthropic_model,
     LanguageModelName.CLAUDE_4_SONNET: call_anthropic_model,
     LanguageModelName.CLAUDE_4_OPUS: call_anthropic_model,
+    LanguageModelName.LLAMA_3_8B_INSTRUCT: call_together_model,
+    LanguageModelName.LLAMA_3_70B_INSTRUCT: call_together_model,
+    LanguageModelName.DEEPSEEK_67B_CHAT: call_together_model,
     LanguageModelName.TEST_M: call_openai_model,
     LanguageModelName.TEST_M1: call_openai_model,
     LanguageModelName.TEST_M2: call_openai_model,

@@ -29,6 +29,7 @@ dependencies = [
     "pyright==1.1.402",
     "pydantic==2.7.1",
     "google-genai==1.24.0",
+    "together==1.5.17",
 ]
 
 [tool.setuptools.packages.find]
