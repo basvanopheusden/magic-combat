@@ -8,6 +8,7 @@ from typing import Optional
 from typing import cast
 
 from llms.create_llm_prompt import parse_block_assignments
+from llms.llm import call_anthropic_model
 from llms.llm import call_openai_model
 from llms.llm_cache import LLMCache
 from magic_combat.dataset import ReferenceAnswer
@@ -32,7 +33,8 @@ async def evaluate_dataset(
             items.append(json.loads(line))
 
     prompts = [cast(str, item["prompt"]) for item in items]
-    responses = await call_openai_model(
+    call = call_anthropic_model if model.startswith("claude") else call_openai_model
+    responses = await call(
         prompts,
         model=model,
         temperature=temperature,
