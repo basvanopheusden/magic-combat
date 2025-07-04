@@ -12,6 +12,7 @@ from llms.llm import call_anthropic_model
 from llms.llm import call_openai_model
 from llms.llm_cache import LLMCache
 from magic_combat.dataset import ReferenceAnswer
+from magic_combat.exceptions import UnparsableLLMOutputError
 
 
 async def evaluate_dataset(
@@ -49,7 +50,10 @@ async def evaluate_dataset(
         ref = ReferenceAnswer.model_validate(ref_data)
         blk_names = ref.blocks.keys()
         atk_names = ref.blocks.values()
-        parsed, _ = parse_block_assignments(response, blk_names, atk_names)
+        try:
+            parsed, _ = parse_block_assignments(response, blk_names, atk_names)
+        except UnparsableLLMOutputError:
+            continue
         pred = ReferenceAnswer(blocks=parsed)
         if pred == ref:
             correct += 1
