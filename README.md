@@ -135,3 +135,17 @@ OPENAI_API_KEY=<your-key> \
 
 The script will generate scenarios, send them to the model and print the
 results to the console.
+
+## Using Gemini models
+
+The :mod:`llms.llm` module also supports Google's Gemini family of models.
+Install the ``google-genai`` package and set the ``GOOGLE_API_KEY``
+environment variable before querying a Gemini model.
+
+```bash
+GOOGLE_API_KEY=<your-key> python - <<'PY'
+import asyncio
+from llms.llm import call_gemini_model
+print(asyncio.run(call_gemini_model(["hello"])))
+PY
+```

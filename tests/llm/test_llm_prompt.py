@@ -2,6 +2,7 @@ import asyncio
 
 from llms.create_llm_prompt import create_llm_prompt
 from llms.create_llm_prompt import parse_block_assignments
+from llms.llm import call_gemini_model
 from llms.llm import call_openai_model
 from llms.llm_cache import LLMCache
 from llms.llm_cache import MockLLMCache
@@ -47,6 +48,31 @@ class DummyClient:
 
     async def close(self):
         pass
+
+
+class DummyGeminiResponse:
+    def __init__(self, content):
+        self.text = content
+
+
+class DummyGeminiModels:
+    def __init__(self, owner):
+        self.owner = owner
+
+    async def generate_content(self, *, model, contents, config=None):
+        self.owner.calls += 1
+        return DummyGeminiResponse(f"response to {contents}")
+
+
+class DummyGeminiAio:
+    def __init__(self, owner):
+        self.models = DummyGeminiModels(owner)
+
+
+class DummyGeminiClient:
+    def __init__(self):
+        self.calls = 0
+        self.aio = DummyGeminiAio(self)
 
 
 def test_create_prompt_contents():
@@ -173,3 +199,38 @@ def test_llm_cache_file_hit(monkeypatch, tmp_path):
     )
     assert res1 == res2
     assert dummy.chat.completions.calls == 1
+
+
+def test_call_gemini_model(monkeypatch):
+    monkeypatch.setattr("google.genai.Client", lambda: DummyGeminiClient())
+    res = asyncio.run(call_gemini_model(["p1", "p2"]))
+    assert res == ["response to p1", "response to p2"]
+
+
+def test_gemini_llm_cache_hit(monkeypatch):
+    monkeypatch.setattr("google.genai.Client", lambda: DummyGeminiClient())
+    cache = MockLLMCache()
+    res1 = asyncio.run(call_gemini_model(["p1"], model="m", cache=cache))
+    res2 = asyncio.run(call_gemini_model(["p1"], model="m", cache=cache))
+    assert res1 == res2
+    assert len(cache.entries) == 1
+
+
+def test_gemini_llm_cache_miss(monkeypatch):
+    monkeypatch.setattr("google.genai.Client", lambda: DummyGeminiClient())
+    cache = MockLLMCache()
+    asyncio.run(call_gemini_model(["p1"], model="m", cache=cache))
+    asyncio.run(call_gemini_model(["p1"], model="m2", cache=cache))
+    assert len({entry["model"] for entry in cache.entries}) == 2
+
+
+def test_gemini_llm_cache_file_hit(monkeypatch, tmp_path):
+    dummy = DummyGeminiClient()
+    monkeypatch.setattr("google.genai.Client", lambda: dummy)
+    cache_path = tmp_path / "cache.jsonl"
+    cache = LLMCache(str(cache_path))
+    res1 = asyncio.run(call_gemini_model(["p1"], model="m", cache=cache))
+    cache2 = LLMCache(str(cache_path))
+    res2 = asyncio.run(call_gemini_model(["p1"], model="m", cache=cache2))
+    assert res1 == res2
+    assert dummy.calls == 1

@@ -2,6 +2,8 @@ import asyncio
 from typing import Optional
 
 import openai
+from google import genai
+from google.genai import types as genai_types
 
 from .llm_cache import LLMCache
 
@@ -74,3 +76,68 @@ async def call_openai_model(
         return list(responses)
     finally:
         await client.close()
+
+
+async def call_gemini_model_single_prompt(
+    prompt: str,
+    *,
+    model: str = "gemini-pro",
+    temperature: float = 0.2,
+    seed: int = 0,
+    cache: Optional[LLMCache] = None,
+    semaphore: Optional[asyncio.Semaphore] = None,
+) -> str:
+    """Return ``prompt`` response from Gemini, optionally using ``cache``."""
+    cached = None
+    if cache is not None:
+        cached = cache.get(prompt, model, seed, temperature)
+    if cached is not None:
+        short = prompt.splitlines()[0][:30]
+        print(f"Using cached LLM response for: {short}...")
+        return cached
+
+    client = genai.Client()
+    generation_config = genai_types.GenerateContentConfig(
+        temperature=temperature, seed=seed
+    )
+
+    async def _call() -> str:
+        response = await client.aio.models.generate_content(
+            model=model, contents=prompt, config=generation_config
+        )
+        return (response.text or "").strip()
+
+    if semaphore is None:
+        text = await _call()
+    else:
+        async with semaphore:
+            text = await _call()
+    if cache is not None:
+        cache.add(prompt, model, seed, temperature, text)
+    return text
+
+
+async def call_gemini_model(
+    prompts: list[str],
+    *,
+    model: str = "gemini-pro",
+    temperature: float = 0.2,
+    seed: int = 0,
+    cache: Optional[LLMCache] = None,
+    concurrency: int | None = None,
+) -> list[str]:
+    """Return responses for ``prompts`` using Gemini."""
+    semaphore = asyncio.Semaphore(concurrency) if concurrency else None
+    tasks = [
+        call_gemini_model_single_prompt(
+            prompt,
+            model=model,
+            temperature=temperature,
+            seed=seed,
+            cache=cache,
+            semaphore=semaphore,
+        )
+        for prompt in prompts
+    ]
+    responses = await asyncio.gather(*tasks)
+    return list(responses)

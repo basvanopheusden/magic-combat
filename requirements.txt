@@ -15,3 +15,4 @@ typing_extensions==4.13.1
 types-requests==2.28.11.17
 pyright==1.1.402
 pydantic==2.7.1
+google-genai==1.24.0
