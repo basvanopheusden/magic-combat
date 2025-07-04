@@ -104,9 +104,11 @@ async def _evaluate_single_scenario(
             if attempts > max_attempts:
                 print("Unparseable response; giving up")
                 break
-            print(
-                f"Unparseable response for model {model} on scenario {idx + 1}; retrying..."
+            msg = (
+                f"Unparseable response for model {model} "
+                f"on scenario {idx + 1}; retrying..."
             )
+            print(msg)
             continue
 
         if invalid:
