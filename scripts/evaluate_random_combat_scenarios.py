@@ -6,6 +6,7 @@ import numpy as np
 
 from llms.create_llm_prompt import create_llm_prompt
 from llms.create_llm_prompt import parse_block_assignments
+from llms.llm import call_anthropic_model
 from llms.llm import call_openai_model
 from llms.llm_cache import LLMCache
 from magic_combat import CombatResult
@@ -56,6 +57,7 @@ async def _evaluate_single_scenario(
     seed: int = 0,
     semaphore: asyncio.Semaphore,
     cache: Optional[LLMCache] = None,
+    model: str = "o3-2025-04-16",
 ) -> None:
     print("Generating scenario", idx + 1)
     (
@@ -85,10 +87,15 @@ async def _evaluate_single_scenario(
         try:
             async with semaphore:
                 print("Calling OpenAI model for scenario", idx + 1)
-                llm_responses = await call_openai_model(
+                call = (
+                    call_anthropic_model
+                    if model.startswith("claude")
+                    else call_openai_model
+                )
+                llm_responses = await call(
                     [prompt],
                     seed=seed + idx,
-                    model="o3-2025-04-16",
+                    model=model,
                     temperature=1.0,
                     cache=cache,
                 )
@@ -220,6 +227,7 @@ async def evaluate_random_scenarios(
     *,
     seed: int = 0,
     cache: Optional[LLMCache] = None,
+    model: str = "o3-2025-04-16",
 ) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -239,6 +247,7 @@ async def evaluate_random_scenarios(
                 seed=seed,
                 semaphore=semaphore,
                 cache=cache,
+                model=model,
             )
         )
         for idx in range(n)
@@ -263,11 +272,22 @@ def main() -> None:
         "--cache",
         help="Path to JSONL cache file for LLM responses",
     )
+    parser.add_argument(
+        "--model",
+        default="o3-2025-04-16",
+        help="Model name (e.g. gpt-4o or claude-3-sonnet-20240229)",
+    )
     args = parser.parse_args()
 
     cache = LLMCache(args.cache) if args.cache else None
     asyncio.run(
-        evaluate_random_scenarios(args.n, args.cards, seed=args.seed, cache=cache)
+        evaluate_random_scenarios(
+            args.n,
+            args.cards,
+            seed=args.seed,
+            cache=cache,
+            model=args.model,
+        )
     )
 
 

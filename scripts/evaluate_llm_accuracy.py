@@ -10,9 +10,11 @@ from typing import cast
 from typing import overload
 
 from llms.create_llm_prompt import parse_block_assignments
+from llms.llm import call_anthropic_model
 from llms.llm import call_openai_model
 from llms.llm_cache import LLMCache
 from magic_combat.dataset import ReferenceAnswer
+from magic_combat.exceptions import UnparsableLLMOutputError
 
 
 @overload
@@ -63,7 +65,8 @@ async def evaluate_dataset(
             items.append(json.loads(line))
 
     prompts = [cast(str, item["prompt"]) for item in items]
-    responses = await call_openai_model(
+    call = call_anthropic_model if model.startswith("claude") else call_openai_model
+    responses = await call(
         prompts,
         model=model,
         temperature=temperature,
@@ -78,7 +81,10 @@ async def evaluate_dataset(
         ref = ReferenceAnswer.model_validate(ref_data)
         blk_names = ref.blocks.keys()
         atk_names = ref.blocks.values()
-        parsed, _ = parse_block_assignments(response, blk_names, atk_names)
+        try:
+            parsed, _ = parse_block_assignments(response, blk_names, atk_names)
+        except UnparsableLLMOutputError:
+            continue
         pred = ReferenceAnswer(blocks=parsed)
         results.append(pred == ref)
 

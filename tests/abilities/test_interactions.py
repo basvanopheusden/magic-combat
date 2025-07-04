@@ -431,6 +431,19 @@ def test_trample_deathtouch_indestructible_min_damage():
     assert blk not in result.creatures_destroyed
 
 
+def test_double_strike_deathtouch_trample_second_step_only_to_player():
+    """CR 702.4b, 702.2b & 702.19b: Once deathtouch makes damage lethal in the first-strike step, a double strike trampler assigns only remaining damage to the player."""
+    attacker = CombatCreature(
+        "Slayer", 2, 2, "A", double_strike=True, deathtouch=True, trample=True
+    )
+    blocker = CombatCreature("Bear", 3, 3, "B")
+    link_block(attacker, blocker)
+    sim = CombatSimulator([attacker], [blocker])
+    result = sim.simulate()
+    assert blocker in result.creatures_destroyed
+    assert result.damage_to_players["B"] == 3
+
+
 def test_exalted_training_with_stronger_ally_counter_only():
     """CR 702.90a & 702.138a: Training triggers with a stronger ally while exalted doesn't with multiple attackers."""
     trainee = CombatCreature("Apprentice", 1, 1, "A", training=True)

@@ -122,6 +122,9 @@ The ``scripts`` directory includes tools that rely on the OpenAI API.  These
 require the ``openai`` package, which is installed when running ``pip install
 -r requirements.txt``.  Before using these scripts you must set the
 ``OPENAI_API_KEY`` environment variable so that the client can authenticate.
+Support for the Anthropic API is also available.  Install the ``anthropic``
+package and set ``ANTHROPIC_API_KEY`` to use models such as
+``claude-3-sonnet-20240229`` or ``claude-3-opus-20240229``.
 
 ``scripts/evaluate_random_combat_scenarios.py`` contacts the model to
 evaluate blocking assignments for randomly generated combat scenarios.  A
@@ -131,6 +134,16 @@ typical invocation looks like this:
 OPENAI_API_KEY=<your-key> \
     python scripts/evaluate_random_combat_scenarios.py -n 3 \
     --cards data/cards.json
+```
+
+To use an Anthropic model instead, set ``ANTHROPIC_API_KEY`` and pass the
+``--model`` option.  For example:
+
+```bash
+ANTHROPIC_API_KEY=<your-key> \
+    python scripts/evaluate_random_combat_scenarios.py -n 3 \
+    --cards data/cards.json \
+    --model claude-3-sonnet-20240229
 ```
 
 The script will generate scenarios, send them to the model and print the
