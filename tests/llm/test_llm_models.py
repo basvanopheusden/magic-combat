@@ -46,6 +46,13 @@ class DummyOpenAIClient:
                 "create": self._completion_create,
             },
         )()
+        self.responses = type(
+            "Responses",
+            (),
+            {
+                "create": self._response_create,
+            },
+        )()
 
     async def _chat_create(
         self, model: str, messages: list[dict[str, str]], temperature: float = 0.0
@@ -62,6 +69,14 @@ class DummyOpenAIClient:
         self.calls += 1
         return type(
             "R", (), {"choices": [DummyOpenAICompletionChoice(f"response to {prompt}")]}
+        )()
+
+    async def _response_create(self, model: str, input: str, temperature: float = 0.0):
+        self.calls += 1
+        return type(
+            "R",
+            (),
+            {"output_text": f"response to {input}"},
         )()
 
     async def close(self) -> None:
