@@ -125,6 +125,11 @@ require the ``openai`` package, which is installed when running ``pip install
 Support for the Anthropic API is also available.  Install the ``anthropic``
 package (version ``0.57.1`` or newer) and set ``ANTHROPIC_API_KEY`` to use models such as
 ``claude-3-sonnet-20240229`` or ``claude-3-opus-20240229``.
+Support for the Together API allows using open models like DeepSeek or Llama.
+Install the ``together`` package (version ``1.5.17`` or newer) and set
+``TOGETHER_API_KEY`` to select models such as
+``meta-llama/Meta-Llama-3-70B-Instruct`` or
+``deepseek-ai/deepseek-llm-67b-chat``.
 
 ``scripts/evaluate_random_combat_scenarios.py`` contacts the model to
 evaluate blocking assignments for randomly generated combat scenarios.  A

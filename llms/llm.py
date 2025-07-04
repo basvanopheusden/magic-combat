@@ -6,6 +6,7 @@ from typing import Optional
 
 import anthropic
 import openai
+import together  # type: ignore[import]
 from google import genai
 from google.genai import types as genai_types
 
@@ -25,6 +26,8 @@ class LanguageModelName(Enum):
     CLAUDE_3_5_SONNET = "claude-3-5-sonnet-20241022"
     CLAUDE_4_SONNET = "claude-sonnet-4-20250514"
     CLAUDE_4_OPUS = "claude-opus-4-20250514"
+    DEEPSEEK_CHAT = "deepseek-ai/deepseek-llm-67b-chat"
+    LLAMA3_70B_INSTRUCT = "meta-llama/Meta-Llama-3-70B-Instruct"
     TEST_M = "m"
     TEST_M1 = "m1"
     TEST_M2 = "m2"
@@ -32,7 +35,11 @@ class LanguageModelName(Enum):
 
 def get_default_temperature(model: LanguageModelName) -> float:
     """Return the default temperature for the given model."""
-    if model in {LanguageModelName.O3_PRO, LanguageModelName.O3, LanguageModelName.O4_MINI}:
+    if model in {
+        LanguageModelName.O3_PRO,
+        LanguageModelName.O3,
+        LanguageModelName.O4_MINI,
+    }:
         return 1.0
     return 0.2
 
@@ -218,7 +225,7 @@ async def call_anthropic_model_single_prompt(
             temperature=temperature,
             max_tokens=1024,
         )
-        return "".join(block.text for block in response.content).strip()
+        return "".join(getattr(block, "text", "") for block in response.content).strip()
 
     return await _call_model_cached(
         prompt,
@@ -260,6 +267,64 @@ async def call_anthropic_model(
         await client.close()
 
 
+async def call_together_model_single_prompt(
+    prompt: str,
+    client: together.AsyncClient,
+    *,
+    model: LanguageModelName = LanguageModelName.LLAMA3_70B_INSTRUCT,
+    temperature: float = 0.2,
+    seed: int = 0,
+    cache: Optional[LLMCache] = None,
+    semaphore: Optional[asyncio.Semaphore] = None,
+) -> str:
+    """Return ``prompt`` response from Together API, optionally using ``cache``."""
+
+    async def _create() -> str:
+        response = await client.chat.completions.create(
+            messages=[{"role": "user", "content": prompt}],
+            model=model.value,
+            temperature=temperature,
+            seed=seed,
+        )
+        return (response.choices[0].message.content or "").strip()
+
+    return await _call_model_cached(
+        prompt,
+        _create,
+        model=model,
+        temperature=temperature,
+        seed=seed,
+        cache=cache,
+        semaphore=semaphore,
+    )
+
+
+async def call_together_model(
+    prompts: list[str],
+    *,
+    model: LanguageModelName = LanguageModelName.LLAMA3_70B_INSTRUCT,
+    temperature: float = 0.2,
+    seed: int = 0,
+    cache: Optional[LLMCache] = None,
+    concurrency: int | None = None,
+) -> list[str]:
+    """Return responses for ``prompts`` using models hosted on Together."""
+    client = together.AsyncClient()
+
+    async def _call_single(prompt: str, sem: Optional[asyncio.Semaphore]) -> str:
+        return await call_together_model_single_prompt(
+            prompt,
+            client,
+            model=model,
+            temperature=temperature,
+            seed=seed,
+            cache=cache,
+            semaphore=sem,
+        )
+
+    return await _call_model(prompts, _call_single, concurrency)
+
+
 CALL_METHOD_BY_MODEL = {
     LanguageModelName.GEMINI_2_5_PRO: call_gemini_model,
     LanguageModelName.GEMINI_2_5_FLASH: call_gemini_model,
@@ -273,6 +338,8 @@ CALL_METHOD_BY_MODEL = {
     LanguageModelName.CLAUDE_3_5_SONNET: call_anthropic_model,
     LanguageModelName.CLAUDE_4_SONNET: call_anthropic_model,
     LanguageModelName.CLAUDE_4_OPUS: call_anthropic_model,
+    LanguageModelName.DEEPSEEK_CHAT: call_together_model,
+    LanguageModelName.LLAMA3_70B_INSTRUCT: call_together_model,
     LanguageModelName.TEST_M: call_openai_model,
     LanguageModelName.TEST_M1: call_openai_model,
     LanguageModelName.TEST_M2: call_openai_model,
