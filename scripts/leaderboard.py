@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Optional
 from typing import Sequence
 
+from tabulate import tabulate
+
 from llms.llm import LanguageModelName
 from llms.llm_cache import LLMCache
 from scripts.evaluate_llm_accuracy import evaluate_dataset
@@ -51,6 +53,39 @@ def two_proportion_p_value(results1: Sequence[bool], results2: Sequence[bool]) -
     return p
 
 
+def format_accuracy_table(
+    results: dict[LanguageModelName, list[bool]],
+    n: int,
+) -> str:
+    """Return a formatted accuracy table."""
+    sortable = [
+        (model, sum(vals) / len(vals) if vals else 0.0)
+        for model, vals in results.items()
+    ]
+    rows = []
+    for model, acc in sorted(sortable, key=lambda x: x[1], reverse=True):
+        se = standard_error(acc, n)
+        rows.append([model.value, f"{acc:.3f}", f"{se:.3f}"])
+    return tabulate(rows, headers=["Model", "Accuracy", "StdErr"], tablefmt="github")
+
+
+def format_pvalue_table(results: dict[LanguageModelName, list[bool]]) -> str:
+    """Return a formatted pairwise p-values table."""
+    models = list(results.keys())
+    headers = [""] + [m.value for m in models]
+    table_rows = []
+    for m1 in models:
+        row = [m1.value]
+        for m2 in models:
+            if m1 == m2:
+                row.append("-")
+            else:
+                p = two_proportion_p_value(results[m1], results[m2])
+                row.append(f"{p:.3f}")
+        table_rows.append(row)
+    return tabulate(table_rows, headers=headers, tablefmt="github")
+
+
 async def evaluate_models(
     dataset: str,
     models: Sequence[LanguageModelName] | None = None,
@@ -90,27 +125,10 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
         cache=cache,
     )
 
-    print("Model\tAccuracy\tStdErr")
-    sortable = [
-        (model, sum(vals) / len(vals) if vals else 0.0)
-        for model, vals in results.items()
-    ]
-    for model, acc in sorted(sortable, key=lambda x: x[1], reverse=True):
-        se = standard_error(acc, n)
-        print(f"{model}\t{acc:.3f}\t{se:.3f}")
+    print(format_accuracy_table(results, n))
 
-    models = list(results.keys())
     print("\nPairwise p-values:")
-    print("\t" + "\t".join(m.value for m in models))
-    for m1 in models:
-        row = [m1.value]
-        for m2 in models:
-            if m1 == m2:
-                row.append("-")
-            else:
-                p = two_proportion_p_value(results[m1], results[m2])
-                row.append(f"{p:.3f}")
-        print("\t".join(row))
+    print(format_pvalue_table(results))
 
 
 def main() -> None:
