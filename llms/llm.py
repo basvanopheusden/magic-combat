@@ -15,7 +15,6 @@ from .llm_cache import LLMCache
 class LanguageModelName(Enum):
     GEMINI_2_5_PRO = "gemini-2.5-pro"
     GEMINI_2_5_FLASH = "gemini-2.5-flash"
-    GEMINI_2_0_PRO = "gemini-2.0-pro"
     GEMINI_2_0_FLASH = "gemini-2.0-flash"
     GPT_4O = "gpt-4o"
     GPT_4_1 = "gpt-4.1"
@@ -38,7 +37,7 @@ async def _call_model_cached(
     prompt: str,
     call: Callable[[], Awaitable[str]],
     *,
-    model: str,
+    model: LanguageModelName,
     temperature: float,
     seed: int,
     cache: Optional[LLMCache],
@@ -46,7 +45,7 @@ async def _call_model_cached(
 ) -> str:
     """Return cached result for ``call`` if available."""
 
-    cached = cache.get(prompt, model, seed, temperature) if cache else None
+    cached = cache.get(prompt, model.value, seed, temperature) if cache else None
     if cached is not None:
         short = prompt.splitlines()[0][:30]
         print(f"Using cached LLM response for: {short}...")
@@ -62,7 +61,7 @@ async def _call_model_cached(
             text = await _run()
 
     if cache is not None:
-        cache.add(prompt, model, seed, temperature, text)
+        cache.add(prompt, model.value, seed, temperature, text)
     return text
 
 
@@ -81,7 +80,7 @@ async def call_openai_model_single_prompt(
     prompt: str,
     client: openai.AsyncOpenAI,
     *,
-    model: str = "gpt-4o",
+    model: LanguageModelName = LanguageModelName.GPT_4O,
     temperature: float = 0.2,
     seed: int = 0,
     cache: Optional[LLMCache] = None,
@@ -91,7 +90,7 @@ async def call_openai_model_single_prompt(
 
     async def _call() -> str:
         response = await client.chat.completions.create(
-            model=model,
+            model=model.value,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
         )
@@ -111,7 +110,7 @@ async def call_openai_model_single_prompt(
 async def call_openai_model(
     prompts: list[str],
     *,
-    model: str = "gpt-4o",
+    model: LanguageModelName = LanguageModelName.GPT_4O,
     temperature: float = 0.2,
     seed: int = 0,
     cache: Optional[LLMCache] = None,
@@ -140,7 +139,7 @@ async def call_openai_model(
 async def call_gemini_model_single_prompt(
     prompt: str,
     *,
-    model: str = "gemini-pro",
+    model: LanguageModelName = LanguageModelName.GEMINI_2_5_PRO,
     temperature: float = 0.2,
     seed: int = 0,
     cache: Optional[LLMCache] = None,
@@ -173,7 +172,7 @@ async def call_gemini_model_single_prompt(
 async def call_gemini_model(
     prompts: list[str],
     *,
-    model: str = "gemini-pro",
+    model: LanguageModelName = LanguageModelName.GEMINI_2_5_PRO,
     temperature: float = 0.2,
     seed: int = 0,
     cache: Optional[LLMCache] = None,
@@ -198,7 +197,7 @@ async def call_anthropic_model_single_prompt(
     prompt: str,
     client: anthropic.AsyncAnthropic,
     *,
-    model: str = "claude-3-sonnet-20240229",
+    model: LanguageModelName = LanguageModelName.CLAUDE_4_OPUS,
     temperature: float = 0.2,
     seed: int = 0,
     cache: Optional[LLMCache] = None,
@@ -229,7 +228,7 @@ async def call_anthropic_model_single_prompt(
 async def call_anthropic_model(
     prompts: list[str],
     *,
-    model: str = "claude-3-sonnet-20240229",
+    model: LanguageModelName = LanguageModelName.CLAUDE_4_OPUS,
     temperature: float = 0.2,
     seed: int = 0,
     cache: Optional[LLMCache] = None,
@@ -258,7 +257,6 @@ async def call_anthropic_model(
 CALL_METHOD_BY_MODEL = {
     LanguageModelName.GEMINI_2_5_PRO: call_gemini_model,
     LanguageModelName.GEMINI_2_5_FLASH: call_gemini_model,
-    LanguageModelName.GEMINI_2_0_PRO: call_gemini_model,
     LanguageModelName.GEMINI_2_0_FLASH: call_gemini_model,
     LanguageModelName.GPT_4O: call_openai_model,
     LanguageModelName.GPT_4_1: call_openai_model,

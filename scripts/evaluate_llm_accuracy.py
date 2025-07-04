@@ -11,6 +11,8 @@ from typing import overload
 
 from llms.create_llm_prompt import parse_block_assignments
 from llms.llm import CALL_METHOD_BY_MODEL
+from llms.llm import LanguageModelName
+from llms.llm import get_default_temperature
 from llms.llm_cache import LLMCache
 from magic_combat.dataset import ReferenceAnswer
 from magic_combat.exceptions import UnparsableLLMOutputError
@@ -20,8 +22,7 @@ from magic_combat.exceptions import UnparsableLLMOutputError
 async def evaluate_dataset(
     path: str,
     *,
-    model: str = "gpt-4o",
-    temperature: float = 0.2,
+    model: LanguageModelName = LanguageModelName.GPT_4O,
     seed: int = 0,
     concurrency: int = 20,
     cache: Optional[LLMCache] = None,
@@ -34,8 +35,7 @@ async def evaluate_dataset(
 async def evaluate_dataset(
     path: str,
     *,
-    model: str = "gpt-4o",
-    temperature: float = 0.2,
+    model: LanguageModelName = LanguageModelName.GPT_4O,
     seed: int = 0,
     concurrency: int = 20,
     cache: Optional[LLMCache] = None,
@@ -47,8 +47,7 @@ async def evaluate_dataset(
 async def evaluate_dataset(
     path: str,
     *,
-    model: str = "gpt-4o",
-    temperature: float = 0.2,
+    model: LanguageModelName = LanguageModelName.GPT_4O,
     seed: int = 0,
     concurrency: int = 20,
     cache: Optional[LLMCache] = None,
@@ -67,6 +66,7 @@ async def evaluate_dataset(
     if model not in CALL_METHOD_BY_MODEL:
         raise ValueError(f"Unsupported model: {model}")
     call = CALL_METHOD_BY_MODEL[model]
+    temperature = get_default_temperature(model)
 
     responses = await call(
         prompts,
@@ -122,8 +122,7 @@ def main() -> None:
     accuracy = asyncio.run(
         evaluate_dataset(
             args.dataset,
-            model=args.model,
-            temperature=args.temperature,
+            model=LanguageModelName(args.model),
             seed=args.seed,
             concurrency=args.concurrency,
             cache=cache,

@@ -6,6 +6,7 @@ import numpy as np
 
 from llms.create_llm_prompt import create_llm_prompt
 from llms.create_llm_prompt import parse_block_assignments
+from llms.llm import LanguageModelName
 from llms.llm import call_anthropic_model
 from llms.llm import call_openai_model
 from llms.llm_cache import LLMCache
@@ -95,7 +96,7 @@ async def _evaluate_single_scenario(
                 llm_responses = await call(
                     [prompt],
                     seed=seed + idx,
-                    model=model,
+                    model=LanguageModelName(model),
                     temperature=1.0,
                     cache=cache,
                 )

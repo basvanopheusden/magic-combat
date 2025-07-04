@@ -11,6 +11,7 @@ from typing import Iterable
 from typing import Optional
 from typing import Sequence
 
+from llms.llm import LanguageModelName
 from llms.llm_cache import LLMCache
 from scripts.evaluate_llm_accuracy import evaluate_dataset
 
@@ -53,20 +54,17 @@ def two_proportion_p_value(results1: Sequence[bool], results2: Sequence[bool]) -
 
 async def evaluate_models(
     dataset: str,
-    models: Iterable[str],
     *,
-    temperature: float = 0.2,
     seed: int = 0,
     concurrency: int = 20,
     cache: Optional[LLMCache] = None,
-) -> dict[str, list[bool]]:
+) -> dict[LanguageModelName, list[bool]]:
     """Return per-item correctness for each model in ``models``."""
-    results: dict[str, list[bool]] = {}
-    for model in models:
+    results: dict[LanguageModelName, list[bool]] = {}
+    for model in LanguageModelName:
         item_results = await evaluate_dataset(
             dataset,
             model=model,
-            temperature=temperature,
             seed=seed,
             concurrency=concurrency,
             cache=cache,
@@ -82,8 +80,6 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
     cache = LLMCache(args.cache) if args.cache else None
     results = await evaluate_models(
         args.dataset,
-        args.models,
-        temperature=args.temperature,
         seed=args.seed,
         concurrency=args.concurrency,
         cache=cache,
@@ -100,7 +96,7 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
 
     models = list(results.keys())
     print("\nPairwise p-values:")
-    print("\t" + "\t".join(models))
+    print("\t" + "\t".join(m.value for m in models))
     for m1 in models:
         row = [m1]
         for m2 in models:
@@ -115,8 +111,6 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Create an LLM leaderboard")
     parser.add_argument("dataset", help="Path to dataset JSONL")
-    parser.add_argument("models", nargs="+", help="Model names to evaluate")
-    parser.add_argument("--temperature", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--concurrency", type=int, default=20)
     parser.add_argument("--cache", help="Path to cache file")
