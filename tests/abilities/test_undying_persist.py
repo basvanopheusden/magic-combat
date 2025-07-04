@@ -85,13 +85,19 @@ def test_persist_score_accounts_for_value_drop():
     assert score[1] == pytest.approx(2.5)
 
 
-def test_undying_value_reduced_after_return():
-    """CR 702.92a: Undying returns with a +1/+1 counter reducing value."""
+def test_undying_value_increases_after_return():
+    """CR 702.92a: Undying returns with a counter but that ability isn't counted."""
     atk = CombatCreature("Bear", 3, 3, "A")
     blk = CombatCreature("Phoenix", 2, 2, "B", undying=True)
-    pre = blk.value()
     link_block(atk, blk)
     sim = CombatSimulator([atk], [blk])
     sim.simulate()
     assert blk.plus1_counters == 1
-    assert blk.value() < pre
+    assert blk.value() == pytest.approx(6.0)
+
+
+def test_undying_value_with_counter():
+    """CR 702.92a: Undying exists but is ignored when a counter is present."""
+    creature = CombatCreature("Phoenix", 3, 3, "A", undying=True)
+    creature.plus1_counters = 1
+    assert creature.value() == pytest.approx(8.0)
