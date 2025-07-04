@@ -11,6 +11,7 @@ from google.genai import types as genai_types
 
 from .llm_cache import LLMCache
 
+
 class LanguageModelName(Enum):
     GEMINI_2_5_PRO = "gemini-2.5-pro"
     GEMINI_2_5_FLASH = "gemini-2.5-flash"
@@ -25,11 +26,13 @@ class LanguageModelName(Enum):
     CLAUDE_4_SONNET = "claude-3-sonnet-20240229"
     CLAUDE_4_OPUS = "claude-4-opus-20240229"
 
+
 def get_default_temperature(model: LanguageModelName) -> float:
     """Return the default temperature for the given model."""
     if model == LanguageModelName.O3_PRO:
         return 1.0
     return 0.2
+
 
 async def _call_model_cached(
     prompt: str,

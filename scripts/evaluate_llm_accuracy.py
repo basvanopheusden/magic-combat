@@ -10,23 +10,10 @@ from typing import cast
 from typing import overload
 
 from llms.create_llm_prompt import parse_block_assignments
-from llms.llm import call_anthropic_model
-from llms.llm import call_openai_model
-from llms.llm import call_gemini_model
+from llms.llm import CALL_METHOD_BY_MODEL
 from llms.llm_cache import LLMCache
 from magic_combat.dataset import ReferenceAnswer
 from magic_combat.exceptions import UnparsableLLMOutputError
-
-def get_llm_call_method(model: str):
-    """Return the appropriate LLM call function based on the model name."""
-    if model.startswith("claude"):
-        return call_anthropic_model
-    elif model.startswith("gemini"):
-        return call_gemini_model
-    elif model.startswith("gpt-") or model.startswith("o3-") or model.startswith("o1-"):
-        return call_openai_model
-    else:
-        raise ValueError(f"Unsupported model: {model}. Supported models are Claude, Gemini, and OpenAI.")
 
 
 @overload
@@ -77,7 +64,10 @@ async def evaluate_dataset(
             items.append(json.loads(line))
 
     prompts = [cast(str, item["prompt"]) for item in items]
-    call = get_llm_call_method(model)
+    if model not in CALL_METHOD_BY_MODEL:
+        raise ValueError(f"Unsupported model: {model}")
+    call = CALL_METHOD_BY_MODEL[model]
+
     responses = await call(
         prompts,
         model=model,
