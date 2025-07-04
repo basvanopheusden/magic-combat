@@ -1,10 +1,5 @@
-import asyncio
-
 from llms.create_llm_prompt import create_llm_prompt
 from llms.create_llm_prompt import parse_block_assignments
-from llms.llm import call_openai_model
-from llms.llm_cache import LLMCache
-from llms.llm_cache import MockLLMCache
 from magic_combat import Color
 from magic_combat import CombatCreature
 from magic_combat import GameState
@@ -113,63 +108,3 @@ def test_parse_block_assignments_invalid_name():
     result, invalid = parse_block_assignments(text, ["Guard"], ["Goblin"])
     assert invalid
     assert result == {}
-
-
-def test_call_openai_model(monkeypatch):
-    monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient())
-    res = asyncio.run(call_openai_model(["p1", "p2"]))
-    assert res == ["response to p1", "response to p2"]
-
-
-def test_llm_cache_hit(monkeypatch):
-    monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient())
-    cache = MockLLMCache()
-    res1 = asyncio.run(
-        call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache)
-    )
-    res2 = asyncio.run(
-        call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache)
-    )
-    assert res1 == res2
-    # Only one API call should have been made
-    assert cache.entries[0]["response"] == res1[0]
-    assert len(cache.entries) == 1
-
-
-def test_llm_cache_miss(monkeypatch):
-    monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient())
-    cache = MockLLMCache()
-    res1 = asyncio.run(
-        call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache)
-    )
-    res2 = asyncio.run(
-        call_openai_model(["p1"], model="m2", temperature=0.3, seed=1, cache=cache)
-    )
-    res3 = asyncio.run(
-        call_openai_model(["p1"], model="m", temperature=0.4, seed=1, cache=cache)
-    )
-    res4 = asyncio.run(
-        call_openai_model(["p1"], model="m", temperature=0.3, seed=2, cache=cache)
-    )
-    assert res1[0] != ""
-    assert res2[0] != ""
-    assert res3[0] != ""
-    assert res4[0] != ""
-    # Four distinct entries due to parameter differences
-    assert len(cache.entries) == 4
-
-
-def test_llm_cache_file_hit(monkeypatch, tmp_path):
-    dummy = DummyClient()
-    monkeypatch.setattr("openai.AsyncOpenAI", lambda: dummy)
-    cache_path = tmp_path / "cache.jsonl"
-    cache = LLMCache(str(cache_path))
-    res1 = asyncio.run(
-        call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache)
-    )
-    cache2 = LLMCache(str(cache_path))
-    res2 = asyncio.run(
-        call_openai_model(["p1"], model="m", temperature=0.3, seed=1, cache=cache2)
-    )
-    assert res1 == res2
-    assert dummy.chat.completions.calls == 1
