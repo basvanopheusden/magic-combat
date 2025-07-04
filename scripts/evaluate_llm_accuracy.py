@@ -68,14 +68,18 @@ async def evaluate_dataset(
     call = CALL_METHOD_BY_MODEL[model]
     temperature = get_default_temperature(model)
 
-    responses = await call(
-        prompts,
-        model=model,
-        temperature=temperature,
-        seed=seed,
-        cache=cache,
-        concurrency=concurrency,
-    )
+    try:
+        responses = await call(
+            prompts,
+            model=model,
+            temperature=temperature,
+            seed=seed,
+            cache=cache,
+            concurrency=concurrency,
+        )
+    except Exception as e:
+        print(f"Error calling model {model}: {e}")
+        return 0.0 if not return_item_results else []
 
     results: list[bool] = []
     for item, response in zip(items, responses):
