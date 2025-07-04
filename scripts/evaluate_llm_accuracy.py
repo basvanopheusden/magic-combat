@@ -89,8 +89,10 @@ async def evaluate_dataset(
         atk_names = ref.blocks.values()
         try:
             parsed, _ = parse_block_assignments(response, blk_names, atk_names)
+            print(f"Parsed response: {parsed}")
         except UnparsableLLMOutputError:
             results.append(False)
+            print(f"Unparsable response for prompt: {response}")
             continue
         pred = ReferenceAnswer(blocks=parsed)
         results.append(pred == ref)

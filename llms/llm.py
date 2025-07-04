@@ -160,13 +160,12 @@ async def call_openai_pro_model_single_prompt(
     """Return ``prompt`` response from O3 Pro using the completions API."""
 
     async def _call() -> str:
-        response = await client.completions.create(
+        response = await client.responses.create(
             model=model.value,
-            prompt=prompt,
+            input=prompt,
             temperature=temperature,
-            max_tokens=1024,
         )
-        return (response.choices[0].text or "").strip()
+        return (response.text or "").strip()
 
     return await _call_model_cached(
         prompt,

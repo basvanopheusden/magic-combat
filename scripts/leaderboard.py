@@ -99,9 +99,9 @@ async def evaluate_models(
         models = list(LanguageModelName)
     results: dict[LanguageModelName, list[bool]] = {}
     for model in models:
-        if model in {LanguageModelName.O3_PRO}:
-            # Skip O3 Pro as it is not available through the chat API.
-            continue
+        # if model in {LanguageModelName.O3_PRO}:
+        #     # Skip O3 Pro as it is not available through the chat API.
+        #     continue
         item_results = await evaluate_dataset(
             dataset,
             model=model,
