@@ -64,6 +64,7 @@ def test_evaluate_dataset(monkeypatch, tmp_path):
     assert acc == 1.0
     assert len(cache.entries) == 2
 
+
 def test_evaluate_dataset_return_results(monkeypatch, tmp_path):
     data_path = tmp_path / "data.jsonl"
     items = [
@@ -84,6 +85,7 @@ def test_evaluate_dataset_return_results(monkeypatch, tmp_path):
         )
     )
     assert results == [True, True]
+
 
 def test_evaluate_dataset_unparsable(monkeypatch, tmp_path):
     data_path = tmp_path / "data.jsonl"
