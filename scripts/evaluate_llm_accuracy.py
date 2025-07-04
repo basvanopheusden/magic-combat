@@ -89,9 +89,10 @@ async def evaluate_dataset(
                     )
                 parsed, _ = parse_block_assignments(response, blk_names, atk_names)
                 break
-            except UnparsableLLMOutputError as exc:
+            except UnparsableLLMOutputError:
                 print(
-                    f"Unparseable response for model {model} on scenario {idx + 1}; retrying..."
+                    "Unparseable response for model "
+                    f"{model} on scenario {idx + 1}; retrying..."
                 )
             except Exception as exc:  # pragma: no cover - network failure
                 print(f"Error calling model {model}: {exc}")

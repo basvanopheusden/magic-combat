@@ -53,16 +53,32 @@ Please analyze the combat situation and provide a detailed explanation
 of the best blocking strategy for the defending player.
 The criteria for the best blocking strategy are as follows:
 1. Avoid losing the game.
-2. Maximize the difference in total creature value destroyed (attacker minus defender).
-Value is defined as the sum of the power and toughness of the creatures
-plus 0.5 times the number of abilities they have.
-A creature with defender incurs a -0.5 penalty in this calculation, and
-double strike is counted twice (it's worth 1 instead of 0.5).
+2. Maximize the difference in total creature value destroyed (attacker minus
+   defender). See ``##Creature value calculation`` below for how value is
+   computed.
 3. Maximize the difference in number of creatures destroyed.
 4. Maximize the total mana value of creatures lost.
 5. Minimize life lost.
 6. Minimize poison counters gained.
 Each criterion should only be considered after the previous one resulted in a tie.
+
+##Creature value calculation
+Creature value is the sum of effective power, effective toughness and half the
+number of keyword abilities.
+Count double strike twice so it contributes 1 full point. Subtract 0.5 if the
+creature has defender.
+Persist and undying creatures are special cases:
+- A persist creature with a -1/-1 counter loses the persist ability's value.
+- An undying creature with a +1/+1 counter loses the undying ability but keeps
+  the +1/+1 counter.
+Plus and minus counters modify power and toughness before calculating value and
+cannot reduce a stat below 0.
+Examples:
+- A 2/2 Goblin with first strike has value 4.5.
+- A 1/4 creature with defender has value 4.5 - 0.5 = 4.0.
+- A 2/2 double strike creature has value 6.0.
+- A 3/3 persist creature with one -1/-1 counter has value 4.0.
+- A 3/3 undying creature with a +1/+1 counter has value 8.0.
 
 Please provide your analysis in **exactly three** markdown sections.
 The first section must be called "Analysis" and should contain a detailed explanation
