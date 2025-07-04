@@ -18,10 +18,11 @@ class LanguageModelName(Enum):
     GEMINI_2_0_FLASH = "gemini-2.0-flash"
     GPT_4O = "gpt-4o"
     GPT_4_1 = "gpt-4.1"
+    O4_MINI = "o4-mini-2025-04-16"
     O3 = "o3-2025-04-16"
     O3_PRO = "o3-pro-2025-06-10"
     CLAUDE_3_7_SONNET = "claude-3-7-sonnet-20250219"
-    CLAUDE_3_7_OPUS = "claude-3-7-opus-20250219"
+    CLAUDE_3_5_SONNET = "claude-3-5-sonnet-20241022"
     CLAUDE_4_SONNET = "claude-sonnet-4-20250514"
     CLAUDE_4_OPUS = "claude-opus-4-20250514"
     TEST_M = "m"
@@ -31,7 +32,7 @@ class LanguageModelName(Enum):
 
 def get_default_temperature(model: LanguageModelName) -> float:
     """Return the default temperature for the given model."""
-    if model in {LanguageModelName.O3_PRO, LanguageModelName.O3}:
+    if model in {LanguageModelName.O3_PRO, LanguageModelName.O3, LanguageModelName.O4_MINI}:
         return 1.0
     return 0.2
 
@@ -263,10 +264,11 @@ CALL_METHOD_BY_MODEL = {
     LanguageModelName.GEMINI_2_0_FLASH: call_gemini_model,
     LanguageModelName.GPT_4O: call_openai_model,
     LanguageModelName.GPT_4_1: call_openai_model,
+    LanguageModelName.O4_MINI: call_openai_model,
     LanguageModelName.O3: call_openai_model,
     LanguageModelName.O3_PRO: call_openai_model,
     LanguageModelName.CLAUDE_3_7_SONNET: call_anthropic_model,
-    LanguageModelName.CLAUDE_3_7_OPUS: call_anthropic_model,
+    LanguageModelName.CLAUDE_3_5_SONNET: call_anthropic_model,
     LanguageModelName.CLAUDE_4_SONNET: call_anthropic_model,
     LanguageModelName.CLAUDE_4_OPUS: call_anthropic_model,
     LanguageModelName.TEST_M: call_openai_model,
