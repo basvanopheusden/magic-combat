@@ -124,6 +124,7 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
 
     print(format_accuracy_table(results, n))
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Create an LLM leaderboard")
     parser.add_argument("dataset", help="Path to dataset JSONL")
