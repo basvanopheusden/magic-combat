@@ -9,7 +9,7 @@ import openai
 import together  # type: ignore
 from google import genai
 from google.genai import types as genai_types
-from openai.types.responses import ResponseTextConfig, Response
+from openai.types.responses import Response
 
 from .llm_cache import LLMCache
 
@@ -151,6 +151,7 @@ async def call_openai_model(
     finally:
         await client.close()
 
+
 def get_short_prompt(prompt: str) -> str:
     """Return a short version of the prompt for logging."""
     key_str = "The current game state is as follows:"
@@ -160,6 +161,7 @@ def get_short_prompt(prompt: str) -> str:
         return parts[1].split(rules_str, 1)[0].strip()
     else:
         return prompt.splitlines()[0][:30]
+
 
 async def call_openai_pro_model_single_prompt(
     prompt: str,
