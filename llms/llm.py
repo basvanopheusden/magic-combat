@@ -284,10 +284,7 @@ async def call_anthropic_model_single_prompt(
             temperature=temperature,
             max_tokens=1024,
         )
-        blocks = "".join(
-            block.text for block in response.content  # type: ignore[union-attr]
-        )
-        return blocks.strip()
+        return "".join(getattr(block, "text", "") for block in response.content).strip()
 
     return await _call_model_cached(
         prompt,
