@@ -2,6 +2,7 @@
 
 import asyncio
 
+from llms.llm import LanguageModelName
 from scripts.leaderboard import count_items
 from scripts.leaderboard import evaluate_models
 from scripts.leaderboard import standard_error
@@ -25,11 +26,24 @@ def test_two_proportion_p_value():
     assert p < 0.05
 
 
-async def dummy_evaluate_dataset(path: str, *, model: str = "", **kwargs) -> list[bool]:
-    return {"m1": [True, False], "m2": [True, True]}[model]
+async def dummy_evaluate_dataset(
+    path: str, *, model: LanguageModelName = LanguageModelName.TEST_M1, **kwargs
+) -> list[bool]:
+    return {
+        LanguageModelName.TEST_M1: [True, False],
+        LanguageModelName.TEST_M2: [True, True],
+    }[model]
 
 
 def test_evaluate_models(monkeypatch):
     monkeypatch.setattr("scripts.leaderboard.evaluate_dataset", dummy_evaluate_dataset)
-    res = asyncio.run(evaluate_models("d.jsonl", ["m1", "m2"]))
-    assert res == {"m1": [True, False], "m2": [True, True]}
+    res = asyncio.run(
+        evaluate_models(
+            "d.jsonl",
+            [LanguageModelName.TEST_M1, LanguageModelName.TEST_M2],
+        )
+    )
+    assert res == {
+        LanguageModelName.TEST_M1: [True, False],
+        LanguageModelName.TEST_M2: [True, True],
+    }
