@@ -32,7 +32,11 @@ class LanguageModelName(Enum):
 
 def get_default_temperature(model: LanguageModelName) -> float:
     """Return the default temperature for the given model."""
-    if model in {LanguageModelName.O3_PRO, LanguageModelName.O3, LanguageModelName.O4_MINI}:
+    if model in {
+        LanguageModelName.O3_PRO,
+        LanguageModelName.O3,
+        LanguageModelName.O4_MINI,
+    }:
         return 1.0
     return 0.2
 
@@ -52,9 +56,11 @@ async def _call_model_cached(
     cached = cache.get(prompt, model.value, seed, temperature) if cache else None
     if cached is not None:
         short = prompt.splitlines()[0][:30]
-        print(
-            f"Using cached LLM response for: {short}, {model.value}, seed={seed}, temperature={temperature}"
+        msg = (
+            f"Using cached LLM response for: {short}, {model.value}, "
+            f"seed={seed}, temperature={temperature}"
         )
+        print(msg)
         return cached
 
     async def _run() -> str:
@@ -218,7 +224,10 @@ async def call_anthropic_model_single_prompt(
             temperature=temperature,
             max_tokens=1024,
         )
-        return "".join(block.text for block in response.content).strip()
+        parts: list[str] = []
+        for block in response.content:
+            parts.append(str(getattr(block, "text", "")))
+        return "".join(parts).strip()
 
     return await _call_model_cached(
         prompt,
