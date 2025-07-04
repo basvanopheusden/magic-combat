@@ -62,6 +62,9 @@ async def evaluate_models(
     """Return per-item correctness for each model in ``models``."""
     results: dict[LanguageModelName, list[bool]] = {}
     for model in LanguageModelName:
+        if model == LanguageModelName.O3_PRO:
+            # Skip O3 Pro as it is not available through the chat API.
+            continue
         item_results = await evaluate_dataset(
             dataset,
             model=model,

@@ -28,7 +28,7 @@ class LanguageModelName(Enum):
 
 def get_default_temperature(model: LanguageModelName) -> float:
     """Return the default temperature for the given model."""
-    if model == LanguageModelName.O3_PRO:
+    if model in {LanguageModelName.O3_PRO, LanguageModelName.O3}:
         return 1.0
     return 0.2
 
@@ -48,7 +48,7 @@ async def _call_model_cached(
     cached = cache.get(prompt, model.value, seed, temperature) if cache else None
     if cached is not None:
         short = prompt.splitlines()[0][:30]
-        print(f"Using cached LLM response for: {short}...")
+        print(f"Using cached LLM response for: {short}, {model.value}, seed={seed}, temperature={temperature}")
         return cached
 
     async def _run() -> str:
