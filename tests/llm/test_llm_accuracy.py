@@ -100,7 +100,7 @@ def test_evaluate_dataset_unparsable(monkeypatch, tmp_path):
         for item in items:
             fh.write(json.dumps(item) + "\n")
 
-    responses = ["- B -> A", "gibberish"]
+    responses = ["- B -> A", "gibberish", "None"]
     monkeypatch.setattr("openai.AsyncOpenAI", lambda: DummyClient(responses))
     cache = MockLLMCache()
     acc = asyncio.run(
@@ -108,4 +108,4 @@ def test_evaluate_dataset_unparsable(monkeypatch, tmp_path):
             str(data_path), model=LanguageModelName.TEST_M, concurrency=2, cache=cache
         )
     )
-    assert acc == 0.5
+    assert acc == 1.0

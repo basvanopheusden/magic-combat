@@ -8,6 +8,7 @@ import anthropic
 import openai
 from google import genai
 from google.genai import types as genai_types
+from openai.types.responses import ResponseTextConfig, Response
 
 from .llm_cache import LLMCache
 
@@ -160,12 +161,12 @@ async def call_openai_pro_model_single_prompt(
     """Return ``prompt`` response from O3 Pro using the completions API."""
 
     async def _call() -> str:
-        response = await client.responses.create(
+        response: Response = await client.responses.create(
             model=model.value,
             input=prompt,
             temperature=temperature,
         )
-        return (response.text or "").strip()
+        return (response.output_text or "").strip()
 
     return await _call_model_cached(
         prompt,
@@ -283,10 +284,7 @@ async def call_anthropic_model_single_prompt(
             temperature=temperature,
             max_tokens=1024,
         )
-        blocks = "".join(
-            block.text for block in response.content  # type: ignore[union-attr]
-        )
-        return blocks.strip()
+        return "".join(getattr(block, "text", "") for block in response.content).strip()
 
     return await _call_model_cached(
         prompt,

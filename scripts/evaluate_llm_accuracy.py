@@ -82,18 +82,51 @@ async def evaluate_dataset(
         return 0.0 if not return_item_results else []
 
     results: list[bool] = []
-    for item, response in zip(items, responses):
+    for idx, (item, response) in enumerate(zip(items, responses)):
         ref_data = cast(dict[str, str], item["answer"])
         ref = ReferenceAnswer.model_validate(ref_data)
         blk_names = ref.blocks.keys()
         atk_names = ref.blocks.values()
-        try:
-            parsed, _ = parse_block_assignments(response, blk_names, atk_names)
-            print(f"Parsed response: {parsed}")
-        except UnparsableLLMOutputError:
+        attempts = 0
+        max_attempts = 3
+        while True:
+            try:
+                parsed, _ = parse_block_assignments(response, blk_names, atk_names)
+                break
+            except UnparsableLLMOutputError:
+                attempts += 1
+                if attempts >= max_attempts:
+                    print(
+                        "Warning: unparseable response for item "
+                        f"{idx}; giving up after {max_attempts} attempts"
+                    )
+                    parsed = None
+                    break
+                print(
+                    "Warning: unparseable response for item "
+                    f"{idx}; retrying with new seed"
+                )
+                try:
+                    response = (
+                        await call(
+                            [prompts[idx]],
+                            model=model,
+                            temperature=temperature,
+                            seed=seed + attempts,
+                            cache=cache,
+                            concurrency=concurrency,
+                        )
+                    )[0]
+                except Exception as e:
+                    print(f"Error calling model {model}: {e}")
+                    parsed = None
+                    break
+
+        if parsed is None:
             results.append(False)
             print(f"Unparsable response for prompt: {response}")
             continue
+        print(parsed)
         pred = ReferenceAnswer(blocks=parsed)
         results.append(pred == ref)
 
