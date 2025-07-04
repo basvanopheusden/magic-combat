@@ -32,7 +32,11 @@ class LanguageModelName(Enum):
 
 def get_default_temperature(model: LanguageModelName) -> float:
     """Return the default temperature for the given model."""
-    if model in {LanguageModelName.O3_PRO, LanguageModelName.O3, LanguageModelName.O4_MINI}:
+    if model in {
+        LanguageModelName.O3_PRO,
+        LanguageModelName.O3,
+        LanguageModelName.O4_MINI,
+    }:
         return 1.0
     return 0.2
 
@@ -218,7 +222,7 @@ async def call_anthropic_model_single_prompt(
             temperature=temperature,
             max_tokens=1024,
         )
-        return "".join(block.text for block in response.content).strip()
+        return "".join(getattr(block, "text", "") for block in response.content).strip()
 
     return await _call_model_cached(
         prompt,
