@@ -125,6 +125,8 @@ require the ``openai`` package, which is installed when running ``pip install
 Support for the Anthropic API is also available.  Install the ``anthropic``
 package and set ``ANTHROPIC_API_KEY`` to use models such as
 ``claude-3-sonnet-20240229`` or ``claude-3-opus-20240229``.
+The ``google-genai`` package enables Gemini models when ``GOOGLE_API_KEY``
+is set (or the Vertex AI environment variables are configured).
 
 ``scripts/evaluate_random_combat_scenarios.py`` contacts the model to
 evaluate blocking assignments for randomly generated combat scenarios.  A
