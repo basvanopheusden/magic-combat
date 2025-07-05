@@ -10,6 +10,8 @@ import together  # type: ignore
 from google import genai
 from google.genai import types as genai_types
 from openai.types.responses import Response
+from xai_sdk import chat as xai_chat  # type: ignore
+from xai_sdk.aio.client import Client as XAIClient  # type: ignore
 
 from .llm_cache import LLMCache
 
@@ -30,6 +32,8 @@ class LanguageModelName(Enum):
     DEEPSEEK_R1 = "deepseek-ai/DeepSeek-R1"
     LLAMA_4_MAVERICK = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
     LLAMA_4_SCOUT = "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+    GROK_3 = "grok-3"
+    GROK_2_VISION = "grok-2-vision"
 
 
 def get_default_temperature(model: LanguageModelName) -> float:
@@ -231,6 +235,32 @@ class TogetherLanguageModel(LanguageModel):
         return content.strip()
 
 
+class XAILanguageModel(LanguageModel):
+    def __init__(
+        self,
+        model: LanguageModelName,
+        *,
+        cache: Optional[LLMCache] = None,
+        verbose: bool = False,
+        max_tokens: int = 1024,
+    ) -> None:
+        super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
+        self.client = XAIClient()
+
+    async def _call_api_model(
+        self, prompt: str, *, temperature: float, seed: int, max_tokens: int
+    ) -> str:
+        chat = self.client.chat.create(
+            model=self.model.value,
+            temperature=temperature,
+            seed=seed,
+            max_tokens=max_tokens,
+        )
+        chat.append(xai_chat.user(prompt))
+        response = await chat.sample()
+        return (response.content or "").strip()
+
+
 class MockLanguageModel(LanguageModel):
     """Simple in-memory mock model for tests."""
 
@@ -275,6 +305,8 @@ _MODEL_CLASS_BY_NAME: dict[LanguageModelName, type[LanguageModel]] = {
     LanguageModelName.DEEPSEEK_R1: TogetherLanguageModel,
     LanguageModelName.LLAMA_4_MAVERICK: TogetherLanguageModel,
     LanguageModelName.LLAMA_4_SCOUT: TogetherLanguageModel,
+    LanguageModelName.GROK_3: XAILanguageModel,
+    LanguageModelName.GROK_2_VISION: XAILanguageModel,
 }
 
 

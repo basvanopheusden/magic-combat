@@ -6,6 +6,7 @@ from llms.llm import LanguageModelName
 from llms.llm import MockLanguageModel
 from llms.llm import OpenAILanguageModel
 from llms.llm import TogetherLanguageModel
+from llms.llm import XAILanguageModel
 from llms.llm import build_language_model
 from llms.llm_cache import MockLLMCache
 
@@ -36,6 +37,7 @@ def test_build_language_model_types(monkeypatch):
     monkeypatch.setattr("anthropic.AsyncAnthropic", lambda: object())
     monkeypatch.setattr("google.genai.Client", lambda: object())
     monkeypatch.setattr("together.AsyncTogether", lambda: object())
+    monkeypatch.setattr("llms.llm.XAIClient", lambda: object())
     assert isinstance(
         build_language_model(LanguageModelName.GPT_4O), OpenAILanguageModel
     )
@@ -48,3 +50,4 @@ def test_build_language_model_types(monkeypatch):
     assert isinstance(
         build_language_model(LanguageModelName.DEEPSEEK_R1), TogetherLanguageModel
     )
+    assert isinstance(build_language_model(LanguageModelName.GROK_3), XAILanguageModel)
