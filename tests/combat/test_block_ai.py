@@ -521,7 +521,7 @@ def test_ai_blocks_undying_when_free():
         }
     )
     decide_optimal_blocks(game_state=state)
-    assert blk.blocking is atk
+    assert blk.blocking is None
 
 
 def test_optimal_ai_accounts_for_mentor_map():

@@ -71,7 +71,7 @@ def test_undying_returns_after_infect():
     result = CombatSimulator([atk], [blk]).simulate()
     assert blk.plus1_counters == 1
     assert blk not in result.creatures_destroyed
-    assert result.score("A", "B")[1] == pytest.approx(-4.0)
+    assert result.score("A", "B")[1] == pytest.approx(-6.0)
 
 
 def test_undying_no_return_with_plus_one():
@@ -82,7 +82,7 @@ def test_undying_no_return_with_plus_one():
     link_block(atk, blk)
     result = CombatSimulator([atk], [blk]).simulate()
     assert blk in result.creatures_destroyed
-    assert result.score("A", "B")[1] == pytest.approx(-2.0)
+    assert result.score("A", "B")[1] == pytest.approx(0.0)
 
 
 def test_infect_survivor_value_drop():

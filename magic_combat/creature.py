@@ -241,8 +241,9 @@ class CombatCreature:
         The value is computed as the sum of the creature's effective power and
         toughness plus half the number of keyword abilities it has. Double strike is
         counted twice. Creatures with the ``defender`` ability incur a ``-0.5``
-        penalty. If a creature with persist has a -1/-1 counter it loses ``0.5`` and
-        a creature with undying that has a +1/+1 counter loses ``2.5``.
+        penalty. If a creature with persist has a -1/-1 counter, the persist ability
+        no longer adds value. Likewise, an undying creature with a +1/+1 counter is
+        valued as though it had no undying ability.
         """
 
         positive = sum(1 for attr in _POSITIVE_KEYWORDS if getattr(self, attr, False))
@@ -251,11 +252,12 @@ class CombatCreature:
             positive += 1
         positive += sum(getattr(self, attr, 0) for attr in _STACKABLE_KEYWORDS)
 
-        value = self.effective_power() + self.effective_toughness() + positive / 2
         if self.persist and self.minus1_counters:
-            value -= 0.5
+            positive -= 1
         if self.undying and self.plus1_counters:
-            value -= 2.5
+            positive -= 1
+
+        value = self.effective_power() + self.effective_toughness() + positive / 2
         if self.defender:
             value -= 0.5
         return value
