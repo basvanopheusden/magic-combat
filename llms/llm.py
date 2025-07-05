@@ -27,6 +27,8 @@ class LanguageModelName(Enum):
     CLAUDE_3_5_SONNET = "claude-3-5-sonnet-20241022"
     CLAUDE_4_SONNET = "claude-sonnet-4-20250514"
     CLAUDE_4_OPUS = "claude-opus-4-20250514"
+    CLAUDE_4_SONNET_THINKING = "claude-sonnet-4-20250514-thinking"
+    CLAUDE_4_OPUS_THINKING = "claude-opus-4-20250514-thinking"
     DEEPSEEK_R1 = "deepseek-ai/DeepSeek-R1"
     LLAMA_4_MAVERICK = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
     LLAMA_4_SCOUT = "meta-llama/Llama-4-Scout-17B-16E-Instruct"
@@ -38,6 +40,8 @@ def get_default_temperature(model: LanguageModelName) -> float:
         LanguageModelName.O3_PRO,
         LanguageModelName.O3,
         LanguageModelName.O4_MINI,
+        LanguageModelName.CLAUDE_4_OPUS_THINKING,
+        LanguageModelName.CLAUDE_4_SONNET_THINKING,
     }:
         return 1.0
     return 0.2
@@ -181,7 +185,7 @@ class AnthropicLanguageModel(LanguageModel):
         *,
         cache: Optional[LLMCache] = None,
         verbose: bool = False,
-        max_tokens: int = 1024,
+        max_tokens: int = 8192,
     ) -> None:
         super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
         self.client = anthropic.AsyncAnthropic()
@@ -189,11 +193,14 @@ class AnthropicLanguageModel(LanguageModel):
     async def _call_api_model(
         self, prompt: str, *, temperature: float, seed: int, max_tokens: int
     ) -> str:
+        thinking = self.model.value.endswith("-thinking")
+        thinking_type = "enabled" if thinking else "disabled"
         response = await self.client.messages.create(
-            model=self.model.value,
+            model=self.model.value.removesuffix("-thinking"),
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_tokens=max_tokens,
+            thinking={"type": thinking_type, "budget_tokens": int(max_tokens/2)},
         )
         return "".join(getattr(b, "text", "") for b in response.content).strip()
 
@@ -220,7 +227,6 @@ class TogetherLanguageModel(LanguageModel):
             model=self.model.value,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
-            seed=seed,
             max_tokens=max_tokens,
         )
         choice = response.choices[0]  # type: ignore[index]
@@ -272,6 +278,8 @@ _MODEL_CLASS_BY_NAME: dict[LanguageModelName, type[LanguageModel]] = {
     LanguageModelName.CLAUDE_3_5_SONNET: AnthropicLanguageModel,
     LanguageModelName.CLAUDE_4_SONNET: AnthropicLanguageModel,
     LanguageModelName.CLAUDE_4_OPUS: AnthropicLanguageModel,
+    LanguageModelName.CLAUDE_4_SONNET_THINKING: AnthropicLanguageModel,
+    LanguageModelName.CLAUDE_4_OPUS_THINKING: AnthropicLanguageModel,
     LanguageModelName.DEEPSEEK_R1: TogetherLanguageModel,
     LanguageModelName.LLAMA_4_MAVERICK: TogetherLanguageModel,
     LanguageModelName.LLAMA_4_SCOUT: TogetherLanguageModel,
@@ -283,10 +291,9 @@ def build_language_model(
     *,
     cache: Optional[LLMCache] = None,
     verbose: bool = False,
-    max_tokens: int = 1024,
 ) -> LanguageModel:
     """Instantiate a language model for ``model``."""
     if model not in _MODEL_CLASS_BY_NAME:
         raise ValueError(f"Unsupported model: {model}")
     cls = _MODEL_CLASS_BY_NAME[model]
-    return cls(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
+    return cls(model, cache=cache, verbose=verbose)
