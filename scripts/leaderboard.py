@@ -60,6 +60,7 @@ def format_leaderboard_table(
     n: int,
     elo: dict[LanguageModelName, float],
     elo_err: dict[LanguageModelName, float] | None = None,
+    value_loss: dict[LanguageModelName, float] | None = None,
 ) -> str:
     """Return a formatted leaderboard table with accuracy and Elo ratings."""
     rows: list[list[str]] = []
@@ -71,13 +72,18 @@ def format_leaderboard_table(
             rating_str = f"{elo_rating:.2f}±{elo_err[model]:.2f}"
         else:
             rating_str = f"{elo_rating:.2f}"
-        rows.append([model.value, f"{acc:.3f}±{se:.3f}", rating_str])
+        loss = value_loss[model] if value_loss is not None else 0.0
+        rows.append([model.value, f"{acc:.3f}±{se:.3f}", rating_str, f"{loss:.3f}"])
 
     def sort_key(row: list[str]) -> float:
         return float(row[2].split("±")[0])
 
     rows.sort(key=sort_key, reverse=True)
-    return tabulate(rows, headers=["Model", "Accuracy", "Elo"], tablefmt="github")
+    return tabulate(
+        rows,
+        headers=["Model", "Accuracy", "Elo", "Value Lost"],
+        tablefmt="github",
+    )
 
 
 def format_elo_table(
@@ -187,13 +193,14 @@ async def evaluate_models(
     seed: int = 0,
     concurrency: int = 20,
     cache: Optional[LLMCache] = None,
-) -> dict[LanguageModelName, list[bool]]:
-    """Return per-item correctness for each model in ``models``."""
+) -> tuple[dict[LanguageModelName, list[bool]], dict[LanguageModelName, list[float]]]:
+    """Return per-item correctness and value lost for each model."""
     if models is None:
         models = list(LanguageModelName)
     results: dict[LanguageModelName, list[bool]] = {}
+    losses: dict[LanguageModelName, list[float]] = {}
     for model in models:
-        item_results = await evaluate_dataset(
+        item_results, item_losses = await evaluate_dataset(
             dataset,
             model=model,
             seed=seed,
@@ -202,14 +209,15 @@ async def evaluate_models(
             return_item_results=True,
         )
         results[model] = item_results
-    return results
+        losses[model] = item_losses
+    return results, losses
 
 
 async def run_leaderboard(args: argparse.Namespace) -> None:
     """Execute leaderboard generation using ``args``."""
     n = count_items(args.dataset)
     cache = LLMCache(args.cache) if args.cache else None
-    results = await evaluate_models(
+    results, losses = await evaluate_models(
         args.dataset,
         seed=args.seed,
         concurrency=args.concurrency,
@@ -218,7 +226,8 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
 
     elo = compute_elo_ratings(results)
     elo_err = compute_elo_error_bars(results, seed=args.seed)
-    print(format_leaderboard_table(results, n, elo, elo_err))
+    avg_loss = {m: sum(lst) / len(lst) if lst else 0.0 for m, lst in losses.items()}
+    print(format_leaderboard_table(results, n, elo, elo_err, avg_loss))
     print(format_pvalue_table(results))
 
 

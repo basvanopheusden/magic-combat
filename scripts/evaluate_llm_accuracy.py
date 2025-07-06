@@ -6,6 +6,7 @@ from typing import Any
 from typing import List
 from typing import Literal
 from typing import Optional
+from typing import Tuple
 from typing import cast
 from typing import overload
 
@@ -43,7 +44,7 @@ async def evaluate_dataset(
     cache: Optional[LLMCache] = None,
     return_item_results: Literal[True],
     verbose: bool = False,
-) -> List[bool]:
+) -> Tuple[List[bool], List[float]]:
     ...
 
 
@@ -56,7 +57,7 @@ async def evaluate_dataset(
     cache: Optional[LLMCache] = None,
     return_item_results: bool = False,
     verbose: bool = False,
-) -> float | List[bool]:
+) -> float | Tuple[List[bool], List[float]] | List[bool]:
     """Return accuracy or per-item results for prompts in ``path``."""
     items: List[dict[str, Any]] = []
     with Path(path).open(encoding="utf8") as fh:
@@ -70,7 +71,7 @@ async def evaluate_dataset(
     semaphore = asyncio.Semaphore(concurrency)
     llm = build_language_model(model, cache=cache, verbose=verbose)
 
-    results: List[bool] = await asyncio.gather(
+    results: List[Tuple[bool, float]] = await asyncio.gather(
         *[
             evaluate_single_item(
                 idx,
@@ -84,12 +85,16 @@ async def evaluate_dataset(
             for idx, item in enumerate(items)
         ]
     )
-
     if return_item_results:
-        return results
+        return [r[0] for r in results], [r[1] for r in results]
 
-    correct = sum(results)
+    correct = sum(r[0] for r in results)
     return correct / len(results) if results else 0.0
+
+
+def _encode_mapping(mapping: dict[str, str]) -> str:
+    """Return a stable string key for a block assignment mapping."""
+    return json.dumps(dict(sorted(mapping.items())), sort_keys=True)
 
 
 async def evaluate_single_item(
@@ -102,8 +107,8 @@ async def evaluate_single_item(
     llm: LanguageModel,
     temperature: float = 1.0,
     max_attempts: int = 3,
-) -> bool:
-    """Return ``True`` if ``llm`` answers ``item`` correctly."""
+) -> Tuple[bool, float]:
+    """Return correctness and value lost for ``llm`` on ``item``."""
     prompt = cast(str, item["prompt"])
     ref_data = cast(dict[str, str], item["answer"])
     ref = ReferenceAnswer.model_validate(ref_data)
@@ -135,9 +140,21 @@ async def evaluate_single_item(
             print(f"Error calling model {model}: {exc}")
             break
     if parsed is None:
-        return False
+        return False, 0.0
     pred = ReferenceAnswer(blocks=parsed)
-    return pred == ref
+    correct = pred == ref
+    score_data = cast(dict[str, dict[str, float]], item.get("score", {}))
+    value_lost = 0.0
+    if score_data:
+        pred_key = _encode_mapping(pred.blocks)
+        opt_key = _encode_mapping(ref.blocks)
+        opt_score = score_data.get(opt_key, {"aggregate": 0.0}).get("aggregate", 0.0)
+        pred_score = score_data.get(
+            pred_key,
+            {"aggregate": min(v.get("aggregate", 0.0) for v in score_data.values())},
+        ).get("aggregate", 0.0)
+        value_lost = opt_score - pred_score
+    return correct, value_lost
 
 
 def main() -> None:

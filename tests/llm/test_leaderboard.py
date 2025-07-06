@@ -31,16 +31,16 @@ def test_two_proportion_p_value():
 
 async def dummy_evaluate_dataset(
     path: str, *, model: LanguageModelName = LanguageModelName.GPT_4O, **kwargs
-) -> list[bool]:
+) -> tuple[list[bool], list[float]]:
     return {
-        LanguageModelName.GPT_4O: [True, False],
-        LanguageModelName.GPT_4_1: [True, True],
+        LanguageModelName.GPT_4O: ([True, False], [0.0, -1.0]),
+        LanguageModelName.GPT_4_1: ([True, True], [0.0, 0.0]),
     }[model]
 
 
 def test_evaluate_models(monkeypatch):
     monkeypatch.setattr("scripts.leaderboard.evaluate_dataset", dummy_evaluate_dataset)
-    res = asyncio.run(
+    res, losses = asyncio.run(
         evaluate_models(
             "d.jsonl",
             [LanguageModelName.GPT_4O, LanguageModelName.GPT_4_1],
@@ -50,6 +50,7 @@ def test_evaluate_models(monkeypatch):
         LanguageModelName.GPT_4O: [True, False],
         LanguageModelName.GPT_4_1: [True, True],
     }
+    assert losses[LanguageModelName.GPT_4O] == [0.0, -1.0]
 
 
 def test_format_leaderboard_table():
@@ -59,7 +60,8 @@ def test_format_leaderboard_table():
     }
     ratings = compute_elo_ratings(res)
     err = compute_elo_error_bars(res, reps=5, seed=0)
-    table = format_leaderboard_table(res, 2, ratings, err)
+    loss = {LanguageModelName.GPT_4O: -0.5, LanguageModelName.GPT_4_1: 0.0}
+    table = format_leaderboard_table(res, 2, ratings, err, loss)
     assert "Model" in table and "Elo" in table
 
 

@@ -1,4 +1,3 @@
-import os
 from abc import ABC
 from abc import abstractmethod
 from enum import Enum
@@ -206,7 +205,10 @@ class AnthropicLanguageModel(LanguageModel):
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_tokens=max_tokens,
-            thinking={"type": thinking_type, "budget_tokens": int(max_tokens / 2)},
+            thinking={
+                "type": thinking_type,
+                "budget_tokens": int(max_tokens / 2),
+            },  # pyright: ignore[reportArgumentType]
         )
         return "".join(getattr(b, "text", "") for b in response.content).strip()
 

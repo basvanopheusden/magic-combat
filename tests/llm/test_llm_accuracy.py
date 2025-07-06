@@ -47,7 +47,7 @@ def test_evaluate_dataset_return_results(monkeypatch, tmp_path):
             fh.write(json.dumps(item) + "\n")
 
     _patch_build(monkeypatch, ["- B -> A", "None"])
-    results = asyncio.run(
+    results, losses = asyncio.run(
         evaluate_dataset(
             str(data_path),
             model=LanguageModelName.GPT_4O,
@@ -56,6 +56,7 @@ def test_evaluate_dataset_return_results(monkeypatch, tmp_path):
         )
     )
     assert results == [True, True]
+    assert losses == [0.0, 0.0]
 
 
 def test_evaluate_dataset_unparsable(monkeypatch, tmp_path):

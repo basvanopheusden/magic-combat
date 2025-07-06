@@ -6,6 +6,7 @@ import argparse
 import json
 import random
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 
@@ -14,7 +15,15 @@ from magic_combat import build_value_map
 from magic_combat import compute_card_statistics
 from magic_combat import generate_random_scenario
 from magic_combat import load_cards
+from magic_combat.block_utils import evaluate_block_assignment
+from magic_combat.blocking_ai import (
+    _get_all_assignments,  # pyright: ignore[reportPrivateUsage]
+)
+from magic_combat.blocking_ai import (
+    _get_block_options,  # pyright: ignore[reportPrivateUsage]
+)
 from magic_combat.dataset import ReferenceAnswer
+from magic_combat.limits import IterationCounter
 from magic_combat.text_utils import summarize_creature
 
 
@@ -25,6 +34,11 @@ def _dump(path: Path, data: list[dict[str, object]]) -> None:
         for item in data:
             json.dump(item, fh)
             fh.write("\n")
+
+
+def _encode_mapping(mapping: dict[str, str]) -> str:
+    """Return a stable string key for a block assignment mapping."""
+    return json.dumps(dict(sorted(mapping.items())), sort_keys=True)
 
 
 def main() -> None:
@@ -54,7 +68,7 @@ def main() -> None:
 
     items: list[dict[str, object]] = []
     for i in range(args.n):
-        state, _, _, opt_map, _ = next(scenario_generator)
+        state, provoke_map, mentor_map, opt_map, _ = next(scenario_generator)
         prompt = create_llm_prompt(state)
         attackers = list(state.players["A"].creatures)
         blockers = list(state.players["B"].creatures)
@@ -64,7 +78,70 @@ def main() -> None:
             if a_idx is not None
         }
         answer = ReferenceAnswer.from_state(mapping, state)
-        items.append({"prompt": prompt, "answer": answer.model_dump()})
+
+        score_map: dict[str, dict[str, object]] = {}
+        options = _get_block_options(state, provoke_map)
+        assignments = _get_all_assignments(options)
+        best_score: tuple[int, float, int, int, int, int] | None = None
+
+        for assignment in assignments:
+            block_dict = {
+                blockers[idx]: attackers[a]
+                for idx, a in enumerate(assignment)
+                if a is not None
+            }
+            result, _ = evaluate_block_assignment(
+                block_dict,
+                state,
+                IterationCounter(int(1e4)),
+                provoke_map=provoke_map,
+                mentor_map=mentor_map,
+            )
+            if result is None:
+                continue
+            score_vec = result.score("A", "B")
+            if best_score is None or score_vec < best_score:
+                best_score = score_vec
+            name_map = {
+                blockers[idx].name: attackers[a].name
+                for idx, a in enumerate(assignment)
+                if a is not None
+            }
+            key = _encode_mapping(name_map)
+            score_map[key] = {
+                "outcome": {
+                    "lost": score_vec[0],
+                    "value_diff": score_vec[1],
+                    "count_diff": score_vec[2],
+                    "mana_diff": score_vec[3],
+                    "life_diff": score_vec[4],
+                    "poison_diff": score_vec[5],
+                }
+            }
+
+        if best_score is not None:
+            for data in score_map.values():
+                sc = cast(dict[str, float | int], data["outcome"])
+                score_vec = (
+                    int(sc["lost"]),
+                    float(sc["value_diff"]),
+                    int(sc["count_diff"]),
+                    int(sc["mana_diff"]),
+                    int(sc["life_diff"]),
+                    int(sc["poison_diff"]),
+                )
+                aggregate = -sum(
+                    abs(float(s) - float(b)) for s, b in zip(score_vec, best_score)
+                )
+                data["aggregate"] = aggregate
+
+        items.append(
+            {
+                "prompt": prompt,
+                "answer": answer.model_dump(),
+                "score": score_map,
+            }
+        )
         scenario_info = (
             f"Generated scenario {i + 1}/{args.n} with "
             f"{len(attackers)} attackers and {len(blockers)} blockers"
