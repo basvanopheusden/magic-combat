@@ -10,7 +10,8 @@ from typing import cast
 from typing import overload
 
 from llms.create_llm_prompt import parse_block_assignments
-from llms.llm import LanguageModelName, LanguageModel
+from llms.llm import LanguageModel
+from llms.llm import LanguageModelName
 from llms.llm import build_language_model
 from llms.llm import get_default_temperature
 from llms.llm_cache import LLMCache
@@ -45,50 +46,6 @@ async def evaluate_dataset(
 ) -> List[bool]:
     ...
 
-
-async def evaluate_single_item(
-    idx: int,
-    item: dict[str, Any],
-    *,
-    model: LanguageModelName = LanguageModelName.GPT_4O,
-    seed: int = 0,
-    semaphore: asyncio.Semaphore,
-    llm: LanguageModel,
-    temperature: float = 1.0,
-    max_attempts=3
-):
-    prompt = cast(str, item["prompt"])
-    ref_data = cast(dict[str, str], item["answer"])
-    ref = ReferenceAnswer.model_validate(ref_data)
-    blk_names = ref.blocks.keys()
-    atk_names = ref.blocks.values()
-    parsed = None
-    for attempt in range(max_attempts):
-        try:
-            async with semaphore:
-                print(f"Calling model {model} for scenario {idx + 1} (attempt {attempt + 1})")
-                response = await llm.call(
-                    prompt,
-                    temperature=temperature,
-                    seed=seed + attempt,
-                )
-                print(f"Response for scenario {idx + 1}, attempt {attempt + 1}")
-
-            parsed, _ = parse_block_assignments(response, blk_names, atk_names)
-            break
-        except UnparsableLLMOutputError as exc:
-            print(
-                f"Unparseable response for model {model} on scenario {idx + 1}; retrying..."
-            )
-        except Exception as exc:  # pragma: no cover - network failure
-            print(f"Error calling model {model}: {exc}")
-            break
-    if parsed is None:
-        print(f"Failed to parse response for scenario {idx + 1} after {max_attempts} attempts")
-        return False
-    pred = ReferenceAnswer(blocks=parsed)
-    return pred == ref
-
 async def evaluate_dataset(
     path: str,
     *,
@@ -112,25 +69,74 @@ async def evaluate_dataset(
     semaphore = asyncio.Semaphore(concurrency)
     llm = build_language_model(model, cache=cache, verbose=verbose)
 
-    results: List[bool] = await asyncio.gather(*[
-        evaluate_single_item(
-            idx,
-            item,
-            model=model,
-            seed=seed,
-            semaphore=semaphore,
-            llm=llm,
-            temperature=temperature,
-        )
-        for idx, item in enumerate(items)
-    ])
-
+    results: List[bool] = await asyncio.gather(
+        *[
+            evaluate_single_item(
+                idx,
+                item,
+                model=model,
+                seed=seed,
+                semaphore=semaphore,
+                llm=llm,
+                temperature=temperature,
+            )
+            for idx, item in enumerate(items)
+        ]
+    )
 
     if return_item_results:
         return results
 
     correct = sum(results)
     return correct / len(results) if results else 0.0
+
+
+async def evaluate_single_item(
+    idx: int,
+    item: dict[str, Any],
+    *,
+    model: LanguageModelName = LanguageModelName.GPT_4O,
+    seed: int = 0,
+    semaphore: asyncio.Semaphore,
+    llm: LanguageModel,
+    temperature: float = 1.0,
+    max_attempts=3,
+) -> bool:
+    """Return ``True`` if ``llm`` answers ``item`` correctly."""
+    prompt = cast(str, item["prompt"])
+    ref_data = cast(dict[str, str], item["answer"])
+    ref = ReferenceAnswer.model_validate(ref_data)
+    blk_names = ref.blocks.keys()
+    atk_names = ref.blocks.values()
+    parsed = None
+    for attempt in range(max_attempts):
+        try:
+            async with semaphore:
+                print(
+                    f"Calling model {model} for scenario {idx + 1} "
+                    f"(attempt {attempt + 1})"
+                )
+                response = await llm.call(
+                    prompt,
+                    temperature=temperature,
+                    seed=seed + attempt,
+                )
+                print(f"Response for scenario {idx + 1}, " f"attempt {attempt + 1}")
+
+            parsed, _ = parse_block_assignments(response, blk_names, atk_names)
+            break
+        except UnparsableLLMOutputError:
+            print(
+                f"Unparseable response for model {model} on scenario "
+                f"{idx + 1}; retrying..."
+            )
+        except Exception as exc:  # pragma: no cover - network failure
+            print(f"Error calling model {model}: {exc}")
+            break
+    if parsed is None:
+        return False
+    pred = ReferenceAnswer(blocks=parsed)
+    return pred == ref
 
 
 def main() -> None:

@@ -201,12 +201,12 @@ class AnthropicLanguageModel(LanguageModel):
     ) -> str:
         thinking = self.model.value.endswith("-thinking")
         thinking_type = "enabled" if thinking else "disabled"
-        response = await self.client.messages.create(
+        response = await self.client.messages.create(  # type: ignore[call-overload]
             model=self.model.value.removesuffix("-thinking"),
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_tokens=max_tokens,
-            thinking={"type": thinking_type, "budget_tokens": int(max_tokens/2)},
+            thinking={"type": thinking_type, "budget_tokens": int(max_tokens / 2)},
         )
         return "".join(getattr(b, "text", "") for b in response.content).strip()
 

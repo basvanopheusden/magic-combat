@@ -1,9 +1,11 @@
 import asyncio
 
 from llms.llm import LanguageModelName
+from scripts.leaderboard import compute_elo_ratings
 from scripts.leaderboard import count_items
 from scripts.leaderboard import evaluate_models
 from scripts.leaderboard import format_accuracy_table
+from scripts.leaderboard import format_elo_table
 from scripts.leaderboard import format_pvalue_table
 from scripts.leaderboard import standard_error
 from scripts.leaderboard import two_proportion_p_value
@@ -65,3 +67,28 @@ def test_format_pvalue_table():
     }
     table = format_pvalue_table(res)
     assert LanguageModelName.GPT_4O.value in table
+
+
+def test_compute_elo_ratings():
+    res = {
+        LanguageModelName.GPT_4O: [True, True],
+        LanguageModelName.GPT_4_1: [True, False],
+        LanguageModelName.O3: [False, False],
+    }
+    ratings = compute_elo_ratings(res)
+    assert (
+        ratings[LanguageModelName.GPT_4O]
+        > ratings[LanguageModelName.GPT_4_1]
+        > ratings[LanguageModelName.O3]
+    )
+
+
+def test_format_elo_table():
+    res = {
+        LanguageModelName.GPT_4O: [True, True],
+        LanguageModelName.GPT_4_1: [True, False],
+        LanguageModelName.O3: [False, False],
+    }
+    ratings = compute_elo_ratings(res)
+    table = format_elo_table(ratings)
+    assert "Elo" in table and LanguageModelName.GPT_4O.value in table
