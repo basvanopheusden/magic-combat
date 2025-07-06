@@ -129,25 +129,10 @@ Support for xAI Grok models is available as well. Install the ``xai-sdk``
 package and set ``XAI_API_KEY`` to authenticate when using models like
 ``grok-3``.
 
-``scripts/evaluate_random_combat_scenarios.py`` contacts the model to
-evaluate blocking assignments for randomly generated combat scenarios.  A
-typical invocation looks like this:
+``scripts/investigate_scenario.py`` prints a randomly generated combat
+scenario and compares the simple and optimal AI block decisions.  It can be
+invoked with no API access required:
 
 ```bash
-OPENAI_API_KEY=<your-key> \
-    python scripts/evaluate_random_combat_scenarios.py -n 3 \
-    --cards data/cards.json
+python scripts/investigate_scenario.py --cards data/cards.json
 ```
-
-To use an Anthropic model instead, set ``ANTHROPIC_API_KEY`` and pass the
-``--model`` option.  For example:
-
-```bash
-ANTHROPIC_API_KEY=<your-key> \
-    python scripts/evaluate_random_combat_scenarios.py -n 3 \
-    --cards data/cards.json \
-    --model claude-3-sonnet-20240229
-```
-
-The script will generate scenarios, send them to the model and print the
-results to the console.
