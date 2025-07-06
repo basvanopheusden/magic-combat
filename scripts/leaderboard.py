@@ -53,21 +53,22 @@ def two_proportion_p_value(results1: Sequence[bool], results2: Sequence[bool]) -
     return p
 
 
-def format_accuracy_table(
+def format_table(
     results: dict[LanguageModelName, list[bool]],
     n: int,
+    elo: dict[LanguageModelName, float] = None,
 ) -> str:
     """Return a formatted accuracy table."""
-    sortable = [
-        (model, sum(vals) / len(vals) if vals else 0.0)
-        for model, vals in results.items()
-    ]
+    models = list(results.keys())
+    assert set(results.keys()) == set(elo.keys())
     rows = []
-    for model, acc in sorted(sortable, key=lambda x: x[1], reverse=True):
+    for model in models:
+        acc = sum(results[model]) / n if n else 0.0
         se = standard_error(acc, n)
-        rows.append([model.value, f"{acc:.3f}", f"{se:.3f}"])
-    return tabulate(rows, headers=["Model", "Accuracy", "StdErr"], tablefmt="github")
-
+        elo_rating = elo[model]
+        rows.append([model.value, f"{acc:.3f}", f"{elo_rating:.2f}"])
+    rows = sorted(rows, key=lambda x: float(x[2]), reverse=True)
+    return tabulate(rows, headers=["Model", "Accuracy", "Elo"], tablefmt="github")
 
 def format_pvalue_table(results: dict[LanguageModelName, list[bool]]) -> str:
     """Return a formatted pairwise p-values table."""
@@ -90,7 +91,7 @@ def compute_elo_ratings(
     results: dict[LanguageModelName, list[bool]],
     *,
     base: float = 1000.0,
-    k: float = 32.0,
+    k: float = 5.0,
 ) -> dict[LanguageModelName, float]:
     """Return Elo ratings computed from ``results``.
 
@@ -118,14 +119,6 @@ def compute_elo_ratings(
                 ratings[m2] += k * (s2 - e2)
 
     return ratings
-
-
-def format_elo_table(ratings: dict[LanguageModelName, float]) -> str:
-    """Return a formatted Elo ratings table."""
-    rows = [(model.value, f"{elo:.1f}") for model, elo in ratings.items()]
-    rows.sort(key=lambda x: float(x[1]), reverse=True)
-    return tabulate(rows, headers=["Model", "Elo"], tablefmt="github")
-
 
 async def evaluate_models(
     dataset: str,
@@ -163,10 +156,8 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
         cache=cache,
     )
 
-    print(format_accuracy_table(results, n))
     elo = compute_elo_ratings(results)
-    print()
-    print(format_elo_table(elo))
+    print(format_table(results, n, elo))
 
 
 def main() -> None:
