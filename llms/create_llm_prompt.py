@@ -63,11 +63,11 @@ The criteria for the best blocking strategy are as follows:
 Each criterion should only be considered after the previous one resulted in a tie.
 
 ##Creature value calculation
-Creature value is the sum of effective power, effective toughness and half the
-number of keyword abilities.
-Count double strike twice so it contributes 1 full point. Subtract 0.5 if the
-creature has defender.
-Persist and undying creatures are special cases:
+Creature value equals effective power plus effective toughness plus half a
+point for every keyword ability. Double strike counts as two abilities so it
+adds a full point. Each instance of stackable abilities like flanking or
+exalted counts separately. Subtract 0.5 if the creature has defender. Persist
+and undying are special cases:
 - A persist creature with a -1/-1 counter loses the persist ability's value.
 - An undying creature with a +1/+1 counter loses the undying ability but keeps
   the +1/+1 counter.
@@ -75,10 +75,14 @@ Plus and minus counters modify power and toughness before calculating value and
 cannot reduce a stat below 0.
 Examples:
 - A 2/2 Goblin with first strike has value 4.5.
-- A 1/4 creature with defender has value 4.5 - 0.5 = 4.0.
-- A 2/2 double strike creature has value 6.0.
+- A 1/4 creature with defender has value 4.5.
+- A 2/2 double strike creature has value 5.0.
+- A 1/1 flier with two +1/+1 counters has value 6.5.
 - A 3/3 persist creature with one -1/-1 counter has value 4.0.
 - A 3/3 undying creature with a +1/+1 counter has value 8.0.
+- A 3/3 Angel with flying, vigilance, first strike, lifelink and trample has
+  value 8.5.
+- A 2/2 creature with flanking 2 has value 5.0.
 
 Please provide your analysis in **exactly three** markdown sections.
 The first section must be called "Analysis" and should contain a detailed explanation
