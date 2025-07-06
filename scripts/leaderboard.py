@@ -53,22 +53,28 @@ def two_proportion_p_value(results1: Sequence[bool], results2: Sequence[bool]) -
     return p
 
 
-def format_table(
+def format_leaderboard_table(
     results: dict[LanguageModelName, list[bool]],
     n: int,
-    elo: dict[LanguageModelName, float] = None,
+    elo: dict[LanguageModelName, float],
 ) -> str:
-    """Return a formatted accuracy table."""
-    models = list(results.keys())
-    assert set(results.keys()) == set(elo.keys())
-    rows = []
-    for model in models:
-        acc = sum(results[model]) / n if n else 0.0
+    """Return a formatted leaderboard table with accuracy and Elo ratings."""
+    rows: list[list[str]] = []
+    for model, model_results in results.items():
+        acc = sum(model_results) / n if n else 0.0
         se = standard_error(acc, n)
         elo_rating = elo[model]
-        rows.append([model.value, f"{acc:.3f}", f"{elo_rating:.2f}"])
-    rows = sorted(rows, key=lambda x: float(x[2]), reverse=True)
+        rows.append([model.value, f"{acc:.3f}±{se:.3f}", f"{elo_rating:.2f}"])
+    rows.sort(key=lambda x: float(x[2]), reverse=True)
     return tabulate(rows, headers=["Model", "Accuracy", "Elo"], tablefmt="github")
+
+
+def format_elo_table(elo: dict[LanguageModelName, float]) -> str:
+    """Return a formatted Elo ratings table."""
+    rows = [[model.value, f"{rating:.2f}"] for model, rating in elo.items()]
+    rows.sort(key=lambda r: float(r[1]), reverse=True)
+    return tabulate(rows, headers=["Model", "Elo"], tablefmt="github")
+
 
 def format_pvalue_table(results: dict[LanguageModelName, list[bool]]) -> str:
     """Return a formatted pairwise p-values table."""
@@ -120,6 +126,7 @@ def compute_elo_ratings(
 
     return ratings
 
+
 async def evaluate_models(
     dataset: str,
     models: Sequence[LanguageModelName] | None = None,
@@ -157,7 +164,8 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
     )
 
     elo = compute_elo_ratings(results)
-    print(format_table(results, n, elo))
+    print(format_leaderboard_table(results, n, elo))
+    print(format_pvalue_table(results))
 
 
 def main() -> None:
