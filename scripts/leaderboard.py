@@ -6,10 +6,12 @@ from __future__ import annotations
 import argparse
 import asyncio
 import math
+import random
 from pathlib import Path
 from typing import Optional
 from typing import Sequence
 
+import numpy as np
 from tabulate import tabulate
 
 from llms.llm import LanguageModelName
@@ -57,6 +59,7 @@ def format_leaderboard_table(
     results: dict[LanguageModelName, list[bool]],
     n: int,
     elo: dict[LanguageModelName, float],
+    elo_err: dict[LanguageModelName, float] | None = None,
 ) -> str:
     """Return a formatted leaderboard table with accuracy and Elo ratings."""
     rows: list[list[str]] = []
@@ -64,15 +67,36 @@ def format_leaderboard_table(
         acc = sum(model_results) / n if n else 0.0
         se = standard_error(acc, n)
         elo_rating = elo[model]
-        rows.append([model.value, f"{acc:.3f}±{se:.3f}", f"{elo_rating:.2f}"])
-    rows.sort(key=lambda x: float(x[2]), reverse=True)
+        if elo_err is not None:
+            rating_str = f"{elo_rating:.2f}±{elo_err[model]:.2f}"
+        else:
+            rating_str = f"{elo_rating:.2f}"
+        rows.append([model.value, f"{acc:.3f}±{se:.3f}", rating_str])
+
+    def sort_key(row: list[str]) -> float:
+        return float(row[2].split("±")[0])
+
+    rows.sort(key=sort_key, reverse=True)
     return tabulate(rows, headers=["Model", "Accuracy", "Elo"], tablefmt="github")
 
 
-def format_elo_table(elo: dict[LanguageModelName, float]) -> str:
+def format_elo_table(
+    elo: dict[LanguageModelName, float],
+    elo_err: dict[LanguageModelName, float] | None = None,
+) -> str:
     """Return a formatted Elo ratings table."""
-    rows = [[model.value, f"{rating:.2f}"] for model, rating in elo.items()]
-    rows.sort(key=lambda r: float(r[1]), reverse=True)
+    rows: list[list[str]] = []
+    for model, rating in elo.items():
+        if elo_err is not None:
+            rating_str = f"{rating:.2f}±{elo_err[model]:.2f}"
+        else:
+            rating_str = f"{rating:.2f}"
+        rows.append([model.value, rating_str])
+
+    def sort_key(row: list[str]) -> float:
+        return float(row[1].split("±")[0])
+
+    rows.sort(key=sort_key, reverse=True)
     return tabulate(rows, headers=["Model", "Elo"], tablefmt="github")
 
 
@@ -127,6 +151,35 @@ def compute_elo_ratings(
     return ratings
 
 
+def compute_elo_error_bars(
+    results: dict[LanguageModelName, list[bool]],
+    *,
+    base: float = 1000.0,
+    k: float = 5.0,
+    reps: int = 100,
+    seed: int | None = None,
+) -> dict[LanguageModelName, float]:
+    """Return standard deviation of Elo ratings via bootstrap.
+
+    ``reps`` determines the number of bootstrap shuffles. ``seed`` controls
+    the randomization.
+    """
+    models = list(results.keys())
+    n = len(next(iter(results.values()))) if results else 0
+    rng = random.Random(seed)
+    samples: dict[LanguageModelName, list[float]] = {m: [] for m in models}
+
+    indices = list(range(n))
+    for _ in range(reps):
+        rng.shuffle(indices)
+        shuffled = {m: [results[m][i] for i in indices] for m in models}
+        ratings = compute_elo_ratings(shuffled, base=base, k=k)
+        for m in models:
+            samples[m].append(ratings[m])
+
+    return {m: float(np.std(vals, ddof=1)) for m, vals in samples.items()}
+
+
 async def evaluate_models(
     dataset: str,
     models: Sequence[LanguageModelName] | None = None,
@@ -164,7 +217,8 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
     )
 
     elo = compute_elo_ratings(results)
-    print(format_leaderboard_table(results, n, elo))
+    elo_err = compute_elo_error_bars(results, seed=args.seed)
+    print(format_leaderboard_table(results, n, elo, elo_err))
     print(format_pvalue_table(results))
 
 
