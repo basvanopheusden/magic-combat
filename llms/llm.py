@@ -253,8 +253,7 @@ class XAILanguageModel(LanguageModel):
         max_tokens: int = 8192,
     ) -> None:
         super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
-        api_key = os.getenv("XAI_API_KEY")
-        self.client = XAIClient(api_key=api_key) if api_key is not None else XAIClient()
+        self.client = XAIClient()
 
     async def _call_api_model(
         self, prompt: str, *, temperature: float, seed: int, max_tokens: int
