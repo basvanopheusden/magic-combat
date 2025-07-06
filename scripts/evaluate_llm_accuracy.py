@@ -84,6 +84,7 @@ async def evaluate_single_item(
             print(f"Error calling model {model}: {exc}")
             break
     if parsed is None:
+        print(f"Failed to parse response for scenario {idx + 1} after {max_attempts} attempts")
         return False
     pred = ReferenceAnswer(blocks=parsed)
     return pred == ref

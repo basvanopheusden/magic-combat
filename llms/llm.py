@@ -1,3 +1,4 @@
+import os
 from abc import ABC
 from abc import abstractmethod
 from enum import Enum
@@ -35,7 +36,8 @@ class LanguageModelName(Enum):
     LLAMA_4_MAVERICK = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
     LLAMA_4_SCOUT = "meta-llama/Llama-4-Scout-17B-16E-Instruct"
     GROK_3 = "grok-3"
-    GROK_2_VISION = "grok-2-vision"
+    GROK_3_MINI = "grok-3-mini"
+    QWEN_3_235B = "Qwen/Qwen3-235B-A22B-fp8-tput"
 
 
 def get_default_temperature(model: LanguageModelName) -> float:
@@ -70,7 +72,7 @@ class LanguageModel(ABC):
         *,
         cache: Optional[LLMCache] = None,
         verbose: bool = False,
-        max_tokens: int = 1024,
+        max_tokens: int = 8192,
     ) -> None:
         self.model = model
         self.cache = cache
@@ -127,7 +129,7 @@ class OpenAILanguageModel(LanguageModel):
         *,
         cache: Optional[LLMCache] = None,
         verbose: bool = False,
-        max_tokens: int = 1024,
+        max_tokens: int = 8192,
     ) -> None:
         super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
         self.client = openai.AsyncOpenAI()
@@ -165,7 +167,7 @@ class GeminiLanguageModel(LanguageModel):
         *,
         cache: Optional[LLMCache] = None,
         verbose: bool = False,
-        max_tokens: int = 1024,
+        max_tokens: int = 8192,
     ) -> None:
         super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
         self.client = genai.Client()
@@ -219,7 +221,7 @@ class TogetherLanguageModel(LanguageModel):
         *,
         cache: Optional[LLMCache] = None,
         verbose: bool = False,
-        max_tokens: int = 1024,
+        max_tokens: int = 8192,
     ) -> None:
         super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
         self.client = together.AsyncTogether()
@@ -248,22 +250,33 @@ class XAILanguageModel(LanguageModel):
         *,
         cache: Optional[LLMCache] = None,
         verbose: bool = False,
-        max_tokens: int = 1024,
+        max_tokens: int = 8192,
     ) -> None:
         super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
-        self.client = XAIClient()
+        self.client = XAIClient(api_key=os.getenv("XAI_API_KEY"))
 
     async def _call_api_model(
         self, prompt: str, *, temperature: float, seed: int, max_tokens: int
     ) -> str:
-        chat = self.client.chat.create(
-            model=self.model.value,
-            temperature=temperature,
-            seed=seed,
-            max_tokens=max_tokens,
-        )
+        if self.model== LanguageModelName.GROK_3_MINI:
+            max_tokens = 32768
+            chat = self.client.chat.create(
+                model=self.model.value,
+                temperature=temperature,
+                seed=seed + 1,  # XAI seeds must be > 0
+                max_tokens=max_tokens,
+                reasoning_effort="high"
+            )
+        else:
+            chat = self.client.chat.create(
+                model=self.model.value,
+                temperature=temperature,
+                seed=seed+1, # XAI seeds must be > 0
+                max_tokens=max_tokens,
+            )
         chat.append(xai_chat.user(prompt))
         response = await chat.sample()
+        # print("XAI response:", response)
         return (response.content or "").strip()
 
 
@@ -276,7 +289,7 @@ class MockLanguageModel(LanguageModel):
         *,
         cache: Optional[LLMCache] = None,
         verbose: bool = False,
-        max_tokens: int = 1024,
+        max_tokens: int = 8192,
     ) -> None:
         super().__init__(
             LanguageModelName.GPT_4O,
@@ -314,7 +327,8 @@ _MODEL_CLASS_BY_NAME: dict[LanguageModelName, type[LanguageModel]] = {
     LanguageModelName.LLAMA_4_MAVERICK: TogetherLanguageModel,
     LanguageModelName.LLAMA_4_SCOUT: TogetherLanguageModel,
     LanguageModelName.GROK_3: XAILanguageModel,
-    LanguageModelName.GROK_2_VISION: XAILanguageModel,
+    LanguageModelName.GROK_3_MINI: XAILanguageModel,
+    LanguageModelName.QWEN_3_235B: TogetherLanguageModel,
 }
 
 
