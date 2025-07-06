@@ -86,6 +86,47 @@ def format_pvalue_table(results: dict[LanguageModelName, list[bool]]) -> str:
     return tabulate(table_rows, headers=headers, tablefmt="github")
 
 
+def compute_elo_ratings(
+    results: dict[LanguageModelName, list[bool]],
+    *,
+    base: float = 1000.0,
+    k: float = 32.0,
+) -> dict[LanguageModelName, float]:
+    """Return Elo ratings computed from ``results``.
+
+    ``results`` maps each model to a list of per-item correctness values.
+    All lists must have equal length.
+    """
+    models = list(results.keys())
+    n = len(next(iter(results.values()))) if results else 0
+    ratings = {m: float(base) for m in models}
+
+    for idx in range(n):
+        for i, m1 in enumerate(models):
+            for m2 in models[i + 1 :]:
+                r1 = results[m1][idx]
+                r2 = results[m2][idx]
+                if r1 == r2:
+                    s1 = s2 = 0.5
+                elif r1:
+                    s1, s2 = 1.0, 0.0
+                else:
+                    s1, s2 = 0.0, 1.0
+                e1 = 1 / (1 + 10 ** ((ratings[m2] - ratings[m1]) / 400))
+                e2 = 1 - e1
+                ratings[m1] += k * (s1 - e1)
+                ratings[m2] += k * (s2 - e2)
+
+    return ratings
+
+
+def format_elo_table(ratings: dict[LanguageModelName, float]) -> str:
+    """Return a formatted Elo ratings table."""
+    rows = [(model.value, f"{elo:.1f}") for model, elo in ratings.items()]
+    rows.sort(key=lambda x: float(x[1]), reverse=True)
+    return tabulate(rows, headers=["Model", "Elo"], tablefmt="github")
+
+
 async def evaluate_models(
     dataset: str,
     models: Sequence[LanguageModelName] | None = None,
@@ -123,6 +164,9 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
     )
 
     print(format_accuracy_table(results, n))
+    elo = compute_elo_ratings(results)
+    print()
+    print(format_elo_table(elo))
 
 
 def main() -> None:
