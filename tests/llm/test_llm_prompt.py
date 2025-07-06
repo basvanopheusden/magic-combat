@@ -108,3 +108,15 @@ def test_parse_block_assignments_invalid_name():
     result, invalid = parse_block_assignments(text, ["Guard"], ["Goblin"])
     assert invalid
     assert result == {}
+
+
+def test_prompt_includes_example_lines():
+    state = GameState(
+        players={
+            "A": PlayerState(life=20, creatures=[]),
+            "B": PlayerState(life=20, creatures=[]),
+        }
+    )
+    prompt = create_llm_prompt(state)
+    assert "flanking 2" in prompt
+    assert "+1/+1 counters" in prompt
