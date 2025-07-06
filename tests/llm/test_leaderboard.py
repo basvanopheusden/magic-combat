@@ -1,6 +1,7 @@
 import asyncio
 
 from llms.llm import LanguageModelName
+from scripts.leaderboard import compute_elo_error_bars
 from scripts.leaderboard import compute_elo_ratings
 from scripts.leaderboard import count_items
 from scripts.leaderboard import evaluate_models
@@ -57,7 +58,8 @@ def test_format_leaderboard_table():
         LanguageModelName.GPT_4_1: [True, True],
     }
     ratings = compute_elo_ratings(res)
-    table = format_leaderboard_table(res, 2, ratings)
+    err = compute_elo_error_bars(res, reps=5, seed=0)
+    table = format_leaderboard_table(res, 2, ratings, err)
     assert "Model" in table and "Elo" in table
 
 
@@ -84,6 +86,16 @@ def test_compute_elo_ratings():
     )
 
 
+def test_compute_elo_error_bars():
+    res = {
+        LanguageModelName.GPT_4O: [True, False, True, False],
+        LanguageModelName.GPT_4_1: [False, True, False, True],
+    }
+    err = compute_elo_error_bars(res, reps=5, seed=1)
+    assert set(err.keys()) == set(res.keys())
+    assert all(e >= 0 for e in err.values())
+
+
 def test_format_elo_table():
     res = {
         LanguageModelName.GPT_4O: [True, True],
@@ -91,5 +103,6 @@ def test_format_elo_table():
         LanguageModelName.O3: [False, False],
     }
     ratings = compute_elo_ratings(res)
-    table = format_elo_table(ratings)
+    err = compute_elo_error_bars(res, reps=5, seed=0)
+    table = format_elo_table(ratings, err)
     assert "Elo" in table and LanguageModelName.GPT_4O.value in table
