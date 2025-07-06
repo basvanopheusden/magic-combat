@@ -253,25 +253,26 @@ class XAILanguageModel(LanguageModel):
         max_tokens: int = 8192,
     ) -> None:
         super().__init__(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
-        self.client = XAIClient(api_key=os.getenv("XAI_API_KEY"))
+        api_key = os.getenv("XAI_API_KEY")
+        self.client = XAIClient(api_key=api_key) if api_key is not None else XAIClient()
 
     async def _call_api_model(
         self, prompt: str, *, temperature: float, seed: int, max_tokens: int
     ) -> str:
-        if self.model== LanguageModelName.GROK_3_MINI:
+        if self.model == LanguageModelName.GROK_3_MINI:
             max_tokens = 32768
             chat = self.client.chat.create(
                 model=self.model.value,
                 temperature=temperature,
                 seed=seed + 1,  # XAI seeds must be > 0
                 max_tokens=max_tokens,
-                reasoning_effort="high"
+                reasoning_effort="high",
             )
         else:
             chat = self.client.chat.create(
                 model=self.model.value,
                 temperature=temperature,
-                seed=seed+1, # XAI seeds must be > 0
+                seed=seed + 1,  # XAI seeds must be > 0
                 max_tokens=max_tokens,
             )
         chat.append(xai_chat.user(prompt))

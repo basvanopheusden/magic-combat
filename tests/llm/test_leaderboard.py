@@ -4,8 +4,8 @@ from llms.llm import LanguageModelName
 from scripts.leaderboard import compute_elo_ratings
 from scripts.leaderboard import count_items
 from scripts.leaderboard import evaluate_models
-from scripts.leaderboard import format_accuracy_table
 from scripts.leaderboard import format_elo_table
+from scripts.leaderboard import format_leaderboard_table
 from scripts.leaderboard import format_pvalue_table
 from scripts.leaderboard import standard_error
 from scripts.leaderboard import two_proportion_p_value
@@ -51,13 +51,14 @@ def test_evaluate_models(monkeypatch):
     }
 
 
-def test_format_accuracy_table():
+def test_format_leaderboard_table():
     res = {
         LanguageModelName.GPT_4O: [True, False],
         LanguageModelName.GPT_4_1: [True, True],
     }
-    table = format_accuracy_table(res, 2)
-    assert "Model" in table and "Accuracy" in table
+    ratings = compute_elo_ratings(res)
+    table = format_leaderboard_table(res, 2, ratings)
+    assert "Model" in table and "Elo" in table
 
 
 def test_format_pvalue_table():

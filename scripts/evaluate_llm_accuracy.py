@@ -46,6 +46,7 @@ async def evaluate_dataset(
 ) -> List[bool]:
     ...
 
+
 async def evaluate_dataset(
     path: str,
     *,
@@ -100,7 +101,7 @@ async def evaluate_single_item(
     semaphore: asyncio.Semaphore,
     llm: LanguageModel,
     temperature: float = 1.0,
-    max_attempts=3,
+    max_attempts: int = 3,
 ) -> bool:
     """Return ``True`` if ``llm`` answers ``item`` correctly."""
     prompt = cast(str, item["prompt"])
