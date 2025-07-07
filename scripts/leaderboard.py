@@ -34,6 +34,14 @@ def standard_error(acc: float, n: int) -> float:
     return math.sqrt(acc * (1.0 - acc) / n) if n else 0.0
 
 
+def standard_error_mean(values: Sequence[float]) -> float:
+    """Return the standard error of the mean for ``values``."""
+    n = len(values)
+    if n <= 1:
+        return 0.0
+    return float(np.std(values, ddof=1)) / math.sqrt(n)
+
+
 def two_proportion_p_value(results1: Sequence[bool], results2: Sequence[bool]) -> float:
     """Return p-value from McNemar's test for two result lists."""
     n01 = 0
@@ -61,6 +69,7 @@ def format_leaderboard_table(
     elo: dict[LanguageModelName, float],
     elo_err: dict[LanguageModelName, float] | None = None,
     value_loss: dict[LanguageModelName, float] | None = None,
+    value_loss_err: dict[LanguageModelName, float] | None = None,
 ) -> str:
     """Return a formatted leaderboard table with accuracy and Elo ratings."""
     rows: list[list[str]] = []
@@ -73,7 +82,11 @@ def format_leaderboard_table(
         else:
             rating_str = f"{elo_rating:4.2f}"
         loss = value_loss[model] if value_loss is not None else 0.0
-        rows.append([model.value, f"{acc:.3f} ± {se:.3f}", rating_str, f"{loss:.3f}"])
+        if value_loss_err is not None:
+            loss_str = f"{loss:.3f} ± {value_loss_err[model]:.3f}"
+        else:
+            loss_str = f"{loss:.3f}"
+        rows.append([model.value, f"{acc:.3f} ± {se:.3f}", rating_str, loss_str])
 
     def sort_key(row: list[str]) -> float:
         return float(row[3].split("±")[0])
@@ -142,7 +155,7 @@ def compute_elo_ratings(
     for idx in range(n):
         for i, m1 in enumerate(models):
             for m2 in models[i + 1 :]:
-                if losses is not None and losses[m1][idx] is not None and losses[m2][idx] is not None:
+                if losses is not None:
                     l1 = losses[m1][idx]
                     l2 = losses[m2][idx]
                     if l1 == l2:
@@ -254,7 +267,8 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
     elo = compute_elo_ratings(results, losses)
     elo_err = compute_elo_error_bars(results, losses, seed=args.seed)
     avg_loss = {m: sum(lst) / len(lst) if lst else 0.0 for m, lst in losses.items()}
-    print(format_leaderboard_table(results, n, elo, elo_err, avg_loss))
+    loss_err = {m: standard_error_mean(lst) for m, lst in losses.items()}
+    print(format_leaderboard_table(results, n, elo, elo_err, avg_loss, loss_err))
 
 
 def main() -> None:

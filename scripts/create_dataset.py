@@ -11,7 +11,8 @@ from typing import cast
 import numpy as np
 
 from llms.create_llm_prompt import create_llm_prompt
-from magic_combat import build_value_map, IllegalBlockError
+from magic_combat import IllegalBlockError
+from magic_combat import build_value_map
 from magic_combat import compute_card_statistics
 from magic_combat import generate_random_scenario
 from magic_combat import load_cards

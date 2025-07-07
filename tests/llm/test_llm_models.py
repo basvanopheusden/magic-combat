@@ -60,4 +60,4 @@ def test_build_language_model_max_tokens(monkeypatch):
     monkeypatch.setattr("together.AsyncTogether", lambda: object())
     monkeypatch.setattr("llms.llm.XAIClient", lambda: object())
     llm = build_language_model(LanguageModelName.GROK_3_MINI)
-    assert llm.max_tokens == 32768
+    assert llm.max_tokens == 131072
