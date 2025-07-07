@@ -2,12 +2,13 @@ import os
 from abc import ABC
 from abc import abstractmethod
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 from typing import Optional
 
 import anthropic
 import openai
 import together  # type: ignore
+from anthropic.types import ThinkingConfigEnabledParam, ThinkingConfigDisabledParam
 from google import genai
 from google.genai import types as genai_types
 from openai.types.responses import Response
@@ -144,7 +145,7 @@ class OpenAILanguageModel(LanguageModel):
                     model=self.model.value,
                     input=prompt,
                     temperature=temperature,
-                    max_tokens=max_tokens,
+                    seed=seed,
                 )
             )
             return (resp.output_text or "").strip()
@@ -152,7 +153,11 @@ class OpenAILanguageModel(LanguageModel):
             model=self.model.value,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
-            max_tokens=max_tokens,
+            seed=seed,
+            reasoning_effort= "high" if self.model in {
+                LanguageModelName.O4_MINI,
+                LanguageModelName.O3,
+            } else None,
         )
         return (chat_resp.choices[0].message.content or "").strip()
 
@@ -183,6 +188,8 @@ class GeminiLanguageModel(LanguageModel):
         )
         return (response.text or "").strip()
 
+THINKING_ENABLED: Literal["enabled"] = "enabled"
+THINKING_DISABLED: Literal["disabled"] = "disabled"
 
 class AnthropicLanguageModel(LanguageModel):
     def __init__(
@@ -199,14 +206,21 @@ class AnthropicLanguageModel(LanguageModel):
     async def _call_api_model(
         self, prompt: str, *, temperature: float, seed: int, max_tokens: int
     ) -> str:
-        thinking = self.model.value.endswith("-thinking")
-        thinking_type = "enabled" if thinking else "disabled"
-        response = await self.client.messages.create(  # type: ignore[call-overload]
+        if self.model.value.endswith("-thinking"):
+            thinking = ThinkingConfigEnabledParam(
+                budget_tokens=int(max_tokens / 2),
+                type = THINKING_ENABLED,
+            )
+        else:
+            thinking = ThinkingConfigDisabledParam(
+                type=THINKING_DISABLED,
+            )
+        response = await self.client.messages.create(
             model=self.model.value.removesuffix("-thinking"),
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_tokens=max_tokens,
-            thinking={"type": thinking_type, "budget_tokens": int(max_tokens / 2)},
+            thinking=thinking,
         )
         return "".join(getattr(b, "text", "") for b in response.content).strip()
 

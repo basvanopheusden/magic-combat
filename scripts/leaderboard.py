@@ -159,11 +159,12 @@ def compute_elo_error_bars(
     reps: int = 100,
     seed: int | None = None,
 ) -> dict[LanguageModelName, float]:
-    """Return standard deviation of Elo ratings via bootstrap.
+    """Return standard error of Elo ratings via bootstrap.
 
     ``reps`` determines the number of bootstrap shuffles. ``seed`` controls
     the randomization.
     """
+    print("Computing Elo error bars with bootstrap sampling...")
     models = list(results.keys())
     n = len(next(iter(results.values()))) if results else 0
     rng = random.Random(seed)
@@ -177,7 +178,7 @@ def compute_elo_error_bars(
         for m in models:
             samples[m].append(ratings[m])
 
-    return {m: float(np.std(vals, ddof=1)) for m, vals in samples.items()}
+    return {m: float(np.std(vals, ddof=1))/np.sqrt(reps) for m, vals in samples.items()}
 
 
 async def evaluate_models(
