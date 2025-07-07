@@ -32,6 +32,8 @@ from .random_scenario import generate_random_scenario
 from .random_scenario import sample_balanced
 from .rules_text import RULES_TEXT
 from .rules_text import get_relevant_rules_text
+from .scoring import AGGREGATE_WEIGHTS
+from .scoring import compute_aggregate_score
 from .scryfall_loader import card_to_creature
 from .scryfall_loader import cards_to_creatures
 from .scryfall_loader import fetch_french_vanilla_cards
@@ -101,4 +103,6 @@ __all__ = [
     "decode_provoke",
     "decode_mentor",
     "ReferenceAnswer",
+    "compute_aggregate_score",
+    "AGGREGATE_WEIGHTS",
 ]
