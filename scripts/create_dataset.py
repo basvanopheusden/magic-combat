@@ -11,7 +11,7 @@ from typing import cast
 import numpy as np
 
 from llms.create_llm_prompt import create_llm_prompt
-from magic_combat import build_value_map
+from magic_combat import build_value_map, IllegalBlockError
 from magic_combat import compute_card_statistics
 from magic_combat import generate_random_scenario
 from magic_combat import load_cards
@@ -91,13 +91,17 @@ def main() -> None:
                 for idx, a in enumerate(assignment)
                 if a is not None
             }
-            result, _ = evaluate_block_assignment(
-                block_dict,
-                state,
-                IterationCounter(int(1e4)),
-                provoke_map=provoke_map,
-                mentor_map=mentor_map,
-            )
+            try:
+                result, _ = evaluate_block_assignment(
+                    block_dict,
+                    state,
+                    IterationCounter(int(1e4)),
+                    provoke_map=provoke_map,
+                    mentor_map=mentor_map,
+                )
+            except IllegalBlockError:
+                # Skip illegal assignments
+                continue
             if result is None:
                 continue
             score_vec = result.score("A", "B")

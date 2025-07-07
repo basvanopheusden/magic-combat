@@ -69,16 +69,16 @@ def format_leaderboard_table(
         se = standard_error(acc, n)
         elo_rating = elo[model]
         if elo_err is not None:
-            rating_str = f"{elo_rating:.2f}±{elo_err[model]:.2f}"
+            rating_str = f"{elo_rating:4.2f} ± {elo_err[model]:.2f}"
         else:
-            rating_str = f"{elo_rating:.2f}"
+            rating_str = f"{elo_rating:4.2f}"
         loss = value_loss[model] if value_loss is not None else 0.0
-        rows.append([model.value, f"{acc:.3f}±{se:.3f}", rating_str, f"{loss:.3f}"])
+        rows.append([model.value, f"{acc:.3f} ± {se:.3f}", rating_str, f"{loss:.3f}"])
 
     def sort_key(row: list[str]) -> float:
-        return float(row[2].split("±")[0])
+        return float(row[3].split("±")[0])
 
-    rows.sort(key=sort_key, reverse=True)
+    rows.sort(key=sort_key)
     return tabulate(
         rows,
         headers=["Model", "Accuracy", "Elo", "Value Lost"],
@@ -125,6 +125,7 @@ def format_pvalue_table(results: dict[LanguageModelName, list[bool]]) -> str:
 
 def compute_elo_ratings(
     results: dict[LanguageModelName, list[bool]],
+    losses: dict[LanguageModelName, list[float]] | None = None,
     *,
     base: float = 1000.0,
     k: float = 5.0,
@@ -141,14 +142,24 @@ def compute_elo_ratings(
     for idx in range(n):
         for i, m1 in enumerate(models):
             for m2 in models[i + 1 :]:
-                r1 = results[m1][idx]
-                r2 = results[m2][idx]
-                if r1 == r2:
-                    s1 = s2 = 0.5
-                elif r1:
-                    s1, s2 = 1.0, 0.0
+                if losses is not None and losses[m1][idx] is not None and losses[m2][idx] is not None:
+                    l1 = losses[m1][idx]
+                    l2 = losses[m2][idx]
+                    if l1 == l2:
+                        s1 = s2 = 0.5
+                    elif l1 < l2:
+                        s1, s2 = 1.0, 0.0
+                    else:
+                        s1, s2 = 0.0, 1.0
                 else:
-                    s1, s2 = 0.0, 1.0
+                    r1 = results[m1][idx]
+                    r2 = results[m2][idx]
+                    if r1 == r2:
+                        s1 = s2 = 0.5
+                    elif r1:
+                        s1, s2 = 1.0, 0.0
+                    else:
+                        s1, s2 = 0.0, 1.0
                 e1 = 1 / (1 + 10 ** ((ratings[m2] - ratings[m1]) / 400))
                 e2 = 1 - e1
                 ratings[m1] += k * (s1 - e1)
@@ -159,6 +170,7 @@ def compute_elo_ratings(
 
 def compute_elo_error_bars(
     results: dict[LanguageModelName, list[bool]],
+    losses: dict[LanguageModelName, list[float]] | None = None,
     *,
     base: float = 1000.0,
     k: float = 5.0,
@@ -179,8 +191,12 @@ def compute_elo_error_bars(
     indices = list(range(n))
     for _ in range(reps):
         rng.shuffle(indices)
-        shuffled = {m: [results[m][i] for i in indices] for m in models}
-        ratings = compute_elo_ratings(shuffled, base=base, k=k)
+        shuffled_results = {m: [results[m][i] for i in indices] for m in models}
+        if losses is not None:
+            shuffled_losses = {m: [losses[m][i] for i in indices] for m in models}
+        else:
+            shuffled_losses = None
+        ratings = compute_elo_ratings(shuffled_results, shuffled_losses, base=base, k=k)
         for m in models:
             samples[m].append(ratings[m])
 
@@ -225,11 +241,10 @@ async def run_leaderboard(args: argparse.Namespace) -> None:
         cache=cache,
     )
 
-    elo = compute_elo_ratings(results)
-    elo_err = compute_elo_error_bars(results, seed=args.seed)
+    elo = compute_elo_ratings(results, losses)
+    elo_err = compute_elo_error_bars(results, losses, seed=args.seed)
     avg_loss = {m: sum(lst) / len(lst) if lst else 0.0 for m, lst in losses.items()}
     print(format_leaderboard_table(results, n, elo, elo_err, avg_loss))
-    print(format_pvalue_table(results))
 
 
 def main() -> None:

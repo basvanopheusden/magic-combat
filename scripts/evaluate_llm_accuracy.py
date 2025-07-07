@@ -136,7 +136,6 @@ async def evaluate_single_item(
                 f"Unparseable response for model {model} on scenario "
                 f"{idx + 1}; retrying..."
             )
-            print(f"Response: {repr(response)}")
         except Exception as exc:  # pragma: no cover - network failure
             print(f"Error calling model {model}: {exc}")
             break
