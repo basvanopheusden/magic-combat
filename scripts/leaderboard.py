@@ -110,7 +110,7 @@ def format_pvalue_table(results: dict[LanguageModelName, list[bool]]) -> str:
     """Return a formatted pairwise p-values table."""
     models = list(results.keys())
     headers = [""] + [m.value for m in models]
-    table_rows = []
+    table_rows: list[list[str]] = []
     for m1 in models:
         row = [m1.value]
         for m2 in models:
@@ -184,7 +184,9 @@ def compute_elo_error_bars(
         for m in models:
             samples[m].append(ratings[m])
 
-    return {m: float(np.std(vals, ddof=1))/np.sqrt(reps) for m, vals in samples.items()}
+    return {
+        m: float(np.std(vals, ddof=1)) / np.sqrt(reps) for m, vals in samples.items()
+    }
 
 
 async def evaluate_models(
@@ -200,8 +202,9 @@ async def evaluate_models(
         models = list(LanguageModelName)
     results: dict[LanguageModelName, list[bool]] = {}
     losses: dict[LanguageModelName, list[float]] = {}
-    for model in models:
-        item_results, item_losses = await evaluate_dataset(
+
+    tasks = [
+        evaluate_dataset(
             dataset,
             model=model,
             seed=seed,
@@ -209,8 +212,15 @@ async def evaluate_models(
             cache=cache,
             return_item_results=True,
         )
+        for model in models
+    ]
+
+    outputs = await asyncio.gather(*tasks)
+
+    for model, (item_results, item_losses) in zip(models, outputs):
         results[model] = item_results
         losses[model] = item_losses
+
     return results, losses
 
 

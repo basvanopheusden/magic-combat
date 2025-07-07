@@ -69,7 +69,9 @@ async def evaluate_dataset(
 
     temperature = get_default_temperature(model)
     semaphore = asyncio.Semaphore(concurrency)
-    llm = build_language_model(model, cache=cache, verbose=verbose)
+    llm = build_language_model(
+        model, cache=cache, verbose=verbose, api_concurrency=concurrency
+    )
 
     results: List[Tuple[bool, float]] = await asyncio.gather(
         *[
@@ -115,6 +117,7 @@ async def evaluate_single_item(
     blk_names = ref.blocks.keys()
     atk_names = ref.blocks.values()
     parsed = None
+    response = ""
     for attempt in range(max_attempts):
         try:
             async with semaphore:
