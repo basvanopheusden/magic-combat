@@ -9,6 +9,7 @@ from scripts.leaderboard import format_elo_table
 from scripts.leaderboard import format_leaderboard_table
 from scripts.leaderboard import format_pvalue_table
 from scripts.leaderboard import standard_error
+from scripts.leaderboard import standard_error_mean
 from scripts.leaderboard import two_proportion_p_value
 
 
@@ -61,8 +62,12 @@ def test_format_leaderboard_table():
     ratings = compute_elo_ratings(res)
     err = compute_elo_error_bars(res, reps=5, seed=0)
     loss = {LanguageModelName.GPT_4O: -0.5, LanguageModelName.GPT_4_1: 0.0}
-    table = format_leaderboard_table(res, 2, ratings, err, loss)
-    assert "Model" in table and "Elo" in table
+    loss_err = {
+        LanguageModelName.GPT_4O: standard_error_mean([0.0, -1.0]),
+        LanguageModelName.GPT_4_1: standard_error_mean([0.0, 0.0]),
+    }
+    table = format_leaderboard_table(res, 2, ratings, err, loss, loss_err)
+    assert "Model" in table and "Elo" in table and "±" in table
 
 
 def test_format_pvalue_table():
