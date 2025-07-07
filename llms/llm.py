@@ -1,13 +1,17 @@
+import asyncio
 from abc import ABC
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Literal
+from typing import Any
+from typing import Literal
 from typing import Optional
+from typing import Type
 
 import anthropic
 import openai
 import together  # type: ignore
-from anthropic.types import ThinkingConfigEnabledParam, ThinkingConfigDisabledParam
+from anthropic.types import ThinkingConfigDisabledParam
+from anthropic.types import ThinkingConfigEnabledParam
 from google import genai
 from google.genai import types as genai_types
 from openai.types.responses import Response
@@ -63,6 +67,16 @@ def get_short_prompt(prompt: str) -> str:
     return prompt.splitlines()[0][:30]
 
 
+_API_SEMAPHORES: dict[Type["LanguageModel"], asyncio.Semaphore] = {}
+
+
+def get_api_semaphore(cls: Type["LanguageModel"], limit: int) -> asyncio.Semaphore:
+    """Return a shared semaphore for ``cls`` with ``limit`` permits."""
+    if cls not in _API_SEMAPHORES:
+        _API_SEMAPHORES[cls] = asyncio.Semaphore(limit)
+    return _API_SEMAPHORES[cls]
+
+
 class LanguageModel(ABC):
     """Base language model wrapper."""
 
@@ -79,6 +93,7 @@ class LanguageModel(ABC):
         self.verbose = verbose
         self.default_temperature = get_default_temperature(model)
         self.max_tokens = max_tokens
+        self._api_semaphore: asyncio.Semaphore | None = None
 
     async def call(
         self,
@@ -99,12 +114,18 @@ class LanguageModel(ABC):
             if self.verbose:
                 print("Cached response:", cached)
             return cached
-        text = await self._call_api_model(
-            prompt,
-            temperature=temp,
-            seed=seed,
-            max_tokens=self.max_tokens if max_tokens is None else max_tokens,
+        semaphore = (
+            self._api_semaphore
+            if self._api_semaphore is not None
+            else get_api_semaphore(type(self), 50)
         )
+        async with semaphore:
+            text = await self._call_api_model(
+                prompt,
+                temperature=temp,
+                seed=seed,
+                max_tokens=self.max_tokens if max_tokens is None else max_tokens,
+            )
         if self.cache is not None:
             self.cache.add(prompt, self.model.value, seed, temp, text)
         if self.verbose:
@@ -153,10 +174,13 @@ class OpenAILanguageModel(LanguageModel):
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             seed=seed,
-            reasoning_effort= "high" if self.model in {
+            reasoning_effort="high"
+            if self.model
+            in {
                 LanguageModelName.O4_MINI,
                 LanguageModelName.O3,
-            } else None,
+            }
+            else None,
         )
         return (chat_resp.choices[0].message.content or "").strip()
 
@@ -187,8 +211,10 @@ class GeminiLanguageModel(LanguageModel):
         )
         return (response.text or "").strip()
 
+
 THINKING_ENABLED: Literal["enabled"] = "enabled"
 THINKING_DISABLED: Literal["disabled"] = "disabled"
+
 
 class AnthropicLanguageModel(LanguageModel):
     def __init__(
@@ -205,10 +231,11 @@ class AnthropicLanguageModel(LanguageModel):
     async def _call_api_model(
         self, prompt: str, *, temperature: float, seed: int, max_tokens: int
     ) -> str:
+        thinking: ThinkingConfigEnabledParam | ThinkingConfigDisabledParam
         if self.model.value.endswith("-thinking"):
             thinking = ThinkingConfigEnabledParam(
                 budget_tokens=int(max_tokens / 2),
-                type = THINKING_ENABLED,
+                type=THINKING_ENABLED,
             )
         else:
             thinking = ThinkingConfigDisabledParam(
@@ -374,10 +401,13 @@ def build_language_model(
     *,
     cache: Optional[LLMCache] = None,
     verbose: bool = False,
+    api_concurrency: int = 50,
 ) -> LanguageModel:
     """Instantiate a language model for ``model``."""
     if model not in _MODEL_CLASS_BY_NAME:
         raise ValueError(f"Unsupported model: {model}")
     cls = _MODEL_CLASS_BY_NAME[model]
     max_tokens = _MAX_TOKENS_BY_MODEL_NAME.get(model, 8192)
-    return cls(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
+    instance = cls(model, cache=cache, verbose=verbose, max_tokens=max_tokens)
+    instance._api_semaphore = get_api_semaphore(cls, api_concurrency)
+    return instance
