@@ -13,7 +13,7 @@ def _patch_build(monkeypatch, responses):
     llm = MockLanguageModel(responses, cache=MockLLMCache())
     monkeypatch.setattr(
         "scripts.evaluate_llm_accuracy.build_language_model",
-        lambda model, cache=None, verbose=False: llm,
+        lambda model, cache=None, verbose=False, api_concurrency=50: llm,
     )
     return llm
 
