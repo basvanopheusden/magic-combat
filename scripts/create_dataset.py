@@ -24,6 +24,7 @@ from magic_combat.blocking_ai import (
 )
 from magic_combat.dataset import ReferenceAnswer
 from magic_combat.limits import IterationCounter
+from magic_combat.scoring import compute_aggregate_score
 from magic_combat.text_utils import summarize_creature
 
 
@@ -130,10 +131,7 @@ def main() -> None:
                     int(sc["life_diff"]),
                     int(sc["poison_diff"]),
                 )
-                aggregate = -sum(
-                    abs(float(s) - float(b)) for s, b in zip(score_vec, best_score)
-                )
-                data["aggregate"] = aggregate
+                data["aggregate"] = compute_aggregate_score(score_vec, best_score)
 
         items.append(
             {
