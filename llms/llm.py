@@ -1,4 +1,3 @@
-import os
 from abc import ABC
 from abc import abstractmethod
 from enum import Enum
@@ -322,6 +321,30 @@ class MockLanguageModel(LanguageModel):
         return response
 
 
+_MAX_TOKENS_BY_MODEL_NAME: dict[LanguageModelName, int] = {
+    LanguageModelName.GROK_3_MINI: 32768,
+    LanguageModelName.GEMINI_2_5_PRO: 8192,
+    LanguageModelName.GEMINI_2_5_FLASH: 8192,
+    LanguageModelName.GEMINI_2_0_FLASH: 8192,
+    LanguageModelName.GPT_4O: 8192,
+    LanguageModelName.GPT_4_1: 8192,
+    LanguageModelName.O4_MINI: 8192,
+    LanguageModelName.O3: 8192,
+    LanguageModelName.O3_PRO: 8192,
+    LanguageModelName.CLAUDE_3_7_SONNET: 8192,
+    LanguageModelName.CLAUDE_3_5_SONNET: 8192,
+    LanguageModelName.CLAUDE_4_SONNET: 8192,
+    LanguageModelName.CLAUDE_4_OPUS: 8192,
+    LanguageModelName.CLAUDE_4_SONNET_THINKING: 8192,
+    LanguageModelName.CLAUDE_4_OPUS_THINKING: 8192,
+    LanguageModelName.DEEPSEEK_R1: 8192,
+    LanguageModelName.LLAMA_4_MAVERICK: 8192,
+    LanguageModelName.LLAMA_4_SCOUT: 8192,
+    LanguageModelName.GROK_3: 8192,
+    LanguageModelName.QWEN_3_235B: 8192,
+}
+
+
 _MODEL_CLASS_BY_NAME: dict[LanguageModelName, type[LanguageModel]] = {
     LanguageModelName.GEMINI_2_5_PRO: GeminiLanguageModel,
     LanguageModelName.GEMINI_2_5_FLASH: GeminiLanguageModel,
@@ -356,4 +379,5 @@ def build_language_model(
     if model not in _MODEL_CLASS_BY_NAME:
         raise ValueError(f"Unsupported model: {model}")
     cls = _MODEL_CLASS_BY_NAME[model]
-    return cls(model, cache=cache, verbose=verbose)
+    max_tokens = _MAX_TOKENS_BY_MODEL_NAME.get(model, 8192)
+    return cls(model, cache=cache, verbose=verbose, max_tokens=max_tokens)

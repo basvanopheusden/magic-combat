@@ -51,3 +51,13 @@ def test_build_language_model_types(monkeypatch):
         build_language_model(LanguageModelName.DEEPSEEK_R1), TogetherLanguageModel
     )
     assert isinstance(build_language_model(LanguageModelName.GROK_3), XAILanguageModel)
+
+
+def test_build_language_model_max_tokens(monkeypatch):
+    monkeypatch.setattr("openai.AsyncOpenAI", lambda: object())
+    monkeypatch.setattr("anthropic.AsyncAnthropic", lambda: object())
+    monkeypatch.setattr("google.genai.Client", lambda: object())
+    monkeypatch.setattr("together.AsyncTogether", lambda: object())
+    monkeypatch.setattr("llms.llm.XAIClient", lambda: object())
+    llm = build_language_model(LanguageModelName.GROK_3_MINI)
+    assert llm.max_tokens == 32768
